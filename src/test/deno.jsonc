@@ -1,0 +1,9 @@
+{
+  "test": {
+    "include": [
+      "../lib/compiling/set/SetLexr_test.ts",
+      "../lib/compiling/set/SetPazr_test.ts"
+    ]
+    // "exclude": [""]
+  }
+}
