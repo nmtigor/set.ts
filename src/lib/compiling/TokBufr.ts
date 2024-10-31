@@ -48,7 +48,7 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
     this.tabsize = tabsize_x;
     this.#srcname = srcname_x;
 
-    //kkkk TOCLEANUP
+    //jjjj TOCLEANUP
     // this.dir_mo.registHandler((n_y) => {
     //   // const rv_a = this.edtr_sa.map((edtr_y) =>
     //   //   (edtr_y as EdtrScrolr).proactiveCaret.ranval
@@ -148,7 +148,7 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
     return this.#anchrLoc;
   }
 
-  //kkkk TOCLEANUP
+  //jjjj TOCLEANUP
   // /**
   //  * @deprecated
   //  * @const @param text_a

@@ -244,7 +244,7 @@ export class Repl {
       for (let i = (inRv_x as Ranval[]).length; i--;) {
         inRan_a[i] = this.#tmpRan.using()
           .setByRanval(this.#bufr, (inRv_x as Ranval[])[i]);
-        inRan_a[i].resetRanval_$(); //!
+        inRan_a[i].syncRanval_$(); //!
         /*#static*/ if (INOUT) {
           if (inRan_a.at(i + 1)) inRan_a[i].posS(inRan_a[i + 1]);
         }
@@ -254,7 +254,7 @@ export class Repl {
 
       inRan_a[0] = this.#tmpRan.using()
         .setByRanval(this.#bufr, inRv_x as Ranval);
-      inRan_a[0].resetRanval_$(); //!
+      inRan_a[0].syncRanval_$(); //!
       // const lnN_inRan = inRan.lineN_1;
     }
     return inRan_a;
@@ -325,11 +325,11 @@ export class Repl {
     if (this.aoa) {
       for (let i = outRan_a.length; i--;) {
         outRan_a[i].toRanval((outRv_x as Ranval[])[i]);
-        outRan_a[i].resetRanval_$(); //!
+        outRan_a[i].syncRanval_$(); //!
       }
     } else {
       outRan_a[0].toRanval(outRv_x as Ranval);
-      outRan_a[0].resetRanval_$(); //!
+      outRan_a[0].syncRanval_$(); //!
     }
   }
 

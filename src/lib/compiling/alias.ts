@@ -7,6 +7,7 @@ import type { Bidi } from "../Bidi.ts";
 import type { uint32 } from "../alias.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import type { JSLangTok } from "./jslang/JSLangTok.ts";
+import type { LaTeXTok } from "./latex/LaTeXTok.ts";
 import type { MdextTok } from "./mdext/MdextTok.ts";
 import type { PDFTok } from "./pdf/PDFTok.ts";
 import type { PlainTok } from "./plain/PlainTok.ts";
@@ -49,6 +50,7 @@ export type Tok =
   | URITok
   | MdextTok
   | PDFTok
+  | LaTeXTok
   | RMLTok
   | JSLangTok;
 

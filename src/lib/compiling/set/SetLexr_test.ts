@@ -16,102 +16,103 @@ const bufr = new SetBufr();
 const lexr = new SetLexr(bufr);
 Object.assign(test_o, { bufr, lexr } as Partial<TestO>);
 
-function init(text_x?: string) {
-  bufr.setLines(text_x);
+function init(text_x?: string[] | string) {
   lexr.reset();
   bufr.repl_actr.init(lexr);
   bufr.repl_mo.registHandler((n_y) => bufr.repl_actr.to(n_y));
+
+  if (text_x) repl(rv(0, 0), text_x);
 }
 
-describe("lex()", () => {
-  afterEach(() => {
-    bufr.reset();
-  });
+afterEach(() => {
+  bufr.reset();
+});
 
+describe("lex()", () => {
   it("lex() fuzykey, and its concatTokens$()", () => {
     init();
-    assertEquals(lexr.strtToken_$.toString(), "strtBdry[0-0)");
-    assertEquals(lexr.stopToken_$.toString(), "stopBdry[0-0)");
+    assertEquals(lexr.strtLexTk_$.toString(), "strtBdry[0-0)");
+    assertEquals(lexr.stopLexTk_$.toString(), "stopBdry[0-0)");
 
     repl(rv(0, 0), "d");
-    assertEquals(
-      lexr.strtToken_$._Repr(),
-      [["strtBdry[0-0)", "fuzykey[0-0,0-1)"], "stopBdry[0-1)", []],
-    );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    assertEquals(lexr.strtLexTk_$._Repr(), [
+      ["strtBdry[0-0)", "fuzykey[0-0,0-1)"],
+      "stopBdry[0-1)",
+      [],
+    ]);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
     undo();
-    assertEquals(
-      lexr.strtToken_$._Repr(),
-      [["strtBdry[0-0)"], "stopBdry[0-0)", []],
-    );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    assertEquals(lexr.strtLexTk_$._Repr(), [
+      ["strtBdry[0-0)"],
+      "stopBdry[0-0)",
+      [],
+    ]);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
     redo();
-    assertEquals(
-      lexr.strtToken_$._Repr(),
-      [["strtBdry[0-0)", "fuzykey[0-0,0-1)"], "stopBdry[0-1)", []],
-    );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    assertEquals(lexr.strtLexTk_$._Repr(), [
+      ["strtBdry[0-0)", "fuzykey[0-0,0-1)"],
+      "stopBdry[0-1)",
+      [],
+    ]);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
 
     /*
     d
      */
-    repl(ran(0).toRanval(), "ef");
-    assertEquals(
-      lexr.strtToken_$._Repr(),
-      [
-        ["strtBdry[0-0)", "fuzykey[0-0,0-3)"],
-        "stopBdry[0-3)",
-        [],
-      ],
-    );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    repl(ran(0)._rv, "ef");
+    assertEquals(lexr.strtLexTk_$._Repr(), [
+      ["strtBdry[0-0)", "fuzykey[0-0,0-3)"],
+      "stopBdry[0-3)",
+      [],
+    ]);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
     /*
     def
      */
     repl(rv(0, 1), "_");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         ["strtBdry[0-0)", "fuzykey[0-0,0-4)"],
         "stopBdry[0-4)",
         [],
       ],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
 
     /*
     d_ef
      */
     repl(rv(0, 1, 0, 2), "\t");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         ["strtBdry[0-0)", "fuzykey[0-0,0-1)", "fuzykey[0-2,0-4)"],
         "stopBdry[0-4)",
         [],
       ],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
-    repl(ran(0).toRanval(), " ");
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+    repl(ran(0)._rv, " ");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         ["strtBdry[0-0)", "fuzykey[0-0,0-1)", "fuzykey[0-2,0-4)"],
         "stopBdry[0-5)",
         [],
       ],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
     repl(rv(0, 0), " ");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         ["strtBdry[0-0)"],
         "fuzykey[0-1,0-2)",
         ["fuzykey[0-3,0-5)", "stopBdry[0-6)"],
       ],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
   });
 
   it("lex() quotkey", () => {
@@ -119,7 +120,7 @@ describe("lex()", () => {
 
     repl(rv(0, 0), '"');
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         [],
         "strtBdry[0-0)",
@@ -129,19 +130,19 @@ describe("lex()", () => {
     assertEquals(lexr._err, [["quotkey[0-0,0-1)", [Err.double_quoted_string]]]);
     repl(rv(0, 0), '"');
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [["strtBdry[0-0)", "quotkey[0-0,0-2)"], "stopBdry[0-2)", []],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
     /*
     ""
      */
     repl(rv(0, 1), "\n");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [["strtBdry[0-0)", "quotkey[0-0,1-1)"], "stopBdry[1-1)", []],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
   });
 
   it("lex() backslash", () => {
@@ -149,42 +150,41 @@ describe("lex()", () => {
 
     repl(rv(0, 0), "\\");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [["strtBdry[0-0)", "subtract[0-0,0-1)"], "stopBdry[0-1)", []],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
     repl(rv(0, 0), "\\");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         ["strtBdry[0-0)", "fuzykey[0-0,0-2)"],
         "stopBdry[0-2)",
         [],
       ],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
     undo();
-    repl(ran(0).toRanval(), "\\");
+    repl(ran(0)._rv, "\\");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         ["strtBdry[0-0)", "fuzykey[0-0,0-2)"],
         "stopBdry[0-2)",
         [],
       ],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
 
     bufr.reset();
-    init();
-    repl(rv(0, 0), '"a c"');
+    init('"a c"');
 
     repl(rv(0, 0), "\\");
     /*
     \"a c"
      */
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         ["strtBdry[0-0)", "fuzykey[0-0,0-3)"],
         "fuzykey[0-4,0-5)",
@@ -197,25 +197,25 @@ describe("lex()", () => {
   it("lex() other SetTok", () => {
     init();
 
-    repl(ran(0).toRanval(), "?");
+    repl(ran(0)._rv, "?");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [["strtBdry[0-0)", "question[0-0,0-1)"], "stopBdry[0-1)", []],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
-    repl(ran(0).toRanval(), ">");
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+    repl(ran(0)._rv, ">");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         ["strtBdry[0-0)", "question[0-0,0-1)", "joiner[0-1,0-2)"],
         "stopBdry[0-2)",
         [],
       ],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
-    repl(ran(0).toRanval(), "∩");
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+    repl(ran(0)._rv, "∩");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         [
           "strtBdry[0-0)",
@@ -227,10 +227,10 @@ describe("lex()", () => {
         [],
       ],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
-    repl(ran(0).toRanval(), "∪");
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+    repl(ran(0)._rv, "∪");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         [
           "strtBdry[0-0)",
@@ -243,10 +243,10 @@ describe("lex()", () => {
         [],
       ],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
-    repl(ran(0).toRanval(), "(");
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+    repl(ran(0)._rv, "(");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         [
           "strtBdry[0-0)",
@@ -260,10 +260,10 @@ describe("lex()", () => {
         [],
       ],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
-    repl(ran(0).toRanval(), ")");
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+    repl(ran(0)._rv, ")");
     assertEquals(
-      lexr.strtToken_$._Repr(),
+      lexr.strtLexTk_$._Repr(),
       [
         [
           "strtBdry[0-0)",
@@ -278,7 +278,7 @@ describe("lex()", () => {
         [],
       ],
     );
-    assertStrictEquals(lexr.stopToken_$, lexr.strtToken_$);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
   });
 });
 /*80--------------------------------------------------------------------------*/

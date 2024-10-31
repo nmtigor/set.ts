@@ -60,19 +60,19 @@ export abstract class BinaryOp extends SetSN {
     /*#static*/ if (INOUT) {
       assert(newSn_x instanceof Set);
     }
+    newSn_x.parent_$ = this;
+
     if (this.lhs$ === oldSn_x) {
-      oldSn_x.transferParentTo(newSn_x);
-      oldSn_x.transferBdryTo(newSn_x);
       this.lhs$ = newSn_x as Set;
     } else {
       /*#static*/ if (INOUT) {
         assert(this.rhs$ === oldSn_x);
       }
-      oldSn_x.transferParentTo(newSn_x);
-      oldSn_x.transferBdryTo(newSn_x);
       this.rhs$ = newSn_x as Set;
     }
     this.children$ = undefined;
+
+    this.invalidateBdry();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

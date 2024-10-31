@@ -47,11 +47,17 @@ export class Ran {
   get ranval() {
     return this.#ranval;
   }
-  resetRanval_$() {
+  syncRanvalAnchr_$() {
     this.#ranval.anchrLidx = this.frstLine.lidx_1;
     this.#ranval.anchrLoff = this.strtLoff;
+  }
+  syncRanvalFocus_$() {
     this.#ranval.focusLidx = this.lastLine.lidx_1;
     this.#ranval.focusLoff = this.stopLoff;
+  }
+  syncRanval_$() {
+    this.syncRanvalAnchr_$();
+    this.syncRanvalFocus_$();
   }
   /* ~ */
 
@@ -138,7 +144,7 @@ export class Ran {
       this.strtLoc$ = loc_1_x;
       this.stopLoc$ = loc_x;
     }
-    // this.resetRanval_$();
+    // this.syncRanval_$();
     return this;
   }
 
@@ -162,7 +168,7 @@ export class Ran {
     this.strtLoc$.become(ran_x.strtLoc$);
     this.stopLoc$.become(ran_x.stopLoc$);
 
-    // this.resetRanval_$();
+    // this.syncRanval_$();
 
     return this;
   }
@@ -192,7 +198,7 @@ export class Ran {
   collapse() {
     this.strtLoc$.become(this.stopLoc$);
 
-    // this.resetRanval_$();
+    // this.syncRanval_$();
 
     return this;
   }
@@ -237,11 +243,14 @@ export class Ran {
       this.strtLoc$.posE(rhs_x.strtLoc$) && this.stopLoc$.posE(rhs_x.stopLoc$);
   }
 
-  /** @primaryconst */
+  /**
+   * @primaryconst
+   * @primaryconst @param loc_x
+   */
   contain(loc_x: Loc): boolean {
     return this.strtLoc$.posSE(loc_x) && loc_x.posS(this.stopLoc$);
   }
-  /** @primaryconst */
+  /** @see {@linkcode contain()} */
   touch(loc_x: Loc): boolean {
     return this.contain(loc_x) || this.stopLoc$.posE(loc_x);
   }
@@ -329,6 +338,9 @@ export class Ran {
     ret_x = this.strtLoc$.toRanval(ret_x, 2);
     this.stopLoc$.toRanval(ret_x, 0);
     return ret_x;
+  }
+  get _rv() {
+    return this.toRanval();
   }
 
   /** For testing only */

@@ -123,10 +123,10 @@ export class Line {
     let ret: Token<T> | undefined;
     let tk_ = this.frstTokenBy(lexr_x);
     if (tk_) {
-      ret = tk_.prevToken_$?.lastLine === this ? tk_.prevToken_$ : tk_;
+      ret = tk_.prevToken_$?.sntLastLine === this ? tk_.prevToken_$ : tk_;
     } else {
       tk_ = this.prevLine?.lastTokenBy(lexr_x);
-      if (tk_?.nextToken_$?.lastLine === this) {
+      if (tk_?.nextToken_$?.sntLastLine === this) {
         ret = tk_.nextToken_$;
       }
     }
@@ -163,10 +163,10 @@ export class Line {
     let ret: Token<T> | undefined;
     let tk_ = this.lastTokenBy(lexr_x);
     if (tk_) {
-      ret = tk_.nextToken_$?.frstLine === this ? tk_.nextToken_$ : tk_;
+      ret = tk_.nextToken_$?.sntFrstLine === this ? tk_.nextToken_$ : tk_;
     } else {
       tk_ = this.nextLine?.frstTokenBy(lexr_x);
-      if (tk_?.prevToken_$?.frstLine === this) {
+      if (tk_?.prevToken_$?.sntFrstLine === this) {
         ret = tk_.prevToken_$;
       }
     }
@@ -584,9 +584,10 @@ export class Line {
     this.linked_$ = false;
     this.bufr$ = undefined;
 
-    /* Because Lexr<T> could keep using to make `this` unreleasable. */
-    this.#frstToken_m.clear();
-    this.#lastToken_m.clear();
+    /* `#frstToken_m`, `#lastToken_m` will be used in `Lexr.adjust_$()` */
+    // /* Because Lexr<T> could keep using to make `this` unreleasable. */
+    // this.#frstToken_m.clear();
+    // this.#lastToken_m.clear();
   }
 
   // /**

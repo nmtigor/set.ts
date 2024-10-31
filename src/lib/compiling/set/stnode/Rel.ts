@@ -107,23 +107,21 @@ export class Rel extends SetSN {
     /*#static*/ if (INOUT) {
       assert(newSn_x instanceof Key);
     }
+    newSn_x.parent_$ = this;
+
     if (this.#src === oldSn_x) {
-      oldSn_x.transferParentTo(newSn_x);
-      oldSn_x.transferBdryTo(newSn_x);
       this.#src = newSn_x as Key;
     } else if (this.#rel === oldSn_x) {
-      oldSn_x.transferParentTo(newSn_x);
-      oldSn_x.transferBdryTo(newSn_x);
       this.#rel = newSn_x as Key;
     } else {
       /*#static*/ if (INOUT) {
         assert(this.#tgt === oldSn_x);
       }
-      oldSn_x.transferParentTo(newSn_x);
-      oldSn_x.transferBdryTo(newSn_x);
       this.#tgt = newSn_x as Key;
     }
     this.children$ = undefined;
+
+    this.invalidateBdry();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

@@ -40,16 +40,13 @@ export class Key extends SetSN {
       assert(newSn_x instanceof FuzykeySeq || newSn_x instanceof QuotkeySeq);
     }
     const c_a = this.children;
-    for (let i = c_a.length; i--;) {
-      if (c_a[i] === oldSn_x) {
-        oldSn_x.transferParentTo(newSn_x);
-        oldSn_x.transferBdryTo(newSn_x);
-        c_a[i] = newSn_x as FuzykeySeq | QuotkeySeq;
-        break;
-      }
+    const i_ = c_a.indexOf(oldSn_x as FuzykeySeq | QuotkeySeq);
+    if (i_ >= 0) {
+      newSn_x.parent_$ = this;
+      c_a.splice(i_, 1, newSn_x as FuzykeySeq | QuotkeySeq);
     }
 
-    // this.invalidateBdry();
+    if (i_ === 0 || i_ === c_a.length - 1) this.invalidateBdry();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

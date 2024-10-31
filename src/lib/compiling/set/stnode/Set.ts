@@ -91,15 +91,12 @@ export class Set extends SetSN {
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  override replaceChild(oldSn_x: UnparenSet, newSn_x: UnparenSet) {
-    oldSn_x.transferParentTo(newSn_x);
-    oldSn_x.transferBdryTo(newSn_x);
+  override replaceChild(_oldSn_x: UnparenSet, newSn_x: UnparenSet) {
+    newSn_x.parent_$ = this;
     this.#unpanenSet = newSn_x;
     this.children$ = undefined;
 
-    // this.invalidateBdry();
-    // this.frstBdryTk;
-    // this.lastBdryTk;
+    this.invalidateBdry();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

@@ -24,6 +24,7 @@ import { RMLTok } from "./rml/RMLTok.ts";
 import { PDFTok } from "./pdf/PDFTok.ts";
 import { URITok } from "./uri/URITok.ts";
 import { SortedIdo } from "../util/SortedArray.ts";
+import { LaTeXTok } from "./latex/LaTeXTok.ts";
 /*80--------------------------------------------------------------------------*/
 
 type NErr_ = 2;
@@ -43,14 +44,14 @@ export class Token<T extends Tok = BaseTok> {
     return this.#oldRanval!;
   }
 
-  bakeRanval_$() {
-    this.ran_$.resetRanval_$();
-    //kkkk TOCLEANUP
-    // if (!this.#oldRanval) this.saveRanval_$();
-  }
+  //jjjj TOCLEANUP
+  // bakeRanval_$() {
+  //   this.ran_$.syncRanval_$();
+  // }
 
   saveRanval_$() {
-    this.ran_$.resetRanval_$();
+    //jjjj TOCLEANUP
+    // this.ran_$.syncRanval_$();
 
     this.#oldRanval ??= new Ranval(0 as lnum_t, 0);
     this.#oldRanval.become(this.ran_$.ranval);
@@ -60,27 +61,50 @@ export class Token<T extends Tok = BaseTok> {
   /* ran_$ */
   readonly ran_$: TokRan<T>;
 
-  get strtLoc() {
+  /**
+   * ! Do not use `sntStrtLoc.become()`. Use `setStrtLoc()` instead.
+   */
+  get sntStrtLoc() {
     return this.ran_$.strtLoc;
   }
-  get frstLine() {
+  /**
+   * @const @param loc_x
+   */
+  setStrtLoc(loc_x: Loc): this {
+    this.ran_$.strtLoc.become(loc_x);
+    this.ran_$.syncRanvalAnchr_$();
+    return this;
+  }
+
+  get sntFrstLine() {
     return this.ran_$.frstLine;
   }
-  get frstLidx_1(): lnum_t {
-    return this.frstLine.lidx_1;
+  get tkFrstLidx_1(): lnum_t {
+    return this.sntFrstLine.lidx_1;
   }
   get strtLoff() {
     return this.ran_$.strtLoff;
   }
 
-  get stopLoc() {
+  /**
+   * ! Do not use `sntStopLoc.become()`. Use `setStopLoc()` instead.
+   */
+  get sntStopLoc() {
     return this.ran_$.stopLoc;
   }
-  get lastLine() {
+  /**
+   * @const @param loc_x
+   */
+  setStopLoc(loc_x: Loc): this {
+    this.ran_$.stopLoc.become(loc_x);
+    this.ran_$.syncRanvalFocus_$();
+    return this;
+  }
+  get sntLastLine() {
     return this.ran_$.lastLine;
   }
-  get lastLidx_1(): lnum_t {
-    return this.lastLine.lidx_1;
+  get tkLastLidx_1(): lnum_t {
+    return this.sntLastLine.lidx_1;
   }
   get stopLoff() {
     return this.ran_$.stopLoff;
@@ -98,11 +122,14 @@ export class Token<T extends Tok = BaseTok> {
     return this.ran_$.lineN_1;
   }
 
-  /** @primaryconst */
+  /**
+   * @primaryconst
+   * @primaryconst @param loc_x
+   */
   contain(loc_x: Loc): boolean {
     return this.ran_$.contain(loc_x);
   }
-  /** @primaryconst */
+  /** @see {@linkcode contain()} */
   touch(loc_x: Loc): boolean {
     return this.ran_$.touch(loc_x);
   }
@@ -136,6 +163,8 @@ export class Token<T extends Tok = BaseTok> {
         (this as any)._valvename = MdextTok[_x];
       } else if (_x <= PDFTok._max) {
         (this as any)._valvename = PDFTok[_x];
+      } else if (_x <= LaTeXTok._max) {
+        (this as any)._valvename = LaTeXTok[_x];
       } else if (_x <= RMLTok._max) {
         (this as any)._valvename = RMLTok[_x];
       } else if (_x <= JSLangTok._max) {
@@ -200,11 +229,9 @@ export class Token<T extends Tok = BaseTok> {
    */
   constructor(lexr_x: Lexr<T>, ran_x: TokRan<T>, value_x?: T) {
     this.lexr_$ = lexr_x;
+    /* `syncRanval_$()` after `this` is scanned or adjusted */
+    // ran_x.syncRanval_$();
     this.ran_$ = ran_x;
-    /* Very much likely, `this` will be modified after creation. So
-    `bakeRanval_$()` or `saveRanval_$()` here make no sense. */
-    // this.bakeRanval_$();
-    // this.saveRanval_$();
     this.value = value_x ? value_x : BaseTok.unknown as T;
   }
 
@@ -242,8 +269,8 @@ export class Token<T extends Tok = BaseTok> {
    * @const @param stopLoc_x
    */
   reset(value_x: T, strtLoc_x?: Loc, stopLoc_x?: Loc) {
-    if (strtLoc_x) this.strtLoc.become(strtLoc_x);
-    if (stopLoc_x) this.stopLoc.become(stopLoc_x);
+    if (strtLoc_x) this.setStrtLoc(strtLoc_x);
+    if (stopLoc_x) this.setStopLoc(stopLoc_x);
     this.value = value_x;
     this.clrErr();
     this.stnod_$ = undefined;
@@ -474,13 +501,13 @@ export class Token<T extends Tok = BaseTok> {
    * Correct `frstLine.#frstToken_m`
    */
   #correct_line_frstToken(): TokLine<T> {
-    const retLn = this.frstLine;
+    const retLn = this.sntFrstLine;
     retLn.delFrstTokenBy_$(this.lexr_$);
 
     let tk: Token<T> = this;
     const VALVE = 1_000;
     let valve = VALVE;
-    while (tk.prevToken_$?.frstLine === retLn && --valve) {
+    while (tk.prevToken_$?.sntFrstLine === retLn && --valve) {
       tk = tk.prevToken_$;
     }
     assert(valve, `Loop ${VALVE}±1 times`);
@@ -491,13 +518,13 @@ export class Token<T extends Tok = BaseTok> {
    * Correct `lastLine.#lastToken_m`
    */
   #correct_line_lastToken(): TokLine<T> {
-    const retLn = this.lastLine;
+    const retLn = this.sntLastLine;
     retLn.delLastTokenBy_$(this.lexr_$);
 
     let tk: Token<T> = this;
     const VALVE = 1_000;
     let valve = VALVE;
-    while (tk.nextToken_$?.lastLine === retLn && --valve) {
+    while (tk.nextToken_$?.sntLastLine === retLn && --valve) {
       tk = tk.nextToken_$;
     }
     assert(valve, `Loop ${VALVE}±1 times`);
@@ -540,7 +567,7 @@ export class Token<T extends Tok = BaseTok> {
    * @headconst @param stndKept_tk_x kkkk check uses, then better remove this
    */
   // @out((_,self:any)=>{}) //! Cause "segmentation fault"
-  linkPrev(retTk_x: Token<T>, stndKept_tk_x?: Token<T>) {
+  linkPrev(retTk_x: Token<T>, stndKept_tk_x?: Token<T>): Token<T> {
     /*#static*/ if (INOUT) {
       assert(retTk_x !== this);
       assert(retTk_x.posS(this));
@@ -558,8 +585,8 @@ export class Token<T extends Tok = BaseTok> {
 
     const frstLn = retTk_x.#correct_line_frstToken();
     const lastLn = retTk_x.#correct_line_lastToken();
-    if (this.frstLine !== frstLn) this.#correct_line_frstToken();
-    if (this.lastLine !== lastLn) this.#correct_line_lastToken();
+    if (this.sntFrstLine !== frstLn) this.#correct_line_frstToken();
+    if (this.sntLastLine !== lastLn) this.#correct_line_lastToken();
 
     /*#static*/ if (INOUT) {
       assert(retTk_x === this.prevToken_$);
@@ -574,7 +601,7 @@ export class Token<T extends Tok = BaseTok> {
    * @headconst @param stndKept_tk_x
    */
   // @out((_,self:any)=>{}) //! Cause "segmentation fault"
-  linkNext(retTk_x: Token<T>, stndKept_tk_x?: Token<T>) {
+  linkNext(retTk_x: Token<T>, stndKept_tk_x?: Token<T>): Token<T> {
     /*#static*/ if (INOUT) {
       assert(retTk_x !== this);
       assert(this.posS(retTk_x));
@@ -592,8 +619,8 @@ export class Token<T extends Tok = BaseTok> {
 
     const frstLn = retTk_x.#correct_line_frstToken();
     const lastLn = retTk_x.#correct_line_lastToken();
-    if (this.frstLine !== frstLn) this.#correct_line_frstToken();
-    if (this.lastLine !== lastLn) this.#correct_line_lastToken();
+    if (this.sntFrstLine !== frstLn) this.#correct_line_frstToken();
+    if (this.sntLastLine !== lastLn) this.#correct_line_lastToken();
 
     /*#static*/ if (INOUT) {
       assert(retTk_x === this.nextToken_$);
@@ -621,8 +648,8 @@ export class Token<T extends Tok = BaseTok> {
       lastLn = prev.#correct_line_lastToken();
     }
     if (next) {
-      if (next.frstLine != frstLn) next.#correct_line_frstToken();
-      if (next.lastLine != lastLn) next.#correct_line_lastToken();
+      if (next.sntFrstLine != frstLn) next.#correct_line_frstToken();
+      if (next.sntLastLine != lastLn) next.#correct_line_lastToken();
     }
 
     return ret_x === "prev" ? prev : ret_x === "next" ? next : undefined;
@@ -651,8 +678,8 @@ export class Token<T extends Tok = BaseTok> {
 
     const frstLn = retTk_x.#correct_line_frstToken();
     const lastLn = retTk_x.#correct_line_lastToken();
-    if (this.frstLine !== frstLn) this.#correct_line_frstToken();
-    if (this.lastLine !== lastLn) this.#correct_line_lastToken();
+    if (this.sntFrstLine !== frstLn) this.#correct_line_frstToken();
+    if (this.sntLastLine !== lastLn) this.#correct_line_lastToken();
 
     /*#static*/ if (INOUT) {
       assert(retTk_x === this.prevToken_$);
@@ -680,8 +707,8 @@ export class Token<T extends Tok = BaseTok> {
 
     const frstLn = retTk_x.#correct_line_frstToken();
     const lastLn = retTk_x.#correct_line_lastToken();
-    if (this.frstLine !== frstLn) this.#correct_line_frstToken();
-    if (this.lastLine !== lastLn) this.#correct_line_lastToken();
+    if (this.sntFrstLine !== frstLn) this.#correct_line_frstToken();
+    if (this.sntLastLine !== lastLn) this.#correct_line_lastToken();
 
     /*#static*/ if (INOUT) {
       assert(retTk_x === this.nextToken_$);
@@ -726,6 +753,7 @@ export class Token<T extends Tok = BaseTok> {
       URITok[this.value] ??
       MdextTok[this.value] ??
       PDFTok[this.value] ??
+      LaTeXTok[this.value] ??
       RMLTok[this.value] ??
       JSLangTok[this.value];
   }
@@ -789,7 +817,7 @@ export const URITk = Token<URITok>;
 /** `frstLine === lastLine` */
 export type MdextTk = Token<MdextTok>;
 export const MdextTk = Token<MdextTok>;
-//kkkk TOCLEANUP
+//jjjj TOCLEANUP
 // /** @final */
 // export class MdextTk extends Token<MdextTok> {
 //   get line() {
@@ -809,6 +837,9 @@ export const MdextTk = Token<MdextTok>;
 
 export type PDFTk = Token<PDFTok>;
 export const PDFTk = Token<PDFTok>;
+
+export type LaTeXTk = Token<LaTeXTok>;
+export const LaTeXTk = Token<LaTeXTok>;
 
 export type RMLTk = Token<RMLTok>;
 export const RMLTk = Token<RMLTok>;

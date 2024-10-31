@@ -108,7 +108,7 @@ export class Loc {
     return this.bufr?.dir ?? BufrDir.ltr;
   }
 
-  //kkkk TOCLEANUP
+  //jjjj TOCLEANUP
   // /** Peeked `Loc` */
   // protected poc$?: Loc;
 
@@ -329,7 +329,7 @@ export class Loc {
 
   /**
    * @primaryconst
-   * @headconst @param line_x
+   * @primaryconst @param line_x
    * @const @param loff_x
    */
   #locS(line_x: Line, loff_x: loff_t): LocCompared {
@@ -393,7 +393,7 @@ export class Loc {
   }
   /**
    * @const
-   * @headconst @param line_x
+   * @const @param line_x
    * @const @param loff_x
    */
   #locE(line_x: Line, loff_x: loff_t): LocCompared {
@@ -411,7 +411,7 @@ export class Loc {
   /**
    * @final
    * @primaryconst
-   * @headconst @param rhs_x
+   * @primaryconst @param rhs_x
    */
   locS(rhs_x: Loc): LocCompared {
     return this.#locS(rhs_x.line_$, rhs_x.loff_$);
@@ -451,7 +451,7 @@ export class Loc {
   /**
    * @final
    * @const
-   * @headconst @param rhs_x
+   * @const @param rhs_x
    */
   locE(rhs_x: Loc): LocCompared {
     return this.#locE(rhs_x.line_$, rhs_x.loff_$);
