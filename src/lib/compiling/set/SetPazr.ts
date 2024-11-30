@@ -3,10 +3,9 @@
  * @license MIT
  ******************************************************************************/
 
+import { assert, fail, traceOut } from "@fe-lib/util/trace.ts";
 import { _TRACE, global, INOUT } from "@fe-src/global.ts";
 import type { uint } from "../../alias.ts";
-import type { Visitor } from "../../util/Visitor.ts";
-import { assert, fail, traceOut } from "@fe-lib/util/trace.ts";
 import { Pazr } from "../Pazr.ts";
 import { SetTk } from "../Token.ts";
 import { Err } from "../alias.ts";
@@ -32,7 +31,7 @@ type PazSet_ = {
 };
 
 /** @final */
-export class SetPazr extends Pazr<SetTok> implements Visitor {
+export class SetPazr extends Pazr<SetTok> {
   static readonly #VALVE = 100;
   #valve = SetPazr.#VALVE;
 
@@ -287,7 +286,7 @@ export class SetPazr extends Pazr<SetTok> implements Visitor {
       if (sn instanceof Key && sn.frstToken === this.strtPazTk$) {
         this.strtPazTk$ = sn.lastToken.nextToken_$!;
         this.unrelSn_sa_$.delete(sn);
-        this.reusdSn_sa_$.add(sn);
+        this.takldSn_sa_$.add(sn);
         return sn.ensureAllBdry();
       }
     }
@@ -325,7 +324,7 @@ export class SetPazr extends Pazr<SetTok> implements Visitor {
       if (sn instanceof FuzykeySeq && sn.frstToken === this.strtPazTk$) {
         this.strtPazTk$ = sn.lastToken.nextToken_$!;
         this.unrelSn_sa_$.delete(sn);
-        this.reusdSn_sa_$.add(sn);
+        this.takldSn_sa_$.add(sn);
         return sn.ensureAllBdry();
       }
     }
@@ -358,7 +357,7 @@ export class SetPazr extends Pazr<SetTok> implements Visitor {
       if (sn instanceof QuotkeySeq && sn.frstToken === this.strtPazTk$) {
         this.strtPazTk$ = sn.lastToken.nextToken_$!;
         this.unrelSn_sa_$.delete(sn);
-        this.reusdSn_sa_$.add(sn);
+        this.takldSn_sa_$.add(sn);
         return sn.ensureAllBdry();
       }
     }
@@ -385,7 +384,7 @@ export class SetPazr extends Pazr<SetTok> implements Visitor {
       if (sn instanceof Set && sn.frstToken === this.strtPazTk$) {
         this.strtPazTk$ = sn.lastToken.nextToken_$!;
         this.unrelSn_sa_$.delete(sn);
-        this.reusdSn_sa_$.add(sn);
+        this.takldSn_sa_$.add(sn);
         _x.lhs = sn.ensureAllBdry();
         return;
       }
@@ -518,20 +517,20 @@ export class SetPazr extends Pazr<SetTok> implements Visitor {
 
   /**
    * Assign `newSn_$`
-   * @implement
+   * @headconst @param sn_x
    */
-  visit(visitable: SetSN) {
-    if (visitable instanceof FuzykeySeq) {
+  visit(sn_x: SetSN) {
+    if (sn_x instanceof FuzykeySeq) {
       this.newSn_$ = this.pazFuzykeySeq_$();
-    } else if (visitable instanceof QuotkeySeq) {
+    } else if (sn_x instanceof QuotkeySeq) {
       this.newSn_$ = this.pazQuotkeySeq_$();
-    } else if (visitable instanceof Key) {
+    } else if (sn_x instanceof Key) {
       this.newSn_$ = this.pazKey_$();
-    } else if (visitable instanceof Rel) {
+    } else if (sn_x instanceof Rel) {
       const snt = this.pazRelKey_$();
       if (snt instanceof SetTk) this.newSn_$ = undefined;
       else this.newSn_$ = snt;
-    } else if (visitable instanceof Set) {
+    } else if (sn_x instanceof Set) {
       this.newSn_$ = this.pazSet_$();
     } else {
       fail("Not implemented");

@@ -198,9 +198,9 @@ describe("SetPazr.paz_impl$()", () => {
     assertEquals(pazr.unrelSn_sa_$._repr(), [
       "FuzykeySeq(3)[ fuzykey[0-0,0-2) ]",
     ]);
-    assertEquals(pazr.reusdSn_sa_$._repr(), ["Key(2)[ fuzykey[0-0,0-2) ]"]);
+    assertEquals(pazr.takldSn_sa_$._repr(), ["Key(2)[ fuzykey[0-0,0-2) ]"]);
     r_ = (pazr.root as Set)._c(0) as Rel;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), r_._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), r_._c(0));
 
     repl(rv(0, 3, 0, 4), `"("`);
     /*
@@ -221,9 +221,9 @@ describe("SetPazr.paz_impl$()", () => {
     assertEquals(pazr.unrelSn_sa_$._repr(), [
       "FuzykeySeq(3)[ fuzykey[0-0,0-2) ]",
     ]);
-    assertEquals(pazr.reusdSn_sa_$._repr(), ["Key(2)[ fuzykey[0-0,0-2) ]"]);
+    assertEquals(pazr.takldSn_sa_$._repr(), ["Key(2)[ fuzykey[0-0,0-2) ]"]);
     r_ = (pazr.root as Set)._c(0) as Rel;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), r_._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), r_._c(0));
   });
 
   it("pazSet_$() without parentheses", () => {
@@ -258,9 +258,9 @@ describe("SetPazr.paz_impl$()", () => {
       rhs: ["Set(2)", ["Key(3)", "FuzykeySeq(4)( fuzykey[0-2,0-3))"]],
     }]]);
     assertEquals(pazr.unrelSn_sa_$._repr(), []);
-    assertEquals(pazr.reusdSn_sa_$._repr(), ["Set(2)[ fuzykey[0-0,0-1) ]"]);
+    assertEquals(pazr.takldSn_sa_$._repr(), ["Set(2)[ fuzykey[0-0,0-1) ]"]);
     b_ = (pazr.root as Set)._c(0) as BinaryOp;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), b_._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c(0));
 
     repl(ran(0)._rv, "\\");
     /*
@@ -287,13 +287,13 @@ describe("SetPazr.paz_impl$()", () => {
       "Intersect(1)[ fuzykey[0-0,0-1), fuzykey[0-2,0-3) ]",
       "Set(0)[ fuzykey[0-0,0-1), fuzykey[0-2,0-3) ]",
     ]);
-    assertEquals(pazr.reusdSn_sa_$._repr(), [
+    assertEquals(pazr.takldSn_sa_$._repr(), [
       "Set(2)[ fuzykey[0-0,0-1) ]",
       "Set(4)[ fuzykey[0-2,0-3) ]",
     ]);
     b_ = (pazr.root as Set)._c(0) as BinaryOp;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), b_._c(0));
-    assertStrictEquals(pazr.reusdSn_sa_$.at(1), b_._c(1)?._c(0)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(1), b_._c(1)?._c(0)?._c(0));
 
     repl(ran(0)._rv, "3");
     /*
@@ -316,13 +316,13 @@ describe("SetPazr.paz_impl$()", () => {
     assertEquals(pazr.unrelSn_sa_$._repr(), [
       "Key(3)[ fuzykey[0-0,0-1) ]",
     ]);
-    assertEquals(pazr.reusdSn_sa_$._repr(), [
+    assertEquals(pazr.takldSn_sa_$._repr(), [
       "Set(2)[ fuzykey[0-0,0-1) ]",
       "Set(4)[ fuzykey[0-2,0-3) ]",
     ]);
     b_ = (pazr.root as Set)._c(0) as BinaryOp;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), b_._c(0));
-    assertStrictEquals(pazr.reusdSn_sa_$.at(1), b_._c(1)?._c(0)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(1), b_._c(1)?._c(0)?._c(0));
 
     repl(ran(0)._rv, "∪");
     /*
@@ -356,16 +356,16 @@ describe("SetPazr.paz_impl$()", () => {
       "Intersect(1)[ fuzykey[0-0,0-1), fuzykey[0-4,0-5) ]",
       "Set(0)[ fuzykey[0-0,0-1), fuzykey[0-4,0-5) ]",
     ]);
-    assertEquals(pazr.reusdSn_sa_$._repr(), [
+    assertEquals(pazr.takldSn_sa_$._repr(), [
       "Set(4)[ fuzykey[0-0,0-1) ]",
       "Set(6)[ fuzykey[0-2,0-3) ]",
       "Set(6)[ fuzykey[0-4,0-5) ]",
     ]);
     b_ = (pazr.root as Set)._c(0) as BinaryOp;
     b_1 = (b_._c(0) as Set)._c(0) as BinaryOp;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), b_1._c(0));
-    assertStrictEquals(pazr.reusdSn_sa_$.at(1), b_1._c(1)?._c(0)?._c(0));
-    assertStrictEquals(pazr.reusdSn_sa_$.at(2), b_1._c(1)?._c(0)?._c(1));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), b_1._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(1), b_1._c(1)?._c(0)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(2), b_1._c(1)?._c(0)?._c(1));
 
     repl(ran(0)._rv, "4");
     /*
@@ -390,11 +390,11 @@ describe("SetPazr.paz_impl$()", () => {
       rhs: ["Set(2)", ["Key(3)", "FuzykeySeq(4)( fuzykey[0-6,0-7))"]],
     }]]);
     assertEquals(pazr.unrelSn_sa_$._repr(), []);
-    assertEquals(pazr.reusdSn_sa_$._repr(), [
+    assertEquals(pazr.takldSn_sa_$._repr(), [
       "Set(2)[ fuzykey[0-0,0-1), fuzykey[0-4,0-5) ]",
     ]);
     b_ = (pazr.root as Set)._c(0) as BinaryOp;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), b_._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c(0));
   });
 
   it("pazSet_$() with paren_open", () => {
@@ -457,11 +457,11 @@ describe("SetPazr.paz_impl$()", () => {
       rhs: ["Set(2)", ["Key(3)", "FuzykeySeq(4)( fuzykey[0-4,0-5))"]],
     }]]);
     assertEquals(pazr.unrelSn_sa_$._repr(), []);
-    assertEquals(pazr.reusdSn_sa_$._repr(), [
+    assertEquals(pazr.takldSn_sa_$._repr(), [
       "Set(2)[ fuzykey[0-3,0-4) ]",
     ]);
     b_ = (pazr.root as Set)._c(0) as BinaryOp;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), b_._c(1));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c(1));
 
     repl(rv(0, 0), "((");
     /*
@@ -483,13 +483,13 @@ describe("SetPazr.paz_impl$()", () => {
       "Intersect(1)[ paren_open[0-0,0-1), fuzykey[0-4,0-5) ]",
       "Set(0)[ paren_open[0-0,0-1), fuzykey[0-4,0-5) ]",
     ]);
-    assertEquals(pazr.reusdSn_sa_$._repr(), [
+    assertEquals(pazr.takldSn_sa_$._repr(), [
       "Set(2)[ fuzykey[0-4,0-5) ]",
       "Key(3)[ fuzykey[0-1,0-2) ]",
     ]);
     b_ = (pazr.root as Set)._c(0) as BinaryOp;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(1), b_._c(0)?._c(0));
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), b_._c(1));
+    assertStrictEquals(pazr.takldSn_sa_$.at(1), b_._c(0)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c(1));
 
     repl(ran(0)._rv, ")");
     /*
@@ -511,13 +511,13 @@ describe("SetPazr.paz_impl$()", () => {
       "Set(2)[ paren_open[0-2,0-3), paren_cloz[0-4,0-5) ]",
       "Intersect(1)[ paren_open[0-2,0-3), fuzykey[0-6,0-7) ]",
     ]);
-    assertEquals(pazr.reusdSn_sa_$._repr(), [
+    assertEquals(pazr.takldSn_sa_$._repr(), [
       "Set(2)[ fuzykey[0-6,0-7) ]",
       "Key(3)[ fuzykey[0-3,0-4) ]",
     ]);
     b_ = (pazr.root as Set)._c(0) as BinaryOp;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(1), b_._c(0)?._c(0));
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), b_._c(1));
+    assertStrictEquals(pazr.takldSn_sa_$.at(1), b_._c(0)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c(1));
 
     /* This is a rare case that FildterDepth_ shows its restriction. */
     repl(ran(0)._rv, ")");
@@ -537,7 +537,7 @@ describe("SetPazr.paz_impl$()", () => {
     assertEquals(pazr.unrelSn_sa_$._repr(), [
       "Intersect(1)[ paren_open[0-2,0-3), fuzykey[0-6,0-7) ]",
     ]);
-    assertEquals(pazr.reusdSn_sa_$._repr(), []);
+    assertEquals(pazr.takldSn_sa_$._repr(), []);
   });
 
   it("pazSet_$() with paren_cloz", () => {
@@ -576,9 +576,9 @@ describe("SetPazr.paz_impl$()", () => {
     assertEquals(pazr.unrelSn_sa_$._repr(), [
       "FuzykeySeq(4)[ fuzykey[0-0,0-1) ]",
     ]);
-    assertEquals(pazr.reusdSn_sa_$._repr(), ["Key(3)[ fuzykey[0-0,0-1) ]"]);
+    assertEquals(pazr.takldSn_sa_$._repr(), ["Key(3)[ fuzykey[0-0,0-1) ]"]);
     b_ = (pazr.root as Set)._c(0) as BinaryOp;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), b_._c(1)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c(1)?._c(0));
 
     repl(ran(0)._rv, ")");
     /*
@@ -601,13 +601,13 @@ describe("SetPazr.paz_impl$()", () => {
       ], "))"],
     }]]);
     assertEquals(pazr.unrelSn_sa_$._repr(), []);
-    assertEquals(pazr.reusdSn_sa_$._repr(), [
+    assertEquals(pazr.takldSn_sa_$._repr(), [
       "Key(3)[ fuzykey[0-3,0-4) ]",
       "Key(3)[ fuzykey[0-0,0-1) ]",
     ]);
     b_ = (pazr.root as Set)._c(0) as BinaryOp;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(1), b_._c(0)?._c(0));
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), b_._c(1)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(1), b_._c(0)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c(1)?._c(0));
 
     repl(rv(0, 0), "((");
     /*
@@ -626,13 +626,13 @@ describe("SetPazr.paz_impl$()", () => {
     assertEquals(pazr.unrelSn_sa_$._repr(), [
       "FuzykeySeq(4)[ fuzykey[0-0,0-1) ]",
     ]);
-    assertEquals(pazr.reusdSn_sa_$._repr(), [
+    assertEquals(pazr.takldSn_sa_$._repr(), [
       "Key(3)[ fuzykey[0-3,0-4) ]",
       "Key(3)[ fuzykey[0-0,0-1) ]",
     ]);
     b_ = (pazr.root as Set)._c(0) as BinaryOp;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(1), b_._c(0)?._c(0));
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), b_._c(1)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(1), b_._c(0)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c(1)?._c(0));
   });
 });
 
@@ -658,7 +658,7 @@ describe("SetSN.replaceChild()", () => {
       "FuzykeySeq(2)( fuzykey[0-0,0-2) fuzykey[0-3,0-4))",
     ]]);
     assertEquals(pazr.unrelSn_sa_$._repr(), []);
-    assertEquals(pazr.reusdSn_sa_$._repr(), []);
+    assertEquals(pazr.takldSn_sa_$._repr(), []);
 
     repl(rv(0, 2), `""`);
     /*
@@ -680,7 +680,7 @@ describe("SetSN.replaceChild()", () => {
       "FuzykeySeq(2)( fuzykey[0-5,0-6))",
     ]]);
     assertEquals(pazr.unrelSn_sa_$._repr(), []);
-    assertEquals(pazr.reusdSn_sa_$._repr(), []);
+    assertEquals(pazr.takldSn_sa_$._repr(), []);
   });
 
   it("visit Key; Rel.replaceChild()", () => {
@@ -712,13 +712,13 @@ describe("SetSN.replaceChild()", () => {
       tgt: "question[0-6,0-7)",
     }]]);
     assertEquals(pazr.unrelSn_sa_$._repr(), []);
-    assertEquals(pazr.reusdSn_sa_$._repr(), [
+    assertEquals(pazr.takldSn_sa_$._repr(), [
       "FuzykeySeq(3)[ fuzykey[0-2,0-3) ]",
       "FuzykeySeq(3)[ fuzykey[0-7,0-8) ]",
     ]);
     r_ = (pazr.root as Set)._c(0) as Rel;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), r_._c(1)?._c(0));
-    assertStrictEquals(pazr.reusdSn_sa_$.at(1), r_._c(1)?._c(1));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), r_._c(1)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(1), r_._c(1)?._c(1));
 
     undo();
     /*
@@ -746,13 +746,13 @@ describe("SetSN.replaceChild()", () => {
       tgt: "question[0-9,0-10)",
     }]]);
     assertEquals(pazr.unrelSn_sa_$._repr(), []);
-    assertEquals(pazr.reusdSn_sa_$._repr(), [
+    assertEquals(pazr.takldSn_sa_$._repr(), [
       "FuzykeySeq(3)[ fuzykey[0-2,0-3) ]",
       "FuzykeySeq(3)[ fuzykey[0-4,0-5) ]",
     ]);
     r_ = (pazr.root as Set)._c(0) as Rel;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), r_._c(1)?._c(0));
-    assertStrictEquals(pazr.reusdSn_sa_$.at(1), r_._c(1)?._c(2));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), r_._c(1)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(1), r_._c(1)?._c(2));
   });
 
   it("visit Set; BinaryOp.replaceChild()", () => {
@@ -783,11 +783,11 @@ describe("SetSN.replaceChild()", () => {
     assertEquals(pazr.unrelSn_sa_$._repr(), [
       "FuzykeySeq(4)[ fuzykey[0-1,0-2) ]",
     ]);
-    assertEquals(pazr.reusdSn_sa_$._repr(), [
+    assertEquals(pazr.takldSn_sa_$._repr(), [
       "Key(3)[ fuzykey[0-1,0-2) ]",
     ]);
     b_ = (pazr.root as Set)._c(0) as BinaryOp;
-    assertStrictEquals(pazr.reusdSn_sa_$.at(0), b_._c(0)?._c(0));
+    assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c(0)?._c(0));
   });
 });
 /*80--------------------------------------------------------------------------*/
