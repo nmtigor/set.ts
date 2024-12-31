@@ -51,7 +51,7 @@ export class Key extends SetSN {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override toString() {
-    return `${this._info}( ${this.children.join(" ")})`;
+    return `${this._info} ( ${this.children.join(" ")})`;
   }
 
   override _repr(): string[] {

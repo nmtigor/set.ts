@@ -126,7 +126,7 @@ export class Rel extends SetSN {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override toString() {
-    return `${this._info}( ${this.#src} > ${this.#rel} > ${this.#tgt})`;
+    return `${this._info} ( ${this.#src} > ${this.#rel} > ${this.#tgt})`;
   }
 
   override _repr(): [string, any] {

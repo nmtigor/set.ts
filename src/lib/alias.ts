@@ -1,6 +1,8 @@
 /** 80**************************************************************************
  * @module lib/alias
  * @license MIT
+ *
+ * ! This module is loaded BEFORE "global.ts". DO NOT use preprocessor names here!
  ******************************************************************************/
 
 import { z } from "@zod";

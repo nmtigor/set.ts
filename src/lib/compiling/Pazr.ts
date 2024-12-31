@@ -5,10 +5,11 @@
 
 import { LOG_cssc } from "../../alias.ts";
 import { INOUT } from "../../global.ts";
-import type { id_t } from "../alias.ts";
+import type { id_t, lnum_t } from "../alias.ts";
 import { assert, out } from "../util/trace.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import type { Lexr } from "./Lexr.ts";
+import type { Loc } from "./Loc.ts";
 import { Stnode } from "./Stnode.ts";
 import { SortedStnod_depth, SortedStnod_id } from "./Stnode.ts";
 import type { TokBufr } from "./TokBufr.ts";
@@ -38,6 +39,16 @@ export abstract class Pazr<T extends Tok = BaseTok> {
 
   headBdryClrTk_$: Token<T> | undefined;
   tailBdryClrTk_$: Token<T> | undefined;
+
+  //jjjj TOCLEANUP
+  // /** @primaryconst @param loc_x */
+  // headClr(loc_x: Loc): boolean {
+  //   return !!this.headBdryClrTk_$?.sntStopLoc.posGE(loc_x);
+  // }
+  // /** @primaryconst @param loc_x */
+  // tailClr(loc_x: Loc): boolean {
+  //   return !!this.tailBdryClrTk_$?.sntStrtLoc.posSE(loc_x);
+  // }
   /* ~ */
 
   protected root$: Stnode<T> | undefined;
@@ -77,6 +88,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   /* ~ */
 
   readonly unrelSn_sa_$ = new SortedStnod_id();
+  /** reused, partially reuesed, or abandoned */
   readonly takldSn_sa_$ = new SortedStnod_id();
 
   protected strtPazTk$!: Token<T>;
@@ -190,8 +202,16 @@ export abstract class Pazr<T extends Tok = BaseTok> {
       assert(this.strtPazTk$.posSE(strtTk_x));
       assert(this.stopPazTk$.posGE(stopTk_x));
     }
-    this.lexr$.saveRanvalBack_$(strtTk_x, this.strtPazTk$);
-    this.lexr$.saveRanvalForw_$(stopTk_x, this.stopPazTk$);
+    this.lexr$.batchBack_$(
+      (tk) => tk.saveRanval_$(),
+      strtTk_x,
+      this.strtPazTk$,
+    );
+    this.lexr$.batchForw_$(
+      (tk) => tk.saveRanval_$(),
+      stopTk_x,
+      this.stopPazTk$,
+    );
     this.invalidateBdries$();
   }
 

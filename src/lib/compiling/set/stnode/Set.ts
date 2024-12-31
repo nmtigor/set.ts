@@ -101,7 +101,7 @@ export class Set extends SetSN {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override toString() {
-    return `${this._info}( ${
+    return `${this._info} ( ${
       new Array(this.#paren).fill("(").join("")
     }${this.#unpanenSet}${new Array(this.#paren).fill(")").join("")})`;
   }

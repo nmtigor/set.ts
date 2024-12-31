@@ -98,8 +98,8 @@ export class SetLexr extends Lexr<SetTok> {
     do {
       const ucod = this.curLoc$.forw_ucod();
       if (this.atRigtBdry$() === LocCompared.yes) {
-        out_x.setErr(Err.double_quoted_string);
-        this.setTok$(SetTok.quotkey, out_x);
+        out_x.setErr(Err.double_quoted_string)
+          .setStop(this.curLoc$, SetTok.quotkey);
         break;
       }
       if (
@@ -108,15 +108,14 @@ export class SetLexr extends Lexr<SetTok> {
       ) {
         this.curLoc$.forw();
         if (this.atRigtBdry$() === LocCompared.yes) {
-          out_x.setErr(Err.double_quoted_string);
-          this.setTok$(SetTok.quotkey, out_x);
+          out_x.setErr(Err.double_quoted_string)
+            .setStop(this.curLoc$, SetTok.quotkey);
           break;
         }
         continue;
       }
       if (ucod === /* '"' */ 0x22) {
-        this.curLoc$.forw();
-        this.setTok$(SetTok.quotkey, out_x);
+        out_x.setStop(this.curLoc$.forw(), SetTok.quotkey);
         break;
       }
     } while (--valve);
@@ -142,7 +141,7 @@ export class SetLexr extends Lexr<SetTok> {
     L_0: do {
       let ucod = this.curLoc$.ucod;
       if (this.atRigtBdry$() === LocCompared.yes || isWhitespaceUCod(ucod)) {
-        this.setTok$(SetTok.fuzykey, retTk_x);
+        retTk_x.setStop(this.curLoc$, SetTok.fuzykey);
         break;
       }
       switch (ucod) {
@@ -153,7 +152,7 @@ export class SetLexr extends Lexr<SetTok> {
         case /* "∪" */ 0x0_222A:
         case /* "(" */ 0x28:
         case /* ")" */ 0x29:
-          this.setTok$(SetTok.fuzykey, retTk_x);
+          retTk_x.setStop(this.curLoc$, SetTok.fuzykey);
           break L_0;
         case /* "\\" */ 0x5C:
           ucod = this.curLoc$.forw_ucod();
@@ -162,8 +161,7 @@ export class SetLexr extends Lexr<SetTok> {
             !SetLexr.#esc_a.includes(ucod)
           ) {
             /* "\\" is subtract */
-            this.curLoc$.back();
-            this.setTok$(SetTok.fuzykey, retTk_x);
+            retTk_x.setStop(this.curLoc$.back(), SetTok.fuzykey);
             break L_0;
           }
           this.curLoc$.forw();
@@ -185,10 +183,9 @@ export class SetLexr extends Lexr<SetTok> {
     let ucod = this.curLoc$.ucod;
     if (isWhitespaceUCod(ucod)) {
       if (!this.#skipWhitespace()) {
-        retTk_x.setStopLoc(this.curLoc$);
-        return retTk_x;
+        return retTk_x.setStop(this.curLoc$);
       }
-      retTk_x.setStrtLoc(this.curLoc$);
+      retTk_x.setStrt(this.curLoc$);
       ucod = this.curLoc$.ucod;
     }
     switch (ucod) {
@@ -196,12 +193,10 @@ export class SetLexr extends Lexr<SetTok> {
         this.#scanQuotkey(retTk_x);
         break;
       case /* "?" */ 0x3F:
-        this.curLoc$.forw();
-        this.setTok$(SetTok.question, retTk_x);
+        retTk_x.setStop(this.curLoc$.forw(), SetTok.question);
         break;
       case /* ">" */ 0x3E:
-        this.curLoc$.forw();
-        this.setTok$(SetTok.joiner, retTk_x);
+        retTk_x.setStop(this.curLoc$.forw(), SetTok.joiner);
         break;
       case /* "\\" */ 0x5C:
         ucod = this.curLoc$.forw_ucod();
@@ -210,27 +205,23 @@ export class SetLexr extends Lexr<SetTok> {
           !SetLexr.#esc_a.includes(ucod)
         ) {
           /* "\\" is subtract */
-          this.setTok$(SetTok.subtract, retTk_x);
+          retTk_x.setStop(this.curLoc$, SetTok.subtract);
           break;
         }
         this.curLoc$.back();
         this._scanFuzykey(retTk_x);
         break;
       case /* "∩" */ 0x0_2229:
-        this.curLoc$.forw();
-        this.setTok$(SetTok.intersect, retTk_x);
+        retTk_x.setStop(this.curLoc$.forw(), SetTok.intersect);
         break;
       case /* "∪" */ 0x0_222A:
-        this.curLoc$.forw();
-        this.setTok$(SetTok.union, retTk_x);
+        retTk_x.setStop(this.curLoc$.forw(), SetTok.union);
         break;
       case /* "(" */ 0x28:
-        this.curLoc$.forw();
-        this.setTok$(SetTok.paren_open, retTk_x);
+        retTk_x.setStop(this.curLoc$.forw(), SetTok.paren_open);
         break;
       case /* ")" */ 0x29:
-        this.curLoc$.forw();
-        this.setTok$(SetTok.paren_cloz, retTk_x);
+        retTk_x.setStop(this.curLoc$.forw(), SetTok.paren_cloz);
         break;
       default:
         this._scanFuzykey(retTk_x);

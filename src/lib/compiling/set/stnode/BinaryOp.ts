@@ -77,7 +77,7 @@ export abstract class BinaryOp extends SetSN {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override toString() {
-    return `${this._info}( ${this.lhs$} ${this.op} ${this.rhs$})`;
+    return `${this._info} ( ${this.lhs$} ${this.op} ${this.rhs$})`;
   }
 
   override _repr(): [string, any] {

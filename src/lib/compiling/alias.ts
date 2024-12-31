@@ -61,6 +61,7 @@ export type Bidir = {
 
 export const enum Err {
   double_quoted_string = "Double quoted string does not closed.",
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /* Set */
   unexpected_token_for_set = "Unexpected token for Set",
@@ -78,5 +79,12 @@ export const enum Err {
   lack_of_rel_rel = "Lack of Rel rel",
   lack_of_rel_tgt = "Lack of Rel tgt",
   lack_of_rel_2nd = 'Lack of Rel 2nd joiner ">"',
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
+  /* SetextHeading */
+  unexpected_close = "Unexpected close",
+  /* Link */
+  //jjjj TOCLEANUP
+  // unrecognizable_linkdest = "The link destination is unrecognizable.",
 }
 /*80--------------------------------------------------------------------------*/
