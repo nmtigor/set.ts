@@ -126,21 +126,21 @@ export class Rel extends SetSN {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override toString() {
-    return `${this._info} ( ${this.#src} > ${this.#rel} > ${this.#tgt})`;
+    return `${this._info_} ( ${this.#src} > ${this.#rel} > ${this.#tgt})`;
   }
 
-  override _repr(): [string, any] {
-    return [this._info, {
+  override _repr_(): [string, any] {
+    return [this._info_, {
       src: this.#src
-        ? this.#src instanceof SetTk ? this.#src.toString() : this.#src._repr()
+        ? this.#src instanceof SetTk ? this.#src.toString() : this.#src._repr_()
         : this.#src,
       jnr_1: this.jnr_1.toString(),
       rel: this.#rel
-        ? this.#rel instanceof SetTk ? this.#rel.toString() : this.#rel._repr()
+        ? this.#rel instanceof SetTk ? this.#rel.toString() : this.#rel._repr_()
         : this.#rel,
       jnr_2: this.jnr_2 ? this.jnr_2.toString() : this.jnr_2,
       tgt: this.#tgt
-        ? this.#tgt instanceof SetTk ? this.#tgt.toString() : this.#tgt._repr()
+        ? this.#tgt instanceof SetTk ? this.#tgt.toString() : this.#tgt._repr_()
         : this.#tgt,
     }];
   }

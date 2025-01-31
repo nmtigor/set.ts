@@ -35,11 +35,11 @@ export abstract class SubkeySeq extends SetSN {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override toString() {
-    return `${this._info} ( ${this.tk_a.join(" ")})`;
+    return `${this._info_} ( ${this.tk_a.join(" ")})`;
   }
 
-  override _repr(): [string, any] {
-    return [this._info, this.tk_a.map((tk_y) => tk_y.toString())];
+  override _repr_(): [string, any] {
+    return [this._info_, this.tk_a.map((tk_y) => tk_y.toString())];
   }
 }
 /*80--------------------------------------------------------------------------*/

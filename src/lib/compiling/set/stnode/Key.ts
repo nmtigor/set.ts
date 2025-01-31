@@ -51,11 +51,11 @@ export class Key extends SetSN {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override toString() {
-    return `${this._info} ( ${this.children.join(" ")})`;
+    return `${this._info_} ( ${this.children.join(" ")})`;
   }
 
-  override _repr(): string[] {
-    const ret = [this._info];
+  override _repr_(): string[] {
+    const ret = [this._info_];
     for (const sn of this.children) {
       ret.push(sn.toString());
     }

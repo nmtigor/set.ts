@@ -6,9 +6,12 @@
 import { INOUT } from "../global.ts";
 import type {
   AbstractConstructor,
+  Brand,
   Constructor,
   FloatArray,
+  Func,
   IntegerArray,
+  ts_t,
   uint,
   uint8,
 } from "./alias.ts";
@@ -146,10 +149,9 @@ Reflect.defineProperty(Object.prototype, "eq", {
 declare global {
   //! Make sure non-`enumerable`
   interface Array<T> {
-    /**
-     * @deprecated Use `.at(-1)`.
-     */
-    last: T | undefined;
+    /** @const @param ary_x */
+    become_Array(ary_x: T[]): this;
+    /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
     /**
      * @headconst @param rhs
@@ -157,12 +159,10 @@ declare global {
      */
     eq(rhs_x: unknown, valve_x?: uint): boolean;
 
-    /**
-     * @const @param ary_x
-     */
+    /** @const @param ary_x */
     fillArray(ary_x: T[]): this;
+    /** @const @param ary_x */
     fillArrayBack(ary_x: T[]): this;
-    become(ary_x: T[]): this;
 
     swap(i_x: uint, j_x: uint): this;
   }
@@ -188,9 +188,10 @@ declare global {
   // }
 }
 
-Reflect.defineProperty(Array.prototype, "last", {
-  get(this: any[]) {
-    return this[this.length - 1];
+Reflect.defineProperty(Array.prototype, "become_Array", {
+  value(this: any[], ary_x: any[]) {
+    this.length = ary_x.length;
+    return this.fillArrayBack(ary_x);
   },
 });
 
@@ -221,12 +222,6 @@ Reflect.defineProperty(Array.prototype, "fillArrayBack", {
       this[i] = ary_x[i];
     }
     return this;
-  },
-});
-Reflect.defineProperty(Array.prototype, "become", {
-  value(this: any[], ary_x: any[]) {
-    this.length = ary_x.length;
-    return this.fillArrayBack(ary_x);
   },
 });
 
@@ -293,12 +288,12 @@ Number.normalize = (in_x, to_x) => {
   return ret;
 };
 
-Number.prototype.fixTo = function (this: Number, digits = 0) {
+Number.prototype.fixTo = function (this, digits = 0) {
   const mul = 10 ** digits;
   return Math.round(this.valueOf() * mul) / mul;
 };
 
-Number.prototype.reprRatio = function (this: Number, fixTo_x = 2) {
+Number.prototype.reprRatio = function (this, fixTo_x = 2) {
   let x_ = this.valueOf();
   const n_ = Number.apxS(x_, 0);
   x_ = Math.abs(x_);
@@ -451,6 +446,37 @@ Reflect.defineProperty(Float64Array.prototype, "eq", {
 });
 /*80--------------------------------------------------------------------------*/
 
+//#region Stringified_<>
+/* Ref. https://youtu.be/z7pDvyVhUnE */
+
+type Stringified_<T> = Brand<string, T>;
+
+type JsonifiedValue_<T> = T extends string | number | boolean | null ? T
+  : T extends { toJSON(): infer R } ? R
+  : T extends undefined | Func ? never
+  : T extends object ? JsonifiedObject_<T>
+  : never;
+type JsonifiedObject_<T> = {
+  [Key in keyof T as [JsonifiedValue_<T[Key]>] extends [never] ? never : Key]:
+    JsonifiedValue_<T[Key]>;
+};
+//#endregion
+
+declare global {
+  interface JSON {
+    stringify<T>(
+      value: T,
+      replacer?: null | undefined,
+      space?: string | number,
+    ): Stringified_<T>;
+    parse<T>(
+      text: Stringified_<T>,
+      reviver?: null | undefined,
+    ): JsonifiedObject_<T>;
+  }
+}
+/*80--------------------------------------------------------------------------*/
+
 declare global {
   interface Date {
     myformat(): string;
@@ -486,10 +512,13 @@ declare global {
       month?: number,
       date?: number,
     ): number;
+
+    _lastNow: ts_t;
+    now_1(): ts_t;
   }
 }
 
-Date.prototype.myformat = function (this: Date): string {
+Date.prototype.myformat = function (this): string {
   // let month_s;
   // switch( this.getMonth() )
   // {
@@ -530,7 +559,7 @@ Date.prototype.myformat = function (this: Date): string {
   ].join(" ");
 };
 
-Date.prototype.getShiChen = function (this: Date) {
+Date.prototype.getShiChen = function (this) {
   switch (this.getHours()) {
     case 23:
     case 0:
@@ -605,6 +634,16 @@ Date.setFullYear = (refdate, year, month, date) => {
     return Date.date.setFullYear(year);
   }
 };
+
+Date.now_1 = () => {
+  let ts_ = Date.now();
+  if (ts_ <= Date._lastNow) ts_ += .01;
+  // console.log(
+  //   `%c${global.dent}>>>>>>>>>>>>> Date.now_1(): ${ts_}`,
+  //   "color:red",
+  // );
+  return Date._lastNow = ts_ as ts_t;
+};
 /*80--------------------------------------------------------------------------*/
 
 declare global {
@@ -670,7 +709,7 @@ ReadableStream.prototype[Symbol.asyncIterator] ??= async function* <R = any>(
  * ! Should always companion with an interface declaration
  *
  * @param mixins_x
- *  Laat element has the highest precedence, and so on.
+ *  Last element has the highest precedence, and so on.
  */
 export function mix<C extends Constructor | AbstractConstructor>(
   Base_x: C,

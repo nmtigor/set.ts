@@ -8,27 +8,24 @@ import { isWhitespaceUCod } from "../../util/general.ts";
 import { assert, out } from "../../util/trace.ts";
 import { Lexr } from "../Lexr.ts";
 import { LocCompared } from "../Loc.ts";
-import type { SetTk } from "../Token.ts";
+import { TokRan } from "../TokRan.ts";
+import { type SetTk, Token } from "../Token.ts";
 import { Err } from "../alias.ts";
-import { SetTok } from "./SetTok.ts";
 import type { SetBufr } from "./SetBufr.ts";
+import { SetTok } from "./SetTok.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
 export class SetLexr extends Lexr<SetTok> {
-  /**
-   * Fuzykey `uint16` which needs to escape using `\`
-   */
+  /** Fuzykey `uint16` which needs to escape using `\` */
   static #esc_a = [0x5C, 0x3E, 0x3F, 0x22, 0x28, 0x29]; // ["\\", ">", "?", '"', "(", ")"]
 
-  reset(bufr_x?: SetBufr): this {
-    return this.reset$(bufr_x ?? this.bufr$);
+  reset_SetLexr(bufr_x?: SetBufr): this {
+    return this.reset_Lexr$(bufr_x ?? this.bufr$);
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  /**
-   * Adjust `strtLexTk$`, `stopLexTk$`, and assign `curLoc$`
-   */
+  /** Adjust `strtLexTk$`, `stopLexTk$`, and assign `curLoc$` */
   protected override prelex$(): void {
     if (this.strtLexTk$.value === SetTok.subtract) {
       this.strtLexTk$ = this.strtLexTk$.prevToken_$!;
@@ -40,12 +37,12 @@ export class SetLexr extends Lexr<SetTok> {
       this.stopLexTk$ = this.stopLexTk$.nextToken_$!;
     }
 
-    this.curLoc$.become(this.strtLexTk$.sntStopLoc);
+    this.curLoc$.become_Loc(this.strtLexTk$.sntStopLoc);
   }
 
   /**
    * @return `false` if all "[curLoc$" of the line `isWhitespaceUCod()`.
-   *    Whatever `true` or `false`, `curLoc$` will be at the right place.
+   *  Whatever `true` or `false`, `curLoc$` will be at the right place.
    */
   #skipLineWhitespace(): boolean {
     let ret = false;
@@ -62,7 +59,7 @@ export class SetLexr extends Lexr<SetTok> {
   }
   /**
    * @return `true` if continue; `false` if `atRigtBdry$() === LocCompared.yes`.
-   *    Whatever `true` or `false`, `curLoc$` will be at the right place.
+   *  Whatever `true` or `false`, `curLoc$` will be at the right place.
    */
   #skipWhitespace(): boolean {
     let ret = true;
@@ -89,7 +86,7 @@ export class SetLexr extends Lexr<SetTok> {
   #scanQuotkey(out_x: SetTk): void {
     /*#static*/ if (INOUT) {
       assert(
-        this.reachRigtBdry$() !== LocCompared.yes &&
+        this.reachLexBdry$() !== LocCompared.yes &&
           this.curLoc$.ucod === /* '"' */ 0x22,
       );
     }
@@ -126,15 +123,13 @@ export class SetLexr extends Lexr<SetTok> {
     }
   }
 
-  /**
-   * @out @param retTk_x
-   */
-  @out((ret) => {
+  /** @out @param retTk_x */
+  @out((_, ret) => {
     assert(ret.value === SetTok.fuzykey && !ret.empty);
   })
   private _scanFuzykey(retTk_x: SetTk): SetTk {
     /*#static*/ if (INOUT) {
-      assert(this.reachRigtBdry$() !== LocCompared.yes);
+      assert(this.reachLexBdry$() !== LocCompared.yes);
     }
     const VALVE = 1_000;
     let valve = VALVE;
@@ -175,28 +170,26 @@ export class SetLexr extends Lexr<SetTok> {
     return retTk_x;
   }
 
-  /**
-   * @implement
-   * @out @param retTk_x
-   */
-  protected scan_impl$(retTk_x: SetTk): SetTk {
+  /** @implement */
+  protected scan_impl$(): SetTk {
+    const retTk = new Token(this, new TokRan(this.curLoc$.dup_Loc()));
     let ucod = this.curLoc$.ucod;
     if (isWhitespaceUCod(ucod)) {
       if (!this.#skipWhitespace()) {
-        return retTk_x.setStop(this.curLoc$);
+        return retTk.setStop(this.curLoc$);
       }
-      retTk_x.setStrt(this.curLoc$);
+      retTk.setStrt(this.curLoc$);
       ucod = this.curLoc$.ucod;
     }
     switch (ucod) {
       case /* '"' */ 0x22:
-        this.#scanQuotkey(retTk_x);
+        this.#scanQuotkey(retTk);
         break;
       case /* "?" */ 0x3F:
-        retTk_x.setStop(this.curLoc$.forw(), SetTok.question);
+        retTk.setStop(this.curLoc$.forw(), SetTok.question);
         break;
       case /* ">" */ 0x3E:
-        retTk_x.setStop(this.curLoc$.forw(), SetTok.joiner);
+        retTk.setStop(this.curLoc$.forw(), SetTok.joiner);
         break;
       case /* "\\" */ 0x5C:
         ucod = this.curLoc$.forw_ucod();
@@ -205,28 +198,28 @@ export class SetLexr extends Lexr<SetTok> {
           !SetLexr.#esc_a.includes(ucod)
         ) {
           /* "\\" is subtract */
-          retTk_x.setStop(this.curLoc$, SetTok.subtract);
+          retTk.setStop(this.curLoc$, SetTok.subtract);
           break;
         }
         this.curLoc$.back();
-        this._scanFuzykey(retTk_x);
+        this._scanFuzykey(retTk);
         break;
       case /* "∩" */ 0x0_2229:
-        retTk_x.setStop(this.curLoc$.forw(), SetTok.intersect);
+        retTk.setStop(this.curLoc$.forw(), SetTok.intersect);
         break;
       case /* "∪" */ 0x0_222A:
-        retTk_x.setStop(this.curLoc$.forw(), SetTok.union);
+        retTk.setStop(this.curLoc$.forw(), SetTok.union);
         break;
       case /* "(" */ 0x28:
-        retTk_x.setStop(this.curLoc$.forw(), SetTok.paren_open);
+        retTk.setStop(this.curLoc$.forw(), SetTok.paren_open);
         break;
       case /* ")" */ 0x29:
-        retTk_x.setStop(this.curLoc$.forw(), SetTok.paren_cloz);
+        retTk.setStop(this.curLoc$.forw(), SetTok.paren_cloz);
         break;
       default:
-        this._scanFuzykey(retTk_x);
+        this._scanFuzykey(retTk);
     }
-    return retTk_x;
+    return retTk;
   }
 
   protected override canConcat$(tk_0: SetTk, tk_1: SetTk) {

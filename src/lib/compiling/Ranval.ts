@@ -6,12 +6,20 @@
 import { LOG_cssc } from "../../alias.ts";
 import { PRF } from "../../global.ts";
 import { Moo, type MooEq } from "../Moo.ts";
-import type { lnum_t, loff_t } from "../alias.ts";
+import { type lnum_t, type loff_t } from "../alias.ts";
 import { Factory } from "../util/Factory.ts";
+import type { Bufr } from "./Bufr.ts";
+import type { Loc } from "./Loc.ts";
+import { g_ran_fac, type Ran } from "./Ran.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
 export class Ranval extends Array<lnum_t | loff_t> {
+  /* Adding `id` needs to change comparisons in "Repl_test.ts" correspondingly. */
+  // static #ID = 0 as id_t;
+  // readonly id = ++Ranval.#ID as id_t;
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
   // override readonly length = 4; // TypeError: Cannot redefine property: length
 
   get focusLidx() {
@@ -42,56 +50,86 @@ export class Ranval extends Array<lnum_t | loff_t> {
   constructor(_2: lnum_t, _3: loff_t, _0?: lnum_t, _1?: loff_t) {
     super(4);
 
-    this.reset(_2, _3, _0, _1);
+    this.setRanval(_2, _3, _0, _1);
   }
 
-  reset(_2: lnum_t, _3: loff_t, _0?: lnum_t, _1?: loff_t): this {
+  setRanval(_2: lnum_t, _3: loff_t, _0?: lnum_t, _1?: loff_t): this {
     this[2] = _2;
     this[3] = _3;
     this[0] = _0 === undefined ? _2 : _0;
     this[1] = _1 === undefined ? _3 : _1;
     return this;
   }
+  /** @primaryconst @param ran_x */
+  setByRan(ran_x: Ran): this {
+    return this.setRanval(
+      ran_x.frstLine.lidx_1,
+      ran_x.strtLoff,
+      ran_x.lastLine.lidx_1,
+      ran_x.stopLoff,
+    );
+  }
+  /** @primaryconst @param loc_x */
+  setFocus(loc_x: Loc, collapse_x?: "collapse"): this {
+    this[0] = loc_x.line_$.lidx_1;
+    this[1] = loc_x.loff_$;
+    if (collapse_x) this.collapseToFocus();
+    return this;
+  }
+  /** @primaryconst @param loc_x */
+  setAnchr(loc_x: Loc, collapse_x?: "collapse"): this {
+    this[2] = loc_x.line_$.lidx_1;
+    this[3] = loc_x.loff_$;
+    if (collapse_x) this.collapseToAnchr();
+    return this;
+  }
 
   /** @const */
-  dup() {
+  dup_Ranval() {
     return new Ranval(this[2] as lnum_t, this[3], this[0] as lnum_t, this[1]);
   }
 
   [Symbol.dispose]() {
     g_ranval_fac.revoke(this);
   }
+
+  /**
+   * @final
+   * @const
+   */
+  usingDup() {
+    return g_ranval_fac.oneMore().become_Array(this);
+  }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @const */
+  get order(): -1 | 0 | 1 {
+    if (this[0] > this[2]) return 1;
+    if (this[0] < this[2]) return -1;
+    if (this[1] > this[3]) return 1;
+    if (this[1] < this[3]) return -1;
+    return 0;
+  }
+  /** @const */
   get collapsed() {
-    return this[0] === this[2] && this[1] === this[3];
+    return this.order === 0;
   }
 
-  collapseToFocus() {
+  collapseToFocus(): this {
     this[2] = this[0];
     this[3] = this[1];
+    return this;
   }
-  collapseToAnchr() {
+  collapseToAnchr(): this {
     this[0] = this[2];
     this[1] = this[3];
+    return this;
   }
-
-  /** @const */
-  get positiv(): boolean {
-    return this[2] < this[0] || this[2] === this[0] && this[3] < this[1];
+  collapseToHead(): this {
+    return this.order > 0 ? this.collapseToFocus() : this.collapseToAnchr();
   }
-  /** @const */
-  get nonnegativ(): boolean {
-    return this.positiv || this.collapsed;
-  }
-  /** @const */
-  get negativ(): boolean {
-    return this[0] < this[2] || this[0] === this[2] && this[1] < this[3];
-  }
-  /** @const */
-  get nonpositiv(): boolean {
-    return this.negativ || this.collapsed;
+  collapseToTail(): this {
+    return this.order < 0 ? this.collapseToFocus() : this.collapseToAnchr();
   }
 
   override reverse(): this {
@@ -102,6 +140,44 @@ export class Ranval extends Array<lnum_t | loff_t> {
     this[1] = this[3];
     this[3] = t_;
     return this;
+  }
+
+  static posSE(
+    lidx_0_x: number,
+    loff_0_x: number,
+    lidx_1_x: number,
+    loff_1_x: number,
+  ) {
+    return lidx_0_x < lidx_1_x || lidx_0_x === lidx_1_x && loff_0_x <= loff_1_x;
+  }
+  contain(rv_x: Ranval): boolean {
+    const o_ = this.order;
+    const o_1 = rv_x.order;
+    if (o_ > 0) {
+      if (o_1 > 0) {
+        return Ranval.posSE(this[2], this[3], rv_x[2], rv_x[3]) &&
+          Ranval.posSE(rv_x[0], rv_x[1], this[0], this[1]);
+      } else {
+        return Ranval.posSE(this[2], this[3], rv_x[0], rv_x[1]) &&
+          Ranval.posSE(rv_x[2], rv_x[3], this[0], this[1]);
+      }
+    } else if (o_ < 0) {
+      if (o_1 > 0) {
+        return Ranval.posSE(this[0], this[1], rv_x[2], rv_x[3]) &&
+          Ranval.posSE(rv_x[0], rv_x[1], this[2], this[3]);
+      } else {
+        return Ranval.posSE(this[0], this[1], rv_x[0], rv_x[1]) &&
+          Ranval.posSE(rv_x[2], rv_x[3], this[2], this[3]);
+      }
+    } else {
+      return false;
+    }
+  }
+
+  /** @headconst @param bufr_x  */
+  getTextFrom(bufr_x: Bufr) {
+    using ran_u = g_ran_fac.setBufr(bufr_x).oneMore().setByRanval(this);
+    return ran_u.getText();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -124,24 +200,15 @@ export class RanvalMo extends Moo<Ranval> {
 /*64----------------------------------------------------------*/
 
 // export class SortedRanval extends SortedArray<Ranval> {
-//   static #less: Less<Ranval> = (a_x, b_x) => {
-//     if (a_x.nonnegativ) {
-//       if (b_x.nonnegativ) {
-//         return a_x[0] < b_x[2] || a_x[0] === b_x[2] && a_x[1] < b_x[3];
-//       } else {
-//         return a_x[0] < b_x[0] || a_x[0] === b_x[0] && a_x[1] < b_x[1];
-//       }
-//     } else {
-//       if (b_x.nonnegativ) {
-//         return a_x[2] < b_x[2] || a_x[2] === b_x[2] && a_x[3] < b_x[3];
-//       } else {
-//         return a_x[2] < b_x[0] || a_x[2] === b_x[0] && a_x[3] < b_x[1];
-//       }
-//     }
-//   };
+//   static #less(endpt_x: Endpt): Less<Ranval> {
+//     return endpt_x === Endpt.anchr
+//       ? (a_y, b_y) => Ranval.posSE(a_y[2], a_y[3], b_y[2], b_y[3])
+//       : (a_y, b_y) => Ranval.posSE(a_y[0], a_y[1], b_y[0], b_y[1]);
+//   }
 
-//   constructor(val_a_x?: Ranval[]) {
-//     super(SortedRanval.#less, val_a_x);
+//   constructor(val_a_x?: Ranval[], endpt_x = Endpt.anchr) {
+//     super(SortedRanval.#less(endpt_x), val_a_x);
+//     this.resort();
 //   }
 // }
 /*64----------------------------------------------------------*/

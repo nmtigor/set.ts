@@ -4,11 +4,10 @@
  ******************************************************************************/
 
 import { assert } from "@fe-lib/util/trace.ts";
-import { LOG_cssc } from "@fe-src/alias.ts";
 import { INOUT } from "@fe-src/global.ts";
-import { SetSN } from "../SetSN.ts";
 import type { SetTk } from "../../Token.ts";
 import { Err } from "../../alias.ts";
+import { SetSN } from "../SetSN.ts";
 import { SetTok } from "../SetTok.ts";
 import { Oprec } from "../alias.ts";
 import { Set } from "./Set.ts";
@@ -77,14 +76,14 @@ export abstract class BinaryOp extends SetSN {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override toString() {
-    return `${this._info} ( ${this.lhs$} ${this.op} ${this.rhs$})`;
+    return `${this._info_} ( ${this.lhs$} ${this.op} ${this.rhs$})`;
   }
 
-  override _repr(): [string, any] {
-    return [this._info, {
-      lhs: this.lhs$._repr(),
+  override _repr_(): [string, any] {
+    return [this._info_, {
+      lhs: this.lhs$._repr_(),
       op: this.opTk.toString(),
-      rhs: this.rhs$ ? this.rhs$._repr() : this.rhs$,
+      rhs: this.rhs$ ? this.rhs$._repr_() : this.rhs$,
     }];
   }
 }

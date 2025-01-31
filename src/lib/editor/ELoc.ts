@@ -11,14 +11,15 @@ import type { id_t, loff_t, uint } from "../alias.ts";
 export class ELoc {
   static #ID = 0 as id_t;
   readonly id = ++ELoc.#ID as id_t;
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   ctnr_$: Node;
   /**
-   * ! In logical ordering rather than visual ordering
+   * ! in logical ordering rather than visual ordering
    */
   offs_$: uint;
   get loff(): loff_t {
-    return ((this.ctnr_$ as any)[$loff] ?? 0) + this.offs_$;
+    return ((this.ctnr_$ as Text)[$loff] ?? 0) + this.offs_$;
   }
 
   /**
@@ -30,9 +31,10 @@ export class ELoc {
     this.offs_$ = offs_x;
   }
 
-  dup() {
+  dupELoc() {
     return new ELoc(this.ctnr_$, this.offs_$);
   }
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @const */
   posE_O(ctnr_x: Node, offs_x: uint): boolean {

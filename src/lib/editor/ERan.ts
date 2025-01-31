@@ -6,16 +6,12 @@
 import { LOG_cssc } from "../../alias.ts";
 import { INOUT, PRF } from "../../global.ts";
 import type { id_t, loff_t, uint } from "../alias.ts";
-import { $facil_node, $ovlap, $tail_ignored } from "../symbols.ts";
+import { Endpt } from "../alias.ts";
+import { $facil_node, $ovlap } from "../symbols.ts";
 import { Factory } from "../util/Factory.ts";
 import { assert, fail } from "../util/trace.ts";
 import { ELoc } from "./ELoc.ts";
 /*80--------------------------------------------------------------------------*/
-
-export const enum ERanEndpoint {
-  focus = 1,
-  anchr,
-}
 
 declare global {
   interface Node {
@@ -25,7 +21,7 @@ declare global {
 }
 
 /**
- * Wrapper of tow `Range`s: `#endpoint`, `#range`\
+ * Wrapper of two `Range`s: `#endpt`, `#range`\
  * Like `Range`, `ERan` has no visual effects. `Caret` has visual effects.
  *
  * Should sync with `EdtrScrolr`s modification as soon as possible.
@@ -35,6 +31,7 @@ declare global {
 export class ERan {
   static #ID = 0 as id_t;
   readonly id = ++ERan.#ID as id_t;
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /* #anchrELoc */
   readonly #anchrELoc: ELoc;
@@ -73,8 +70,8 @@ export class ERan {
     return this.#anchrELoc.posE(this.#focusELoc);
   }
 
-  readonly #endpoint = new Range();
-  // get focusRect() { return this.#endpoint.getBoundingClientRect(); }
+  readonly #endpt = new Range();
+  // get focusRect() { return this.#endpt.getBoundingClientRect(); }
 
   readonly #range = new Range();
   // get rangeRect() { return this.#range.getBoundingClientRect(); }
@@ -89,10 +86,19 @@ export class ERan {
    */
   constructor(focusELoc_x: ELoc, anchrELoc_x?: ELoc) {
     this.#focusELoc = focusELoc_x;
-    this.#anchrELoc = anchrELoc_x ?? focusELoc_x.dup();
+    this.#anchrELoc = anchrELoc_x ?? focusELoc_x.dupELoc();
     /*#static*/ if (INOUT) {
       assert(this.#focusELoc !== this.#anchrELoc);
     }
+  }
+
+  /** @const */
+  become_ERan(rhs_x: ERan): this {
+    this.#focusELoc.ctnr_$ = rhs_x.focusCtnr;
+    this.#focusELoc.offs_$ = rhs_x.focusOffs;
+    this.#anchrELoc.ctnr_$ = rhs_x.anchrCtnr;
+    this.#anchrELoc.offs_$ = rhs_x.anchrOffs;
+    return this;
   }
 
   [Symbol.dispose]() {
@@ -128,19 +134,8 @@ export class ERan {
       rhs_x.#anchrELoc.posE(this.#anchrELoc);
   }
 
-  /** @const */
-  become(rhs_x: ERan): this {
-    this.#focusELoc.ctnr_$ = rhs_x.focusCtnr;
-    this.#focusELoc.offs_$ = rhs_x.focusOffs;
-    this.#anchrELoc.ctnr_$ = rhs_x.anchrCtnr;
-    this.#anchrELoc.offs_$ = rhs_x.anchrOffs;
-    return this;
-  }
-
-  /**
-   * @return reversed or not
-   */
-  reverse_$() {
+  /** @return reversed or not */
+  reverse_$(): boolean {
     if (this.collapsed) return false;
 
     const ctnr = this.focusCtnr;
@@ -153,23 +148,24 @@ export class ERan {
   }
 
   /**
-   * @return `DOMRect` of synchronized `#endpoint`
+   * Assign `#endpt` only, and return its `DOMRect`.
+   * @return `DOMRect` of synchronized `#endpt`
    */
-  getRecSync_$(_x = ERanEndpoint.focus): DOMRect {
+  getRecSync_$(_x = Endpt.focus): DOMRect {
     let ret;
     // assert(this.focusCtnr);
     const ctnr = /* final switch */ {
-      [ERanEndpoint.focus]: this.focusCtnr,
-      [ERanEndpoint.anchr]: this.anchrCtnr,
+      [Endpt.focus]: this.focusCtnr,
+      [Endpt.anchr]: this.anchrCtnr,
     }[_x];
-    let offs = /* final switch */ {
-      [ERanEndpoint.focus]: this.focusOffs,
-      [ERanEndpoint.anchr]: this.anchrOffs,
+    const offs = /* final switch */ {
+      [Endpt.focus]: this.focusOffs,
+      [Endpt.anchr]: this.anchrOffs,
     }[_x];
     if (ctnr.isText) {
-      this.#endpoint.setEnd(ctnr, offs);
-      this.#endpoint.collapse();
-      ret = this.#endpoint.getBoundingClientRect();
+      this.#endpt.setEnd(ctnr, offs);
+      this.#endpt.collapse();
+      ret = this.#endpt.getBoundingClientRect();
     } else {
       //jjjj TOCHECK
       let subNd: Node | undefined;
@@ -184,8 +180,8 @@ export class ERan {
       /*#static*/ if (INOUT) {
         assert(subNd);
       }
-      this.#endpoint.selectNode(subNd!);
-      ret = this.#endpoint.getBoundingClientRect();
+      this.#endpt.selectNode(subNd!);
+      ret = this.#endpt.getBoundingClientRect();
       if (i === iI) ret.x = ret.right; //!
       ret.width = 0;
     }
@@ -195,6 +191,7 @@ export class ERan {
   }
 
   /**
+   * Assign `#range` only.\
    * ! Range's start is always ahead of end, otherwise `collapsed`.
    * @return synchronized `#range`
    */
@@ -225,9 +222,7 @@ export class ERan {
     return this.#range;
   }
 
-  /**
-   * @const @param ct_x
-   */
+  /** @const @param ct_x */
   collapse_$(ct_x = EdranCollapseTo.focus) {
     if (this.collapsed) return;
 

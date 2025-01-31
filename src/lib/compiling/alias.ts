@@ -3,8 +3,7 @@
  * @license MIT
  ******************************************************************************/
 
-import type { Bidi } from "../Bidi.ts";
-import type { uint32 } from "../alias.ts";
+import type { Chr, Dulstr, lnum_t, loff_t, uint32 } from "../alias.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import type { JSLangTok } from "./jslang/JSLangTok.ts";
 import type { LaTeXTok } from "./latex/LaTeXTok.ts";
@@ -15,6 +14,8 @@ import type { RMLTok } from "./rml/RMLTok.ts";
 import type { SetTok } from "./set/SetTok.ts";
 import type { URITok } from "./uri/URITok.ts";
 /*80--------------------------------------------------------------------------*/
+
+export type Locval = [lnum_t, loff_t];
 
 /**
  * ! If change `BufrReplState` names, check "ReplActr.ts" first where names are
@@ -54,9 +55,8 @@ export type Tok =
   | RMLTok
   | JSLangTok;
 
-export type Bidir = {
-  readonly bidi: Bidi;
-};
+/** Dulling map */
+export type Dulmap = Map<Chr, Dulstr | Dulstr[]>;
 /*80--------------------------------------------------------------------------*/
 
 export const enum Err {

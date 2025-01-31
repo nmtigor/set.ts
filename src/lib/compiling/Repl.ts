@@ -6,22 +6,37 @@
 import { _TRACE, global, INOUT } from "../../global.ts";
 import type { id_t, lnum_t } from "../alias.ts";
 import { linesOf } from "../util/general.ts";
+import { type Less, SortedArray } from "../util/SortedArray.ts";
 import { assert, fail, traceOut } from "../util/trace.ts";
 import { BufrReplState } from "./alias.ts";
 import type { Bufr } from "./Bufr.ts";
 import { Line } from "./Line.ts";
 import { Ran } from "./Ran.ts";
-import { g_ranval_fac, Ranval } from "./Ranval.ts";
+import { Ranval } from "./Ranval.ts";
 /*80--------------------------------------------------------------------------*/
+
+export type Replin = { rv: Ranval; txt: string | string[] };
+
+class SortedReplin_ extends SortedArray<Replin> {
+  static #less: Less<Replin> = (a_y, b_y) =>
+    Ranval.posSE(a_y.rv[2], a_y.rv[3], b_y.rv[2], b_y.rv[3]);
+
+  constructor(val_a_x?: Replin[]) {
+    super(SortedReplin_.#less, val_a_x);
+    this.resort();
+  }
+}
+/*64----------------------------------------------------------*/
 
 /** @final */
 export class Repl {
   static #ID = 0 as id_t;
   readonly id = ++Repl.#ID as id_t;
   /** @final */
-  get _type_id() {
+  get _type_id_() {
     return `${this.constructor.name}_${this.id}`;
   }
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   readonly #bufr: Bufr;
 
@@ -29,16 +44,16 @@ export class Repl {
   readonly aoa;
 
   readonly #ranval_a: Ranval[] | undefined;
-  get _ranval_a(): Ranval[] {
+  get _ranval_a_(): Ranval[] {
     return this.#ranval_a!;
   }
   readonly #ranval: Ranval | undefined;
-  get _ranval() {
+  get _ranval_() {
     return this.#ranval!;
   }
 
   readonly #ranval_rev_a: Ranval[] | undefined;
-  get _ranval_rev_a(): Ranval[] {
+  get _ranval_rev_a_(): Ranval[] {
     return this.#ranval_rev_a!;
   }
   readonly #ranval_rev: Ranval | undefined;
@@ -47,58 +62,67 @@ export class Repl {
   }
 
   #text_a2: string[][] | undefined;
-  get _text_a2(): string[][] {
+  get _text_a2_(): string[][] {
     return this.#text_a2!;
   }
   #text_a: string[] | undefined;
-  get _text_a(): string[] {
+  get _text_a_(): string[] {
     return this.#text_a!;
   }
 
-  readonly replText_a2: string[][] | undefined;
-  readonly replText_a: string[] | undefined;
+  readonly #replText_a2: string[][] | undefined;
+  get _replText_a2_(): string[][] {
+    return this.#replText_a2!;
+  }
+  readonly #replText_a: string[] | undefined;
+  get _replText_a_(): string[] {
+    return this.#replText_a!;
+  }
+
+  /** for composition */
+  #replText_a2_0: string[][] | undefined;
+  /** for composition */
+  #replText_a_0: string[] | undefined;
 
   /** Helper */
   readonly #tmpRan;
 
   /**
    * Use `Ranval` not `Ran` directly because `Ran` can be invalid
-   * after `undo()` / `redo()`
+   * after `undo()` / `redo()`.
    * @headconst @param bufr_x
-   * @const @param rv_x [COPIED] if `Ranval`
-   * @const @param text_x
+   * @headconst @param replin_x [COPIED] if `this` will not be abandoned
+   *  immediately after `replFRun()` (e.g. queued in `Bufr.#doq`).\
+   *  If `Replin[]`, `.rv`s MUST be disjoint!.
    */
-  constructor(
-    bufr_x: Bufr,
-    rv_x: Ranval | Ranval[],
-    text_x: (string[] | string) | (string[] | string)[],
-  ) {
-    /*#static*/ if (INOUT) {
-      assert((rv_x instanceof Ranval) || rv_x.length === text_x.length);
-    }
+  constructor(bufr_x: Bufr, replin_x: Replin | Replin[]) {
     this.#bufr = bufr_x;
-    if (rv_x instanceof Ranval) {
-      this.aoa = false;
-      this.#ranval = rv_x;
-      this.#text_a = Array.isArray(text_x)
-        ? text_x as string[]
-        : linesOf(text_x);
-      this.#ranval_rev = new Ranval(0 as lnum_t, 0);
-      this.replText_a = [];
-    } else {
+    if (Array.isArray(replin_x)) {
       this.aoa = true;
-      this.#ranval_a = rv_x;
-      this.#text_a2 = (text_x as (string[] | string)[]).map((_y) =>
-        Array.isArray(_y) ? _y : linesOf(_y)
-      );
+      const LEN = replin_x.length;
+      this.#ranval_a = new Array(LEN);
+      this.#text_a2 = new Array(LEN);
+      new SortedReplin_(replin_x).forEach((e_y, i_y) => {
+        this.#ranval_a![i_y] = e_y.rv;
+        this.#text_a2![i_y] = Array.isArray(e_y.txt)
+          ? e_y.txt
+          : linesOf(e_y.txt);
+      });
       this.#ranval_rev_a = Array.from(
-        { length: rv_x.length },
+        { length: LEN },
         () => new Ranval(0 as lnum_t, 0),
       );
-      this.replText_a2 = Array.from({ length: rv_x.length }, () => []);
+      this.#replText_a2 = Array.from({ length: LEN }, () => []);
+    } else {
+      this.aoa = false;
+      this.#ranval = replin_x.rv;
+      this.#text_a = Array.isArray(replin_x.txt)
+        ? replin_x.txt as string[]
+        : linesOf(replin_x.txt);
+      this.#ranval_rev = new Ranval(0 as lnum_t, 0);
+      this.#replText_a = [];
     }
-    using rv_ = g_ranval_fac.oneMore().reset(0 as lnum_t, 0);
-    this.#tmpRan = Ran.create(this.#bufr, rv_);
+    this.#tmpRan = Ran.create(this.#bufr);
   }
 
   /**
@@ -174,7 +198,7 @@ export class Repl {
       // lnSrc_1.prevLine.append_$( txtSrc_1.slice(loffSrc_1) );
       // lnSrc_1.removeSelf_$();
       lnSrc_1.splice_$(0, loffSrc_1, lnSrc_1.prevLine!.text);
-      outRan_x.stopLoc.set(lnSrc_1, lnSrc_1.prevLine!.uchrLen);
+      outRan_x.stopLoc.set_Loc(lnSrc_1, lnSrc_1.prevLine!.uchrLen);
       if (lnSrc_1.prevLine === lnSrc_0) lnSrc_0 = lnSrc_1; //!
       lnSrc_1.prevLine!.removeSelf_$();
     } else if (lnSrc === lnSrc_1) {
@@ -190,7 +214,7 @@ export class Repl {
         lnSrc_1.splice_$(loffSrc_0, loffSrc_1, inTxt_a_x[0]);
 
         // lnSrc_0 = lnSrc_1;
-        outRan_x.stopLoc.set(lnSrc_1, loffSrc_0 + inTxt_a_x[0].length);
+        outRan_x.stopLoc.set_Loc(lnSrc_1, loffSrc_0 + inTxt_a_x[0].length);
       } else {
         if (i_ < tgtN - 1) {
           const bufr = this.#bufr;
@@ -214,23 +238,21 @@ export class Repl {
         }
         lnSrc_1.splice_$(0, loffSrc_1, inTxt_a_x[i_]);
 
-        outRan_x.stopLoc.set(lnSrc_1, inTxt_a_x[i_].length);
+        outRan_x.stopLoc.set_Loc(lnSrc_1, inTxt_a_x[i_].length);
       }
     } else {
       /*#static*/ if (INOUT) {
         fail("Should not run here!");
       }
     }
-    outRan_x.strtLoc.set(lnSrc_0, loffSrc_0);
+    outRan_x.strtLoc.set_Loc(lnSrc_0, loffSrc_0);
 
     /*#static*/ if (INOUT) {
       assert(lnSrc_1 === outRan_x.lastLine);
     }
   }
 
-  /**
-   * @const @param inRv_x
-   */
+  /** @const @param inRv_x */
   #pre(inRv_x: Ranval | Ranval[]): Ran[] {
     // console.log(`inRv_x = ${inRv_x.toString()}`);
     // console.log(inTxt_a_x);
@@ -242,8 +264,8 @@ export class Repl {
       inRan_a.length = (inRv_x as Ranval[]).length;
 
       for (let i = (inRv_x as Ranval[]).length; i--;) {
-        inRan_a[i] = this.#tmpRan.using()
-          .setByRanval(this.#bufr, (inRv_x as Ranval[])[i]);
+        inRan_a[i] = this.#tmpRan.usingDup()
+          .setByRanval((inRv_x as Ranval[])[i]);
         inRan_a[i].syncRanval_$(); //!
         /*#static*/ if (INOUT) {
           if (inRan_a.at(i + 1)) inRan_a[i].posS(inRan_a[i + 1]);
@@ -252,8 +274,7 @@ export class Repl {
     } else {
       inRan_a.length = 1;
 
-      inRan_a[0] = this.#tmpRan.using()
-        .setByRanval(this.#bufr, inRv_x as Ranval);
+      inRan_a[0] = this.#tmpRan.usingDup().setByRanval(inRv_x as Ranval);
       inRan_a[0].syncRanval_$(); //!
       // const lnN_inRan = inRan.lineN_1;
     }
@@ -305,7 +326,7 @@ export class Repl {
           }
           tailToNext = prevToHead;
         }
-        outRan_a[i] = this.#tmpRan.using();
+        outRan_a[i] = this.#tmpRan.usingDup();
       }
     } else {
       this.#repl_impl(
@@ -318,7 +339,7 @@ export class Repl {
       //   console.log( `outRv_x=${outRv_x.toString()}` );
       //   console.log( outTxt_a_x );
       // // #endif
-      outRan_a[0] = this.#tmpRan.using();
+      outRan_a[0] = this.#tmpRan.usingDup();
       // this.#bufr.dtLineN_$ = this.#bufr.newRan_$.lineN_1 - lnN_inRan;
     }
 
@@ -339,7 +360,7 @@ export class Repl {
    * @out @param outRv_x range of inTxt_a_x
    * @out @param outTxt_a_x texts of inRv_x
    */
-  _test(
+  _test_(
     inRv_x: Ranval | Ranval[],
     inTxt_a_x: string[] | string[][],
     outRv_x: Ranval | Ranval[],
@@ -365,7 +386,7 @@ export class Repl {
     outTxt_a_x: string[] | string[][],
   ) {
     /*#static*/ if (_TRACE) {
-      console.log(`${global.indent}>>>>>>> ${this._type_id}._impl() >>>>>>>`);
+      console.log(`${global.indent}>>>>>>> ${this._type_id_}._impl() >>>>>>>`);
     }
     const inRan_a = this.#pre(inRv_x);
 
@@ -383,8 +404,8 @@ export class Repl {
 
   #replFRan = false;
   /**
-   * If `aoa`, assign `#ranval_rev_a`, `replText_a2`,
-   * else, assign `#ranval_rev`, `replText_a`.
+   * If `aoa`, assign `#ranval_rev_a`, `#replText_a2`,
+   * else, assign `#ranval_rev`, `#replText_a`.
    *
    * A `Repl` is a step stored in `Bufr.#doq`, and `replFRun()` is called with
    * one `#text_a`.\
@@ -415,7 +436,7 @@ export class Repl {
           ? txt_x as string[]
           : linesOf(txt_x);
         // this.#ranval = this.#ranval_rev.dup(); //!
-        // replText_a_save = [...this.replText_a]; //!
+        // replText_a_save = [...this.#replText_a]; //!
       }
     }
 
@@ -424,14 +445,14 @@ export class Repl {
         this.#ranval_a!,
         this.#text_a2!,
         this.#ranval_rev_a!,
-        this.replText_a2!,
+        this.#replText_a2!,
       );
     } else {
       this._impl(
         this.#ranval!,
         this.#text_a!,
         this.#ranval_rev!,
-        this.replText_a!,
+        this.#replText_a!,
       );
     }
 
@@ -439,34 +460,36 @@ export class Repl {
       this.#replFRan = true;
     } else {
       if (this.aoa) {
+        this.#replText_a2_0 ??= this.#replText_a2!.slice();
+
         for (let i = this.#ranval_rev_a!.length; i--;) {
-          this.#ranval_a![i].become(this.#ranval_rev_a![i]);
+          this.#ranval_a![i].become_Array(this.#ranval_rev_a![i]);
         }
       } else {
-        this.#ranval!.become(this.#ranval_rev!);
+        this.#replText_a_0 ??= this.#replText_a!.slice();
+
+        this.#ranval!.become_Array(this.#ranval_rev!);
       }
       /* ..., then could continue to `this.replFRun(txt_x)` */
 
-      // this.replText_a = replText_a_save!; // For keeping `replBRun()` correct
-      // console.log(this.replText_a);
+      // this.#replText_a = replText_a_save!; // For keeping `replBRun()` correct
+      // console.log(this.#replText_a);
     }
   }
 
-  /**
-   * Assign `#ranval`, `#text_a`.
-   */
+  /** Assign `#ranval`, `#text_a` */
   replBRun() {
     if (this.aoa) {
       this._impl(
         this.#ranval_rev_a!,
-        this.replText_a2!,
+        this.#replText_a2_0 ?? this.#replText_a2!,
         this.#ranval_a!,
         this.#text_a2!,
       );
     } else {
       this._impl(
         this.#ranval_rev!,
-        this.replText_a!,
+        this.#replText_a_0 ?? this.#replText_a!,
         this.#ranval!,
         this.#text_a!,
       );

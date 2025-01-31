@@ -83,12 +83,21 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     this.#slidr_p.removeCsscHandler(this.#onSlidrCssc);
   }
   /* ~ */
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   #scrolr!: Scrolr<C>;
   readonly #scrodB: ScrodB_<C>;
   readonly #scrodI: ScrodI_<C>; //kkkk make it in use
+
   readonly #scrobarB: ScrobarB_<C>;
+  get slidrB() {
+    return this.#scrobarB.slidr;
+  }
+
   readonly #scrobarI: ScrobarI_<C>; //kkkk make it in use
+  get slidrI() {
+    return this.#scrobarI.slidr;
+  }
 
   /** @final */
   get bufrDir(): BufrDir {
@@ -116,7 +125,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     super(coo_x, div());
 
     /*#static*/ if (DEV) {
-      this.el$.id = this._type_id;
+      this.el$.id = this._type_id_;
     }
     this.assignStylo({
       display: "grid",
@@ -129,6 +138,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
 
     this.#scrodB = new ScrodB_(this);
     this.#scrodI = new ScrodI_(this);
+
     this.#scrobarB = new ScrobarB_(this);
     this.#scrobarI = new ScrobarI_(this);
 
@@ -146,13 +156,13 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   /**
    * Called by subclasses
    *
-   * This method does not need to be called, i.e., it could be `!#scrolrInited`,
-   * and `#scrolr` is not set.
+   * This method does not have to be called, i.e., it could be the state that
+   * `!#scrolrInited`, `#scrolr` are not set.
    *
    * @final
    * @headconst @param scrolr_x
    */
-  initScrolr(scrolr_x: Scrolr<C>) {
+  initScrolr(scrolr_x: Scrolr<C>): void {
     /*#static*/ if (INOUT) {
       assert(!this.#scrolrInited);
     }
@@ -180,7 +190,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
    *
    * @const @param lo_x act as a verifier if any
    */
-  syncLayout(lo_x?: Required<SetLayoutP>) {
+  syncLayout(lo_x?: SetLayoutP) {
     /*#static*/ if (INOUT) {
       assert(!lo_x?.writingMode || lo_x.writingMode === this.writingMode);
     }
@@ -246,7 +256,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
    * Also update `#clientHigt`, `#scrollHigt`
    * @final
    */
-  readonly refresh = () => {
+  readonly refreshScronr = (): void => {
     // console.log(`%crun here: refresh()`, `color:${LOG_cssc.runhere}`);
     if (!this.el$.isConnected || !this.#scrolrInited) return;
 
@@ -280,7 +290,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   #refresh_to: number | undefined;
   toRefresh() {
     clearTimeout(this.#refresh_to);
-    this.#refresh_to = setTimeout(this.refresh, 500);
+    this.#refresh_to = setTimeout(this.refreshScronr, 500);
   }
 
   readonly #resizob = new ResizeObserver(this._onResiz);
@@ -289,13 +299,13 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   private _onResiz() {
     /*#static*/ if (_TRACE && RESIZ) {
       console.log(
-        `%c${global.indent}>>>>>>> ${this._type_id}._onResiz() >>>>>>>`,
+        `%c${global.indent}>>>>>>> ${this._type_id_}._onResiz() >>>>>>>`,
         `color:${LOG_cssc.resiz}`,
       );
     }
     if (!this.el$.isConnected || !this.#scrolrInited) return;
 
-    this.refresh();
+    this.refreshScronr();
   }
 
   /** `in( this.#scrolrInited )` */
@@ -326,7 +336,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   private _onWheel(evt_x: WheelEvent) {
     // /*#static*/ if (_TRACE) {
     //   console.log(
-    //     `${global.indent}>>>>>>> ${this._type_id}._onWheel(`,
+    //     `${global.indent}>>>>>>> ${this._type_id_}._onWheel(`,
     //     evt_x._repr,
     //     `) >>>>>>>`,
     //   );

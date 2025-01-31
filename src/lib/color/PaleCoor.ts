@@ -6,7 +6,7 @@
 import { z } from "@zod";
 import { INOUT } from "../../global.ts";
 import { Moo } from "../Moo.ts";
-import type { id_t, int, uint } from "../alias.ts";
+import type { id_t, uint } from "../alias.ts";
 import { type Less, SortedArray } from "../util/SortedArray.ts";
 import { assert, warn } from "../util/trace.ts";
 import { createColr, csscLess, csscname } from "./Colr.ts";
@@ -49,6 +49,7 @@ type QM_ = [ColranQ | undefined, Cssc | ColrFn];
 export class PaleCoor extends Moo<PaleCoor> {
   static #ID = 0 as id_t;
   override readonly id = ++PaleCoor.#ID as id_t;
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
    * The same as `PaleCoorRaw.raw` if it's not `undefined`
@@ -74,7 +75,7 @@ export class PaleCoor extends Moo<PaleCoor> {
 
   readonly modified_mo = new Moo({
     val: false,
-    _name: `PaleCoor_${this.id}.modified_mo`,
+    _name_: `PaleCoor_${this.id}.modified_mo`,
   });
   // /** For `qm_a` and `Cssc | ColrFn` part. Not for `ColranQ` part. */
   // #modified = false;
@@ -117,9 +118,7 @@ export class PaleCoor extends Moo<PaleCoor> {
   #iQM_1 = -1;
   readonly mapped_c = csscname("red");
 
-  /**
-   * @const @param raw_x
-   */
+  /** @const @param raw_x */
   constructor(raw_x: PaleCoorRaw) {
     super({ val: null as any });
 
@@ -141,20 +140,19 @@ export class PaleCoor extends Moo<PaleCoor> {
       }
     }
 
-    this.sample().update().set(this);
+    this.sample().update().setMoo(this);
   }
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   #upR = () => {
-    this.update().refresh();
+    this.update().refreshMoo();
   };
 
   #onQModified = (_x: boolean) => {
     this.modified_mo.val = _x;
   };
 
-  /**
-   * No business with `#iAx`
-   */
+  /** No business with `#iAx` */
   getMapped(iQM_x = this.#iQM): Cssc | ColrFn {
     return this.qm_sa[iQM_x][1];
   }
@@ -266,11 +264,9 @@ export class PaleCoor extends Moo<PaleCoor> {
     if (!contain_0) this.mapped_c.setByCssc("red");
     return this;
   }
-  /*49-----------------------------------------*/
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  /**
-   * @const @param iQM_x
-   */
+  /** @const @param iQM_x */
   toggleQM(iQM_x: uint): boolean {
     /*#static*/ if (INOUT) {
       assert(0 <= iQM_x && iQM_x < this.nQM);
@@ -394,9 +390,7 @@ export class PaleCoor extends Moo<PaleCoor> {
     return resample_;
   }
 
-  /**
-   * @const @param iAx_x
-   */
+  /** @const @param iAx_x */
   deleteAx(iAx_x: uint): boolean {
     /*#static*/ if (INOUT) {
       assert(0 <= iAx_x && iAx_x < this.dim);
@@ -425,10 +419,10 @@ export class PaleCoor extends Moo<PaleCoor> {
 
     return resample_;
   }
-  /*49-----------------------------------------*/
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   toJSON(): PaleCoorRaw {
-    this.modified_mo.set(false); //!
+    this.modified_mo.setMoo(false); //!
     return {
       axes: this.axes.length ? this.axes : undefined,
       qm_a: this.qm_sa as any,

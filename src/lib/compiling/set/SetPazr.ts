@@ -51,7 +51,7 @@ export class SetPazr extends Pazr<SetTok> {
 
     if (this.drtSn_$) {
       this.visit(this.drtSn_$);
-      if (!this.newSn_$ || this.newSn_$.isErr || !this.reachRigtBdry()) {
+      if (!this.newSn_$ || this.newSn_$.isErr || !this.reachPazBdry$()) {
         this.enlargeBdriesTo_$(this.drtSn_$.parent_$!);
         this.strtPazTk$ = this.strtPazTk$.nextToken_$!; //!
         if (this.drtSn_$) this.visit(this.drtSn_$);
@@ -81,17 +81,17 @@ export class SetPazr extends Pazr<SetTok> {
    */
   @traceOut(_TRACE)
   pazSet_$(_x = {} as PazSet_): Set {
+    assert(this.#valve--, `Loop ${SetPazr.#VALVE} times`);
     /*#static*/ if (_TRACE) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.pazSet_$() >>>>>>>`,
+        `${global.indent}>>>>>>> ${this._type_id_}.pazSet_$() >>>>>>>`,
       );
     }
     (_x as any).oprec ??= Oprec.lowest;
     (_x as any).paren ??= 0;
     _x.selfParen ??= 0;
-    assert(this.#valve--, `Loop ${SetPazr.#VALVE} times`);
     /*#static*/ if (INOUT) {
-      assert(!this.reachRigtBdry());
+      assert(!this.reachPazBdry$());
       if (!_x.lhs) assert(_x.selfParen === 0);
     }
     if (!_x.lhs) {
@@ -102,7 +102,7 @@ export class SetPazr extends Pazr<SetTok> {
       //   do {
       //     ++_x.selfParen;
       //     this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
-      //     if (this.reachRigtBdry()) {
+      //     if (this.reachPazBdry$()) {
       //       snt = this.strtPazTk$ = curTk_save;
       //       _x.lhs = new Set(snt, 0);
       //       _x.lhs.setErr(Err.lack_of_closing_paren);
@@ -125,7 +125,7 @@ export class SetPazr extends Pazr<SetTok> {
       //     break;
       // }
       // _x.lhs = new Set(snt, _x.selfParen);
-      // if (this.reachRigtBdry()) {
+      // if (this.reachPazBdry$()) {
       //   if (_x.selfParen) {
       //     _x.lhs.setErr(Err.lack_of_closing_paren);
       //   }
@@ -133,7 +133,7 @@ export class SetPazr extends Pazr<SetTok> {
       //   return _x.lhs;
       // }
       this.#pazLhs(_x as Required<PazSet_>);
-      if (this.reachRigtBdry()) return _x.lhs!;
+      if (this.reachPazBdry$()) return _x.lhs!;
 
       const p_ = this.#pazClozParen(_x as Required<PazSet_>);
       if (_x.lhs!.isErr) this.errSn_sa$.add(_x.lhs!);
@@ -160,7 +160,7 @@ export class SetPazr extends Pazr<SetTok> {
   pazRelKey_$(): Rel | Key | SetTk {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.pazRelKey_$() >>>>>>>`,
+        `${global.indent}>>>>>>> ${this._type_id_}.pazRelKey_$() >>>>>>>`,
       );
     }
     let srcSn: Key | SetTk | undefined;
@@ -181,7 +181,7 @@ export class SetPazr extends Pazr<SetTok> {
         this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
         break;
     }
-    if (this.reachRigtBdry() || this.strtPazTk$.value !== SetTok.joiner) {
+    if (this.reachPazBdry$() || this.strtPazTk$.value !== SetTok.joiner) {
       if (unexpTk_a.length) {
         /*#static*/ if (INOUT) {
           assert(unexpTk_a.length === 1 && !srcSn);
@@ -194,7 +194,7 @@ export class SetPazr extends Pazr<SetTok> {
     const jnr_1 = this.strtPazTk$;
     this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
     let ret: Rel | undefined;
-    if (this.reachRigtBdry()) {
+    if (this.reachPazBdry$()) {
       ret = new Rel(srcSn, jnr_1);
       unexpTk_a.forEach((tk_y) => {
         ret!.setErr(`${Err.unexpected_token_for_rel}: ${tk_y}`);
@@ -222,7 +222,7 @@ export class SetPazr extends Pazr<SetTok> {
         this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
         break;
     }
-    if (this.reachRigtBdry()) {
+    if (this.reachPazBdry$()) {
       ret = new Rel(srcSn, jnr_1, relSn, jnr_2);
       unexpTk_a.forEach((tk_y) => {
         ret!.setErr(`${Err.unexpected_token_for_rel}: ${tk_y}`);
@@ -236,7 +236,7 @@ export class SetPazr extends Pazr<SetTok> {
     }
     if (jnr_2) {
       this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
-      if (this.reachRigtBdry()) {
+      if (this.reachPazBdry$()) {
         ret = new Rel(srcSn, jnr_1, relSn, jnr_2, undefined);
         unexpTk_a.forEach((tk_y) => {
           ret!.setErr(`${Err.unexpected_token_for_rel}: ${tk_y}`);
@@ -273,7 +273,7 @@ export class SetPazr extends Pazr<SetTok> {
   pazKey_$(): Key {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.pazKey_$() >>>>>>>`,
+        `${global.indent}>>>>>>> ${this._type_id_}.pazKey_$() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -301,7 +301,7 @@ export class SetPazr extends Pazr<SetTok> {
           : this.pazQuotkeySeq_$(),
       );
       if (
-        this.reachRigtBdry() ||
+        this.reachPazBdry$() ||
         this.strtPazTk$.value !== SetTok.fuzykey &&
           this.strtPazTk$.value !== SetTok.quotkey
       ) break;
@@ -314,7 +314,7 @@ export class SetPazr extends Pazr<SetTok> {
   pazFuzykeySeq_$(): FuzykeySeq {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.pazFuzykeySeq_$() >>>>>>>`,
+        `${global.indent}>>>>>>> ${this._type_id_}.pazFuzykeySeq_$() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -335,7 +335,7 @@ export class SetPazr extends Pazr<SetTok> {
     do {
       tk_a.push(this.strtPazTk$);
       this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
-      if (this.reachRigtBdry() || this.strtPazTk$.value !== SetTok.fuzykey) {
+      if (this.reachPazBdry$() || this.strtPazTk$.value !== SetTok.fuzykey) {
         break;
       }
     } while (--valve);
@@ -347,7 +347,7 @@ export class SetPazr extends Pazr<SetTok> {
   pazQuotkeySeq_$(): QuotkeySeq {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.pazQuotkeySeq_$() >>>>>>>`,
+        `${global.indent}>>>>>>> ${this._type_id_}.pazQuotkeySeq_$() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -368,7 +368,7 @@ export class SetPazr extends Pazr<SetTok> {
     do {
       tk_a.push(this.strtPazTk$);
       this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
-      if (this.reachRigtBdry() || this.strtPazTk$.value !== SetTok.quotkey) {
+      if (this.reachPazBdry$() || this.strtPazTk$.value !== SetTok.quotkey) {
         break;
       }
     } while (--valve);
@@ -396,7 +396,7 @@ export class SetPazr extends Pazr<SetTok> {
       do {
         ++_x.selfParen;
         this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
-        if (this.reachRigtBdry()) {
+        if (this.reachPazBdry$()) {
           snt = this.strtPazTk$ = curTk_save;
           _x.lhs = new Set(snt, 0);
           _x.lhs.setErr(Err.lack_of_closing_paren);
@@ -419,7 +419,7 @@ export class SetPazr extends Pazr<SetTok> {
         break;
     }
     _x.lhs = new Set(snt, _x.selfParen);
-    if (this.reachRigtBdry()) {
+    if (this.reachPazBdry$()) {
       if (_x.selfParen) {
         _x.lhs.setErr(Err.lack_of_closing_paren);
       }
@@ -440,7 +440,7 @@ export class SetPazr extends Pazr<SetTok> {
     const op_ = this.strtPazTk$;
     this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
     let sn_: Subtract | Intersect | Union | BinaryErr;
-    if (this.reachRigtBdry()) {
+    if (this.reachPazBdry$()) {
       sn_ = new B_x(_x.lhs, op_, undefined);
     } else {
       const rhs = this.pazSet_$({ oprec: B_x.oprec, paren: _x.selfParen });
@@ -449,7 +449,7 @@ export class SetPazr extends Pazr<SetTok> {
     if (sn_.isErr) this.errSn_sa$.add(sn_);
 
     _x.lhs = new Set(sn_, _x.selfParen);
-    if (this.reachRigtBdry()) {
+    if (this.reachPazBdry$()) {
       if (_x.selfParen) {
         _x.lhs.setErr(Err.lack_of_closing_paren);
       }
@@ -490,7 +490,7 @@ export class SetPazr extends Pazr<SetTok> {
       }
       this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
     } while (
-      !this.reachRigtBdry() &&
+      !this.reachPazBdry$() &&
       this.strtPazTk$.value === SetTok.paren_cloz
     );
     if (ret) {
@@ -504,7 +504,7 @@ export class SetPazr extends Pazr<SetTok> {
       lhs.paren_$ = lhs.paren + paren_1;
       lhs.setErr(Err.lack_of_opening_paren);
     }
-    if (this.reachRigtBdry()) {
+    if (this.reachPazBdry$()) {
       if (ret) {
         lhs.paren_$ = lhs.paren + ret;
         lhs.setErr(Err.lack_of_closing_paren);

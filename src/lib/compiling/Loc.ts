@@ -16,12 +16,13 @@ import type {
 } from "../alias.ts";
 import { assert } from "../util/trace.ts";
 import { BufrDir } from "../alias.ts";
-import type { Bidir } from "./alias.ts";
+import type { Bidir } from "../Bidi.ts";
 import type { Line } from "./Line.ts";
 import { Ranval } from "./Ranval.ts";
 import type { Bufr } from "./Bufr.ts";
 import { Factory } from "../util/Factory.ts";
 import { LOG_cssc } from "../../alias.ts";
+import { Endpt } from "../alias.ts";
 /*80--------------------------------------------------------------------------*/
 
 export const enum LocCompared {
@@ -43,6 +44,7 @@ export type _BidirMap = BidirMap_;
 export class Loc {
   static #ID = 0 as id_t;
   readonly id = ++Loc.#ID as id_t;
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   line_$!: Line;
   get line() {
@@ -117,7 +119,7 @@ export class Loc {
    * @const @param loff_x
    */
   constructor(line_x: Line, loff_x?: loff_t) {
-    this.set(line_x, loff_x);
+    this.set_Loc(line_x, loff_x);
   }
   /**
    * @headconst @param bufr_x
@@ -134,7 +136,7 @@ export class Loc {
    * @headconst @param line_x
    * @const @param loff_x
    */
-  set(line_x: Line, loff_x?: loff_t): this {
+  set_Loc(line_x: Line, loff_x?: loff_t): this {
     this.line_$ = line_x;
     this.loff_$ = loff_x === undefined ? line_x.uchrLen : loff_x;
     this.#lcol = -1;
@@ -142,16 +144,16 @@ export class Loc {
     return this;
   }
   /** @final */
-  set_O(lidx_x: lnum_t, loff_x?: loff_t, bufr_x = this.bufr) {
+  set_Loc_O(lidx_x: lnum_t, loff_x?: loff_t, bufr_x = this.bufr) {
     /*#static*/ if (INOUT) {
       assert(bufr_x);
     }
     const line = bufr_x!.line(lidx_x);
-    return this.set(line, loff_x);
+    return this.set_Loc(line, loff_x);
   }
 
   /** @const */
-  dup() {
+  dup_Loc() {
     const ret = new Loc(this.line_$, this.loff_$);
     ret.tabsize$ = this.tabsize$;
     ret.#lcol = this.#lcol;
@@ -163,7 +165,7 @@ export class Loc {
    * @final
    * @const @param loc_x
    */
-  become(loc_x: Loc): this {
+  become_Loc(loc_x: Loc): this {
     this.line_$ = loc_x.line_$;
     this.loff_$ = loc_x.loff_$;
     this.tabsize$ = loc_x.tabsize$;
@@ -176,12 +178,9 @@ export class Loc {
     g_loc_fac.revoke(this);
   }
 
-  /**
-   * @final
-   * @const
-   */
-  using() {
-    return g_loc_fac.setLine(this.line_$).oneMore().become(this);
+  /** @const */
+  usingDup() {
+    return g_loc_fac.setLine(this.line_$).oneMore().become_Loc(this);
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -313,14 +312,14 @@ export class Loc {
 
   /** @primaryconst */
   peek_uchr(n_x: int, inline_x?: "inline"): UChr {
-    using loc = this.using();
+    using loc = this.usingDup();
     if (n_x >= 0) loc.forwn(n_x, inline_x);
     else loc.backn(-n_x, inline_x);
     return loc.uchr;
   }
   /** @primaryconst */
   peek_ucod(n_x: int, inline_x?: "inline"): uint16 {
-    using loc = this.using();
+    using loc = this.usingDup();
     if (n_x >= 0) loc.forwn(n_x, inline_x);
     else loc.backn(-n_x, inline_x);
     return loc.ucod;
@@ -486,7 +485,7 @@ export class Loc {
     if (hintLoff_x === this.loff_$) return this.#lcol = hintLcol_x;
 
     let ret = hintLcol_x;
-    using loc_ = this.using().set(this.line_$, hintLoff_x);
+    using loc_ = this.usingDup().set_Loc(this.line_$, hintLoff_x);
     for (; loc_.loff_$ < this.loff_$; ++loc_.loff_$) {
       if (loc_.ucod === /* "\t" */ 9) {
         ret += this.tabsize$ - ret % this.tabsize$;
@@ -505,7 +504,7 @@ export class Loc {
    * @const @param loc_x
    */
   lcolBy(loc_x: Loc): lcol_t {
-    using loc_ = loc_x.using();
+    using loc_ = loc_x.usingDup();
     if (loc_.#part) {
       loc_.#lcol -= loc_.#lcol % this.tabsize$;
       loc_.#part = false;
@@ -566,33 +565,45 @@ export class Loc {
    * @headconst @param bidirMap_x
    * @return effective or not
    */
-  visulFarleftenIn(bidirMap_x: BidirMap_, in_x?: "row"): boolean {
+  visulFarleftenIn(bidirMap_x: BidirMap_, row_x?: "row"): boolean {
     const bidi = bidirMap_x.get(this.line_$)!.bidi;
     const oldLoff = this.loff_$;
     this.loff_$ = bidi.visulFarleften(
-      in_x === "row" ? bidi.rowOf(this.loff_$) : undefined,
+      row_x ? bidi.rowOf(this.loff_$) : undefined,
     );
     return oldLoff !== this.loff_$;
   }
   /** @see {@linkcode visulFarleftenIn()} */
-  visulFarrigtenIn(bidirMap_x: BidirMap_, in_x?: "row"): boolean {
+  visulFarrigtenIn(bidirMap_x: BidirMap_, row_x?: "row"): boolean {
     const bidi = bidirMap_x.get(this.line_$)!.bidi;
     const oldLoff = this.loff_$;
     this.loff_$ = bidi.visulFarrigten(
-      in_x === "row" ? bidi.rowOf(this.loff_$) : undefined,
+      row_x ? bidi.rowOf(this.loff_$) : undefined,
     );
     return oldLoff !== this.loff_$;
   }
 
   /** @see {@linkcode visulFarleftenIn()} */
   visulLeftenIn(bidirMap_x: BidirMap_): boolean {
+    const DIR = this.dir;
+    let ln_1: Line | undefined;
+    //jjjj TOCLEANUP
+    // /* The case `atEol` does not go through Bidi, because it's not in `[0,$)`. */
+    // if (this.atEol && DIR === BufrDir.rtl) {
+    //   ln_1 = this.line.nextLine;
+    //   if (!ln_1) return false;
+
+    //   this.line_$ = ln_1;
+    //   this.visulFarrigtenIn(bidirMap_x);
+    //   return true;
+    // }
+
     const bidi = bidirMap_x.get(this.line_$)!.bidi;
     const ret = bidi.visulLeften(this.loff_$);
     this.loff_$ = bidi.lastLogal;
     if (ret) return true;
 
-    const DIR = this.dir;
-    const ln_1 = DIR === BufrDir.ltr ? this.line.prevLine : this.line.nextLine;
+    ln_1 = DIR === BufrDir.ltr ? this.line.prevLine : this.line.nextLine;
     if (!ln_1) return false;
 
     this.line_$ = ln_1;
@@ -601,13 +612,25 @@ export class Loc {
   }
   /** @see {@linkcode visulFarleftenIn()} */
   visulRigtenIn(bidirMap_x: BidirMap_): boolean {
+    const DIR = this.dir;
+    let ln_1: Line | undefined;
+    //jjjj TOCLEANUP
+    // /* The case `atEol` does not go through Bidi, because it's not in `[0,$)`. */
+    // if (this.atEol && DIR === BufrDir.ltr) {
+    //   ln_1 = this.line.nextLine;
+    //   if (!ln_1) return false;
+
+    //   this.line_$ = ln_1;
+    //   this.visulFarleftenIn(bidirMap_x);
+    //   return true;
+    // }
+
     const bidi = bidirMap_x.get(this.line_$)!.bidi;
     const ret = bidi.visulRigten(this.loff_$);
     this.loff_$ = bidi.lastLogal;
     if (ret) return true;
 
-    const DIR = this.dir;
-    const ln_1 = DIR === BufrDir.ltr ? this.line.nextLine : this.line.prevLine;
+    ln_1 = DIR === BufrDir.ltr ? this.line.nextLine : this.line.prevLine;
     if (!ln_1) return false;
 
     this.line_$ = ln_1;
@@ -617,14 +640,21 @@ export class Loc {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
-   * `in( !ret_x || ret_x && (i_0_x === 0 || i_0_x === 2) )`
    * @out @param ret_x
-   * @const @param i_0_x
+   * @const @param endpt_x
    */
-  toRanval(ret_x?: Ranval, i_0_x?: 0 | 2): Ranval {
+  toRanval(ret_x?: Ranval, endpt_x?: Endpt): Ranval {
+    /*#static*/ if (INOUT) {
+      assert(!ret_x || ret_x && endpt_x);
+    }
     if (ret_x) {
-      ret_x[i_0_x!] = this.lidx_1;
-      ret_x[i_0_x! + 1] = this.loff_$;
+      if (endpt_x === Endpt.focus) {
+        ret_x[0] = this.lidx_1;
+        ret_x[1] = this.loff_$;
+      } else if (endpt_x === Endpt.anchr) {
+        ret_x[2] = this.lidx_1;
+        ret_x[3] = this.loff_$;
+      }
     } else {
       ret_x = new Ranval(this.lidx_1, this.loff_$);
     }
@@ -658,7 +688,7 @@ class LocFac_ extends Factory<Loc> {
   }
 
   protected override reuseVal$(i_x: uint) {
-    return this.get(i_x).set(this.#line, 0);
+    return this.get(i_x).set_Loc(this.#line, 0);
   }
 }
 export const g_loc_fac = new LocFac_();

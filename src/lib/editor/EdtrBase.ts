@@ -4,7 +4,7 @@
  ******************************************************************************/
 
 import { LOG_cssc } from "../../alias.ts";
-import { _TRACE, DEV, global, INOUT, RESIZ } from "../../global.ts";
+import { _COLR, _TRACE, DEV, global, INOUT, RESIZ } from "../../global.ts";
 import { LastCb_i, Moo } from "../Moo.ts";
 import { Scrolr, Scronr } from "../Scronr.ts";
 import type { CSSStyle, id_t, lnum_t, ts_t, uint } from "../alias.ts";
@@ -17,12 +17,12 @@ import { div } from "../dom.ts";
 import { $cssstylesheet, $loff, $tail_ignored } from "../symbols.ts";
 import { Factory } from "../util/Factory.ts";
 import { SortedArray } from "../util/SortedArray.ts";
-import { assert } from "../util/trace.ts";
+import { assert, traceOut } from "../util/trace.ts";
 import { Caret, type CaretRvM } from "./Caret.ts";
-import { ELine } from "./ELine.ts";
-import type { ELineBase } from "./ELineBase.ts";
+import { ELineBase } from "./ELineBase.ts";
 import { ERan } from "./ERan.ts";
-import { EdtrMain_z, type EdtrType } from "./alias.ts";
+import type { EdtrType, FSRec } from "./alias.ts";
+import { EdtrMain_z } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
 
 export interface EdtrBaseCI extends CooInterface {
@@ -30,11 +30,12 @@ export interface EdtrBaseCI extends CooInterface {
   get writingMode(): WritingMode;
   get scrolr(): EdtrBaseScrolr;
 
-  /**
-   * `in( this.el$.isConnected )`
-   * @final
-   */
-  refresh(): void;
+  //jjjj TOCLEANUP
+  // /**
+  //  * `in( this.el$.isConnected )`
+  //  * @final
+  //  */
+  // refreshEdtrScronr(): void;
 
   // onRanvalChange(
   //   handler_x: MooHandler<Ranval>,
@@ -65,6 +66,7 @@ export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
   extends HTMLVCo<CI, HTMLDivElement> {
   static #ID = 0 as id_t;
   override readonly id = ++EdtrBase.#ID as id_t;
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   #scronr!: EdtrScronr<CI>;
   /** @final */
@@ -90,6 +92,14 @@ export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
     return this.#scronr?.writingMode ?? this.#writingMode;
   }
 
+  #lastView_ts = 0 as ts_t;
+  get lastView_ts() {
+    return this.#lastView_ts;
+  }
+  updateLastViewTs(): ts_t {
+    return this.#lastView_ts = Date.now_1();
+  }
+
   /** */
   constructor() {
     super(div());
@@ -98,12 +108,18 @@ export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
     this.#scronr = new EdtrScronr(this);
 
     /*#static*/ if (DEV) {
-      this.el$.id = this._type_id;
+      this.el$.id = this._type_id_;
     }
 
-    Object.assign(this.ci, {
-      refresh: () => this._refresh(),
-    } as EdtrBaseCI);
+    /* Some common settings here. May be overridden by `style$()`. */
+    this.assignStylo({
+      lineBreak: "loose",
+    });
+
+    //jjjj TOCLEANUP
+    // Object.assign(this.ci, {
+    //   refreshEdtrScronr: () => this._refreshEdtrScronr(),
+    // } as EdtrBaseCI);
     Reflect.defineProperty(this.ci, "writingMode_mo", {
       get: () => this._writingMode_mo,
     });
@@ -131,15 +147,17 @@ export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
       this.#scronr.el,
     );
 
-    this._writingMode_mo.set(this.#writingMode)
-      .registHandler((n_y) => {
+    this._writingMode_mo.setMoo(this.#writingMode)
+      .registHandler(() => {
         this.scrolr$
           .invalidate_bcr()
           .refreshCarets();
       }, { i: LastCb_i });
     this.#scronr.syncLayout();
 
-    new ResizeObserver(this.#scronr.refresh).observe(this.scrolr$.main_el);
+    new ResizeObserver(this.#scronr.refreshScronr).observe(
+      this.scrolr$.main_el,
+    );
 
     /*#static*/ if (DEV) this.#scronr.observeTheme(); //!
 
@@ -162,7 +180,7 @@ export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
       ? WritingMode.vlr
       : WritingMode.htb;
     if (this.#inited) {
-      this.#scronr.writingMode_mo.set(this.#writingMode);
+      this.#scronr.writingMode_mo.setMoo(this.#writingMode);
       this.#scronr.syncLayout();
     }
 
@@ -176,8 +194,15 @@ export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
    * `in( this.el$.isConnected )`
    * @final
    */
-  _refresh() {
-    this.#scronr.refresh();
+  _refreshEdtrScronr() {
+    this.#scronr.refreshScronr();
+  }
+
+  /** @final */
+  _refreshEdtr(): this {
+    this.scrolr$.refreshEdtrScrolr()
+      .coo._refreshEdtrScronr();
+    return this;
   }
 }
 /*64----------------------------------------------------------*/
@@ -221,6 +246,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   extends Scrolr<EdtrBase<CI>> {
   static #ID = 0 as id_t;
   override readonly id = ++EdtrBaseScrolr.#ID as id_t;
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   readonly type: EdtrType;
 
@@ -253,7 +279,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     if (!this.#bcr) {
       this.#bcr = this.el$.getBoundingClientRect();
 
-      this.bufr$.lastView_ts = Date.now() as ts_t; //!
+      this.coo$.updateLastViewTs(); //!
     }
     return this.#bcr;
   }
@@ -319,12 +345,14 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       }
     }
   }
-  readonly active_mo = new Moo({ val: false });
+
+  readonly active_mo = new Moo({ val: false, info: this as EdtrBaseScrolr });
   get active() {
     return this.active_mo.val;
   }
   /* ~ */
 
+  //jjjj
   /* edting_mo */
   readonly edting_mo = new Moo({ val: true });
   get edting() {
@@ -343,9 +371,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     this.type = type_x;
     this.caret_a$ = [Caret.create(host_x.coo)];
 
-    /*#static*/ if (DEV) {
-      this.el$.id = this._type_id;
-    }
+    this.el$.id = this._type_id_;
     // this.el$.id = "editor-selection";
     this.assignAttro({
       contenteditable: "true",
@@ -354,37 +380,38 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
 
       autocomplete: "off",
       autocorrect: "off",
-    });
-    this.assignStylo({
+    }).assignStylo({
       position: "relative",
       // zIndex: 0,
       isolation: "isolate", //!
-      overflow: "scroll",
       // writingMode: "vertical-rl",
 
       // border: "2px solid",
       // backgroundColor: "#fff",
       outlineStyle: "none",
 
-      whiteSpace: "break-spaces",
+      whiteSpace: "break-spaces", // Ref. https://stackoverflow.com/questions/64699828/css-property-white-space-example-for-break-spaces
       // wordBreak: "break-all",
       // overflowWrap: "anywhere",
-      lineBreak: "anywhere",
+      // lineBreak: "loose",
       // fontFamily: fontFamily_x,
       // fontSize: fontSize_x,
 
       caretColor: "transparent",
-      userSelect: "none",
+      // userSelect: "text",
     });
     document[$cssstylesheet].insertRule(
-      // `#${this.el$.id} ::selection { background-color: transparent; }`,
-      `#${this.el$.id} ::selection { display: none; }`,
+      /*#static*/ _COLR
+        ? `#${this.el$.id} ::selection { background-color: yellow; }`
+        : `#${this.el$.id} ::selection { display: none; }`,
     );
 
     // Object.assign( this.main_el, {
     //   inputMode: "none",
     // });
-    this.main_el.assignStylo({
+    this.main_el.assignAttro({
+      // contenteditable: "true",
+    }).assignStylo({
       position: "relative",
       zIndex: EdtrMain_z,
       //
@@ -439,7 +466,8 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     //   this.ci.offAlignChange = (handler_x) =>
     //     this.dir_mo$.removeHandler(handler_x);
 
-    this.on("pointerup", this.#onPointerUp);
+    this.on("pointerup", this.#onPointerUp.bind(this));
+    // this.host.slidrB.on("pointerdown", () => this.active = false);
   }
 
   //kkkk cache `ELineBase`?
@@ -447,7 +475,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
    * `in( this.el$.isConnected )`
    * @final
    */
-  reset(): this {
+  reset_EdtrBaseScrolr(): this {
     this.main_el.removeAllChild();
     this.eline_m.clear();
     return this;
@@ -495,7 +523,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       ctnr = ctnr_a_x[i];
       if (ctnr) {
         // const out_o = {};
-        // const bline = ELine.getBLine( ctnr, out_o );
+        // const bline = ELineBase.getBLine( ctnr, out_o );
         // const offset = out_o.np === NodeInELine.indent ?
         //   ctnr.textContent.length :
         //   bline.uchrLen - out_o.vuu.indent;
@@ -546,8 +574,8 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     const offs_0 = range.startOffset;
     const offs_1 = range.endOffset;
 
-    const bln_0 = ELine.getBLine(ctnr_0);
-    const bln_1 = ELine.getBLine(ctnr_1);
+    const bln_0 = ELineBase.getBLine(ctnr_0);
+    const bln_1 = ELineBase.getBLine(ctnr_1);
     const bloff_1 = (ctnr_1 as Text).loff(offs_1);
 
     let ctnr = ctnr_0;
@@ -633,17 +661,20 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   }
 
   /**
-   * Can be useful after images loaded or errored asyc'ly
+   * `refreshCarets()` vs `refresh()` is in essence
+   * `Caret.draw_$()` vs `Caret.shadowShow()`, where `draw_$()` does not care
+   * about show-hide-things, nor does it update `Caret.#eran` or
+   * `Caret.#fat_eran`.
    * @final
    */
   refreshCarets() {
-    /* In reverse order to make sure that the main caret is handled last */
+    /* In reverse order to make sure that the main caret is handled lastly */
     for (let i = this.caret_a$.length; i--;) {
       const caret = this.caret_a$[i];
       if (caret.active && caret.shown) {
-        const k_ = caret.keepVLInlineOnce_$;
+        const k_ = caret.keepInlineOnce_$;
         caret.draw_$();
-        caret.keepVLInlineOnce_$ = k_;
+        caret.keepInlineOnce_$ = k_;
       }
     }
   }
@@ -653,7 +684,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
 
     /*#static*/ if (_TRACE && RESIZ) {
       console.log(
-        `%c${global.indent}>>>>>>> ${this._type_id}.#onResiz() >>>>>>>`,
+        `%c${global.indent}>>>>>>> ${this._type_id_}.#onResiz() >>>>>>>`,
         `color:${LOG_cssc.resiz}`,
       );
     }
@@ -662,53 +693,82 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     /*#static*/ if (_TRACE && RESIZ) global.outdent;
     return;
   };
-  _onResiz() {
-    return this.#onResiz();
+  // _onResiz_() {
+  //   return this.#onResiz();
+  // }
+
+  /**
+   * Cf. {@linkcode refreshCarets()}\
+   * `in( this.el$.isConnected )`
+   * @final
+   */
+  refreshEdtrScrolr(): this {
+    // /*#static*/ if (_TRACE) {
+    //   console.log(`${global.indent}>>>>>>> ${this._type_id_}.refresh() >>>>>>>`);
+    // }
+    // this.reset$();
+
+    // createSetELines(this, this.bufr$.frstLine, this.bufr$.lastLine);
+    // /*#static*/ if (DEV) {
+    //   ++g_count.newVuu;
+    // }
+    // this.bufr$.refresh();
+
+    for (const caret of this.caret_a$) {
+      if (caret.realBody?.shown) {
+        caret.shadowShow();
+      } else {
+        caret.hideAll();
+      }
+    }
+    // /*#static*/ if (_TRACE && RESIZ) global.outdent;
+    return this;
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
    * @headconst @param eran_x
+  //jjjj TOCLEANUP
   //  * @out @param outF_o
   //  * @out @param outA_o
-  //  * @return fill and return caret.ranval_$
+  //  * @return fill and return caret.rv_repl_$
    */
   protected getRanvalBy$(eran_x: ERan, ret_x?: Ranval): Ranval {
     ret_x ??= new Ranval(0 as lnum_t, 0);
-
-    ret_x.focusLidx = ELine.getBLine(eran_x.focusCtnr).lidx_1;
+    ret_x.focusLidx = ELineBase.getBLine(eran_x.focusCtnr).lidx_1;
     ret_x.focusLoff = eran_x.focusLoff;
     if (eran_x.collapsed) {
       ret_x.collapseToFocus();
     } else {
-      ret_x.anchrLidx = ELine.getBLine(eran_x.anchrCtnr).lidx_1;
+      ret_x.anchrLidx = ELineBase.getBLine(eran_x.anchrCtnr).lidx_1;
       ret_x.anchrLoff = eran_x.anchrLoff;
     }
-
     return ret_x;
   }
 
-  /** @headconst @param rv_x will be corrected */
-  abstract getEFocusBy_$(rv_x: Ranval, ret_x?: ERan): ERan;
-  /** @headconst @param rv_x will be corrected */
-  abstract getEAnchrBy_$(rv_x: Ranval, out_x: ERan): void;
+  /**
+   * Assign `ret_x.#focusELoc` only.
+   * @headconst @param rv_x will be corrected
+   */
+  abstract getEFocusOf_$(rv_x: Ranval, ret_x?: ERan): ERan;
+  /**
+   * Assign `ret_x.#anchrELoc` only.
+   * @headconst @param rv_x will be corrected
+   */
+  abstract getEAnchrOf_$(rv_x: Ranval, out_x: ERan): void;
   /**
    * @final
    * @headconst @param rv_x will be corrected
    */
-  getERanBy_$(rv_x: Ranval, ret_x?: ERan) {
+  getERanOf_$(rv_x: Ranval, ret_x?: ERan) {
     // console.log(rv_x);
-    ret_x = this.getEFocusBy_$(rv_x, ret_x);
-    this.getEAnchrBy_$(rv_x, ret_x);
+    ret_x = this.getEFocusOf_$(rv_x, ret_x);
+    this.getEAnchrOf_$(rv_x, ret_x);
     return ret_x;
   }
 
-  /**
-   * Get `rec` of the "fat" rather than the "thin"
-   * @headconst @param rv_x will be corrected
-   * @param eran_x could be modified if any
-   */
-  abstract anchrRecOf_$(rv_x: Ranval, eran_x?: ERan): DOMRect;
+  /** @headconst @param rv_x will be modified */
+  abstract anchrRecOf_$(rv_x: Ranval): FSRec;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   // /** @final */
@@ -739,16 +799,15 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   //   return ret;
   // }
 
-  #onPointerUp = () => {
+  @traceOut(_TRACE)
+  #onPointerUp() {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.#onPointerUp() >>>>>>>`,
+        `${global.indent}>>>>>>> ${this._type_id_}.#onPointerUp() >>>>>>>`,
       );
     }
     this.active = true;
-    /*#static*/ if (_TRACE) global.outdent;
-    return;
-  };
+  }
 }
 /*80--------------------------------------------------------------------------*/
 

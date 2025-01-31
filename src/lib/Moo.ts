@@ -9,17 +9,17 @@ import { assert } from "./util/trace.ts";
 /*80--------------------------------------------------------------------------*/
 
 export type MooEq<T extends {} | null> = (a: T, b: T) => boolean;
-export type MooHandler<T extends {} | null, D = any> = (
+export type MooHandler<T extends {} | null, D = any, I = any> = (
   newval: T,
   oldval: T,
   data?: D,
-  // moo?: Moo<T, D>,
+  info?: I,
 ) => void;
 
 // type IndexedMooHandler< T > = [ uint, MooHandler<T> ];
 // type SortedIndexedMooHandler< T > = SortedArray< IndexedMooHandler<T> >;
-interface MooHandlerExt<T extends {} | null, D = any> {
-  handler: MooHandler<T, D>;
+interface MooHandlerExt<T extends {} | null, D = any, I = any> {
+  handler: MooHandler<T, D, I>;
   match_newval: T | undefined;
   match_oldval: T | undefined;
   forcing: boolean;
@@ -29,14 +29,14 @@ interface MooHandlerExt<T extends {} | null, D = any> {
  * primaryconst: const exclude elements of `#_a`
  * @final
  */
-class MooHandlerDB<T extends {} | null, D = any> {
+class MooHandlerDB<T extends {} | null, D = any, I = any> {
   readonly #eq: MooEq<T>;
 
   /**
    * Soted by `index_x` ascendingly
    * Same `index_x` elements are sorted by their adding order.
    */
-  readonly #_a: MooHandlerExt<T, D>[] = [];
+  readonly #_a: MooHandlerExt<T, D, I>[] = [];
   get len() {
     return this.#_a.length;
   }
@@ -46,9 +46,7 @@ class MooHandlerDB<T extends {} | null, D = any> {
     return this.#nforce > 0;
   }
 
-  /**
-   * @headconst @param eq_x
-   */
+  /** @headconst @param eq_x */
   constructor(eq_x: MooEq<T>) {
     this.#eq = eq_x;
   }
@@ -62,7 +60,7 @@ class MooHandlerDB<T extends {} | null, D = any> {
    * @return `true` if added, `false` if not.
    */
   add(
-    h_x: MooHandler<T, D>,
+    h_x: MooHandler<T, D, I>,
     match_n_x?: T,
     match_o_x?: T,
     forcing_x = false,
@@ -97,7 +95,7 @@ class MooHandlerDB<T extends {} | null, D = any> {
    * @headconst @param match_o_x
    * @return `true` if deleted, `false` if not
    */
-  del(h_x: MooHandler<T, D>, match_n_x?: T, match_o_x?: T) {
+  del(h_x: MooHandler<T, D, I>, match_n_x?: T, match_o_x?: T) {
     const i = this.#_a.findIndex((ext) => ext.handler === h_x);
     if (i < 0) return false;
 
@@ -121,11 +119,9 @@ class MooHandlerDB<T extends {} | null, D = any> {
   #newval: T | undefined;
   #oldval: T | undefined;
   #gforce: boolean | undefined;
-  #got: MooHandler<T, D>[] = [];
-  /**
-   * Get a sub-array of `#_a`
-   */
-  get(n_x: T, o_x: T, gforce_x: boolean) {
+  #got: MooHandler<T, D, I>[] = [];
+  /** Get a sub-array of `#_a` */
+  get(n_x: T, o_x: T, gforce_x: boolean): MooHandler<T, D, I>[] {
     if (
       this.#got.length &&
       this.#newval !== undefined && this.#eq(this.#newval, n_x) &&
@@ -160,12 +156,13 @@ class MooHandlerDB<T extends {} | null, D = any> {
   }
 }
 
-type MooCtorP_<T extends {} | null> = {
+type MooCtorP_<T extends {} | null, I = any> = {
   val: T;
   eq_?: MooEq<T>;
+  info?: I | undefined;
   active?: boolean;
   forcing?: boolean;
-  _name?: string;
+  _name_?: string;
 };
 
 export const FrstCb_i = -100;
@@ -200,10 +197,11 @@ type OnO_ = {
  * `Moo` instance concerns about one value, whether it changes or not.\
  * `Moo` instance stores many callbacks.
  */
-export class Moo<T extends {} | null, D = any> {
+export class Moo<T extends {} | null, D = any, I = any> {
   static #ID = 0 as id_t;
   readonly id = ++Moo.#ID as id_t;
-  readonly name: string | undefined;
+  readonly _name_: string | undefined;
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   readonly #initval: T;
   readonly #eq: MooEq<T>;
@@ -223,7 +221,7 @@ export class Moo<T extends {} | null, D = any> {
 
   #handler_db_: MooHandlerDB<T, D> | undefined;
   get #handler_db() {
-    return this.#handler_db_ ??= new MooHandlerDB<T, D>(this.#eq);
+    return this.#handler_db_ ??= new MooHandlerDB<T, D, I>(this.#eq);
   }
   get nCb() {
     return this.#handler_db_ ? this.#handler_db_.len : 0;
@@ -254,33 +252,38 @@ export class Moo<T extends {} | null, D = any> {
     return this;
   }
 
+  readonly #info;
+
   constructor({
     val,
     eq_ = (a: T, b: T) => a === b,
+    info,
     active = false,
     forcing = false,
-    _name,
-  }: MooCtorP_<T>) {
+    _name_,
+  }: MooCtorP_<T, I>) {
     this.#initval = val;
     this.#eq = eq_;
+    this.#info = info;
     this.#active = active;
     this.#forcing = forcing;
-    this.name = _name;
+    this._name_ = _name_;
 
-    this.reset();
+    this.reset_Moo();
   }
 
   /**
    * Not invoking any callbacks
+   * @final
    */
-  set(val: T): this {
+  setMoo(val: T): this {
     this.#val = this.#newval = val;
     return this;
   }
 
   /** @final */
-  reset(): this {
-    this.set(this.#initval);
+  reset_Moo(): this {
+    this.setMoo(this.#initval);
     if (this.nCb) {
       this.#handler_db_ = undefined;
       //! Do not `#handler_db_.clear()` because `#handler_db_` could be shared.
@@ -296,7 +299,7 @@ export class Moo<T extends {} | null, D = any> {
    * @final
    */
   registHandler(
-    h_x: MooHandler<T, D>,
+    h_x: MooHandler<T, D, I>,
     { n, o, f, i = 0 } = {} as RegistHandlerO_<T>,
   ) {
     /*#static*/ if (INOUT) {
@@ -306,7 +309,7 @@ export class Moo<T extends {} | null, D = any> {
     // console.log( `this.#handler_db.size=${this.#handler_db.size}` );
   }
   /** @final */
-  removeHandler(h_x: MooHandler<T, D>, { n, o } = {} as RemoveHandlerO_<T>) {
+  removeHandler(h_x: MooHandler<T, D, I>, { n, o } = {} as RemoveHandlerO_<T>) {
     this.#handler_db.del(h_x, n, o);
     // console.log( `this.#handler_db.size=${this.#handler_db.size}` );
   }
@@ -315,7 +318,7 @@ export class Moo<T extends {} | null, D = any> {
    * @headconst @param h_x
    * @h2ndconst @param o_x
    */
-  registOnceHandler(h_x: MooHandler<T, D>, o_x?: RegistHandlerO_<T>) {
+  registOnceHandler(h_x: MooHandler<T, D, I>, o_x?: RegistHandlerO_<T>) {
     const wrap_ = (n_y: T, o_y: T, d_y?: D) => {
       h_x(n_y, o_y, d_y);
       this.removeHandler(wrap_, o_x);
@@ -327,25 +330,26 @@ export class Moo<T extends {} | null, D = any> {
    * Force `match_n_x`, ignore `match_o_x`
    * @final
    */
-  on(n_x: T, h_x: MooHandler<T, D>, { f, i = 0 } = {} as OnO_) {
+  on(n_x: T, h_x: MooHandler<T, D, I>, { f, i = 0 } = {} as OnO_) {
     this.registHandler(h_x, { n: n_x, f, i });
   }
   /**
    * Force `match_n_x`, ignore `match_o_x`
    * @final
    */
-  off(n_x: T, h_x: MooHandler<T, D>) {
+  off(n_x: T, h_x: MooHandler<T, D, I>) {
     this.removeHandler(h_x, { n: n_x });
   }
   /**
    * Force `match_n_x`, ignore `match_o_x`
    * @final
    */
-  once(n_x: T, h_x: MooHandler<T, D>, { f, i = 0 } = {} as OnO_) {
+  once(n_x: T, h_x: MooHandler<T, D, I>, { f, i = 0 } = {} as OnO_) {
     this.registOnceHandler(h_x, { n: n_x, f, i });
   }
 
   static _count = 0;
+  /** @primaryconst @param n_x only potentially changed by  `#eq` */
   set val(n_x: T) {
     if (
       this.#eq(n_x, this.#val) &&
@@ -360,7 +364,7 @@ export class Moo<T extends {} | null, D = any> {
     if (this.#active) this.#val = n_x;
     this.#handler_db.get(n_x, this.#oldval, this.#forcing_)
       .forEach((h_y) => {
-        h_y(n_x, this.#oldval, this.#data);
+        h_y(n_x, this.#oldval, this.#data, this.#info);
         // /*#static*/ if (DEV) Moo._count += 1;
       });
     this.#val = n_x;
@@ -371,16 +375,16 @@ export class Moo<T extends {} | null, D = any> {
 
     // /*#static*/ if (DEV) {
     //   console.log(
-    //     `[${this.name ?? `Moo_${this.id}`}]\t\tMoo._count = ${Moo._count}`,
+    //     `[${this._name_ ?? `Moo_${this.id}`}]\t\tMoo._count = ${Moo._count}`,
     //   );
     // }
   }
 
-  refresh() {
+  refreshMoo() {
     this.force().val = this.#val;
   }
 
-  shareHandlerTo(rhs: Moo<T, D>) {
+  shareHandlerTo(rhs: Moo<T, D, I>) {
     /*#static*/ if (INOUT) {
       assert(rhs.nCb === 0 || rhs.#handler_db_ === this.#handler_db_);
     }
@@ -394,18 +398,18 @@ export class Moo<T extends {} | null, D = any> {
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
-export class Runr<D = any> implements IRunr {
-  #_mo = new Moo<boolean, D>({ val: true, forcing: true });
+export class Runr<D = any, I = any> implements IRunr {
+  #_mo = new Moo<boolean, D, I>({ val: true, forcing: true });
 
   set data(data_x: D) {
     this.#_mo.data = data_x;
   }
 
-  add(_x: (n_y: boolean, o_y: boolean, d_y?: D) => void) {
+  add(_x: (n_y: boolean, o_y: boolean, d_y?: D, i_y?: I) => void) {
     this.#_mo.on(true, _x);
   }
 
-  del(_x: (n_y: boolean, o_y: boolean, d_y?: D) => void) {
+  del(_x: (n_y: boolean, o_y: boolean, d_y?: D, i_y?: I) => void) {
     this.#_mo.off(true, _x);
   }
 
@@ -416,7 +420,7 @@ export class Runr<D = any> implements IRunr {
 }
 
 /** @final */
-export class Boor<D = any> {
+export class Boor<D = any, I = any> {
   #_mo;
   get val() {
     return this.#_mo.val;
@@ -439,21 +443,21 @@ export class Boor<D = any> {
     this.#_mo.data = data_x;
   }
 
-  constructor(forcing_x = false) {
-    this.#_mo = new Moo<boolean, D>({ val: false, forcing: forcing_x });
+  constructor(forcing = false, info?: I) {
+    this.#_mo = new Moo<boolean, D, I>({ val: false, info, forcing });
   }
 
-  onTru(_x: (n_y: boolean, o_y: boolean, d_y?: D) => void) {
+  onTru(_x: (n_y: boolean, o_y: boolean, d_y?: D, i_y?: I) => void) {
     this.#_mo.on(true, _x);
   }
-  offTru(_x: (n_y: boolean, o_y: boolean, d_y?: D) => void) {
+  offTru(_x: (n_y: boolean, o_y: boolean, d_y?: D, i_y?: I) => void) {
     this.#_mo.off(true, _x);
   }
 
-  onFos(_x: (n_y: boolean, o_y: boolean, d_y?: D) => void) {
+  onFos(_x: (n_y: boolean, o_y: boolean, d_y?: D, i_y?: I) => void) {
     this.#_mo.on(false, _x);
   }
-  offFos(_x: (n_y: boolean, o_y: boolean, d_y?: D) => void) {
+  offFos(_x: (n_y: boolean, o_y: boolean, d_y?: D, i_y?: I) => void) {
     this.#_mo.off(false, _x);
   }
 }

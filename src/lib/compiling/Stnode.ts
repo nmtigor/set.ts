@@ -29,9 +29,9 @@ export class SortedStnod_depth extends SortedArray<Stnode<any>> {
 
 /** @final */
 export class SortedStnod_id extends SortedIdo<Stnode<any>> {
-  _repr(): string[] {
+  _repr_(): string[] {
     const ret: string[] = [];
-    for (const v of this) ret.push(v._oldInfo);
+    for (const v of this) ret.push(v._oldInfo_);
     return ret;
   }
 }
@@ -212,7 +212,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
 
   /* #errMsg_a */
   readonly #errMsg_a = new Array(NErr_).fill("") as TupleOf<string, NErr_>;
-  get _err(): string[] {
+  get _err_(): string[] {
     return this.#errMsg_a.filter(Boolean);
   }
   /** @fianl */
@@ -252,7 +252,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /* frstToken$ */
   protected frstToken$: Token<T> | undefined;
   /**
-   * ! Do not call in `Pazr.markPazRegion_$()`
+   * ! Do not call in `Pazr.pazmrk_$()`
    * @primaryconst
    */
   get frstToken(): Token<T> {
@@ -285,7 +285,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /* lastToken$ */
   protected lastToken$: Token<T> | undefined;
   /**
-   * ! Do not call in `Pazr.markPazRegion_$()`
+   * ! Do not call in `Pazr.pazmrk_$()`
    * @primaryconst
    */
   get lastToken(): Token<T> {
@@ -317,7 +317,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
 
   /**
    * ! Do not use `frstToken` and `lastToken`, because this will be called in
-   * ! `Pazr.markPazRegion_$()()`.
+   * ! `Pazr.pazmrk_$()()`.
    * @final
    */
   invalidateBdry(): this {
@@ -661,31 +661,31 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   // get _info(): string {
   //   return `${this.constructor.name}(${this.depth_2})`;
   // }
-  get _info(): string {
+  get _info_(): string {
     return `${this.constructor.name},${this.depth_2}`;
   }
   //jjjj TOCLEANUP
   // /** @final */
-  // get _oldInfo(): string {
+  // get _oldInfo_(): string {
   //   return `${this._info}[ ` +
   //     `${this.frstToken$?._name}${this.frstToken$?.oldRanval}, ` +
   //     `${this.lastToken$?._name}${this.lastToken$?.oldRanval} ]`;
   // }
   /** @final */
-  override get _oldInfo(): string {
+  override get _oldInfo_(): string {
     return this.frstToken === this.lastToken
-      ? `${this._info} [ ${this.frstToken._oldInfo} ]`
-      : `${this._info} [ ${this.frstToken._oldInfo}, ${this.lastToken._oldInfo} ]`;
+      ? `${this._info_} [ ${this.frstToken._oldInfo_} ]`
+      : `${this._info_} [ ${this.frstToken._oldInfo_}, ${this.lastToken._oldInfo_} ]`;
   }
   /** @final */
-  get _newInfo(): string {
+  get _newInfo_(): string {
     return this.frstToken === this.lastToken
-      ? `${this._info} [ ${this.frstToken} ]`
-      : `${this._info} [ ${this.frstToken}, ${this.lastToken} ]`;
+      ? `${this._info_} [ ${this.frstToken} ]`
+      : `${this._info_} [ ${this.frstToken}, ${this.lastToken} ]`;
   }
 
-  _repr(): unknown {
-    return this._info;
+  _repr_(): unknown {
+    return this._info_;
   }
 
   // /** For testing only */

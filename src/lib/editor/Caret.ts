@@ -3,32 +3,24 @@
  * @license MIT
  ******************************************************************************/
 
-import {
-  _TRACE,
-  CYPRESS,
-  DEV,
-  EDITOR,
-  EDITOR_v,
-  global,
-  INOUT,
-} from "../../global.ts";
+import { _TRACE, CYPRESS, DEV, EDITOR, global, INOUT } from "../../global.ts";
 import type { id_t, lnum_t, loff_t } from "../alias.ts";
-import { WritingDir } from "../alias.ts";
+import { Endpt, WritingDir } from "../alias.ts";
 import type { Cssc } from "../color/alias.ts";
 import { Pale } from "../color/Pale.ts";
-import { RanP } from "../compiling/Ran.ts";
+import type { Ranpo } from "../compiling/Ran.ts";
 import { g_ranval_fac, Ranval, RanvalMo } from "../compiling/Ranval.ts";
 import { HTMLVuu } from "../cv.ts";
 import { html, span } from "../dom.ts";
 import "../jslang.ts";
 import { $ovlap } from "../symbols.ts";
-import { assert } from "../util/trace.ts";
+import { assert, bind, out, traceOut } from "../util/trace.ts";
 import { Caret_passive_z, Caret_proactive_z } from "./alias.ts";
-import type { EdtrScrolr } from "./Edtr.ts";
 import type { EdtrBase, EdtrBaseScrolr } from "./EdtrBase.ts";
 import { ELoc } from "./ELoc.ts";
-import { ERan, ERanEndpoint } from "./ERan.ts";
+import { ERan } from "./ERan.ts";
 import { SelecFac } from "./Selec.ts";
+import { genInlineMidOf } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
 export type CaretRvM = [proactiveCaret: Caret, ranval_mo: RanvalMo];
@@ -68,15 +60,14 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     this.#passiveFatOl.registCsscHandler(this.#onPassiveFatOlCssc);
   }
   /* ~ */
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   get edtr() {
     return this.coo._scrolr;
   }
 
   /* #caretrvm */
-  /**
-   * Exist after attaching Bufr (ref. `EdtrScrolr.attachBufr_impl$()`)
-   */
+  /** Exist after attaching Bufr (ref. `EdtrScrolr.attachBufr_impl$()`) */
   #caretrvm: CaretRvM | undefined;
   get caretrvm() {
     return this.#caretrvm;
@@ -110,19 +101,18 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   }
   /* ~ */
 
-  readonly ranval = new Ranval(0 as lnum_t, 0);
-
   /* #focused */
   /** For main caret only */
   #focused = false;
+  @traceOut(_TRACE && EDITOR)
   set focused(_x: boolean) {
-    if (this.#focused === _x) return;
-
     /*#static*/ if (_TRACE && EDITOR) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.focused( ${_x} ) >>>>>>>`,
+        `${global.indent}>>>>>>> ${this._type_id_}.focused( ${_x} ) >>>>>>>`,
       );
     }
+    if (this.#focused === _x) return;
+
     this.#focused = _x;
 
     // if (this.#st !== CaretState.hidden) {
@@ -133,17 +123,20 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     }
     // }
 
-    if (this.#focused) this.#ranval_kept = undefined; //!
-    /*#static*/ if (_TRACE && EDITOR) global.outdent;
-    return;
+    //jjjj TOCLEANUP
+    // if (this.#focused) this.#ranval_kept = undefined; //!
   }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  /** Keep (if not undefiend) until `focused = true` */
-  #ranval_kept: Ranval | undefined;
-  keepRanval_$(rv_x: Ranval) {
-    this.#ranval_kept = rv_x;
-  }
+  //jjjj TOCLEANUP
+  // /** Keep (if not undefiend) until `focused = true` */
+  // #ranval_kept: Ranval | undefined;
+  // keepRanval_$(rv_x: Ranval) {
+  //   this.#ranval_kept = rv_x;
+  // }
   /* ~ */
+
+  readonly ranval = new Ranval(0 as lnum_t, 0);
 
   #eran?: ERan;
   get eran() {
@@ -165,7 +158,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   }
 
   #blink_an?: Animation;
-  stare() {
+  stare(): void {
     if (this.#st === CaretState.staring) return;
 
     this.#blink_an?.cancel();
@@ -176,7 +169,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
 
     this.#st = CaretState.staring;
   }
-  blink() {
+  blink(): void {
     if (this.#st === CaretState.blinking) return;
 
     if (this.#blink_an) {
@@ -200,7 +193,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     this.#st = CaretState.blinking;
   }
 
-  hide() {
+  hide(): void {
     if (this.#st === CaretState.hidden) return;
 
     this.el$.style.display = "none";
@@ -233,22 +226,42 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
       assert(!this.#shown);
     }
   }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  /* vInline_$ */
+  //jjjj TOCLEANUP
+  // #lastFat?: DOMRect;
+  // #lastSin?: DOMRect;
+  // #focusMoved = false;
+  // get focusMoved() {
+  //   return this.#focusMoved;
+  // }
+
+  /** Viewport inline within `edtr` to keep */
+  inline_$ = 0;
+  keepInlineOnce_$ = false;
+
   /**
-   * Viewport inline within `edtr` to keep
+   * Set in EdtrScrolr, because it is shared between `proactiveCaret` and its
+   * shadow carets.
    */
-  vInline_$ = 0;
+  suppressDrawRangeOnce_$ = false;
 
-  keepVLInlineOnce_$ = false;
+  /* For `EdtrScrolr.moveCaretLeft()`, etc */
+  readonly rv_move_$ = new Ranval(0 as lnum_t, 0);
   /* ~ */
 
-  /** Helper @see {@linkcode EdtrScrolr.prereplace_$()} */
-  ranval_$ = new Ranval(0 as lnum_t, 0);
-  ranpA_$ = RanP.unknown;
-  ranpF_$ = RanP.unknown; //jjjj always `eran !== undefined` if `ranpF_$ !== RanP.unknown`?
-  offsA_$: loff_t | lnum_t = 0;
-  offsF_$: loff_t | lnum_t = 0;
+  /* For `EdtrScrolr.prereplace_$()`, and related thereafter */
+  readonly rv_repl_$ = new Ranval(0 as lnum_t, 0);
+  // ranpA_$ = Ranp.unknown;
+  // ranpF_$ = Ranp.unknown; //jjjj always `eran !== undefined` if `ranpF_$ !== Ranp.unknown`?
+  // offsA_$: loff_t | lnum_t = 0;
+  // offsF_$: loff_t | lnum_t = 0;
+  readonly ranpo_a_$: Ranpo[] = [];
+  /* ~ */
+
+  /* For dragging selection */
+  rv_ctnr_$: Ranval | undefined;
+  rv_drag_$: Ranval | undefined;
   /* ~ */
 
   /**
@@ -259,14 +272,14 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     super(coo_x, html("input"));
     this.#selec_fac = new SelecFac(coo_x);
 
-    this.el$.id = this._type_id; // Otherwise, Chrome DevTools will issue "A form field element has neither an id nor a name attribute."
+    this.el$.id = this._type_id_; // Otherwise, Chrome DevTools will issue "A form field element has neither an id nor a name attribute."
     /*#static*/ if (CYPRESS) {
-      this.el$.cyName = this._type_id;
+      this.el$.cyName = this._type_id_;
     }
     this.assignAttro({
       // className: "editor-selection",
       //
-      // contenteditable: true,
+      // contenteditable: false,
       // inputmode: "text",
       spellcheck: "false",
       // autocapitalize: "off",
@@ -277,7 +290,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
       autocorrect: "off",
 
       /* To prevent Edge from complaining. See [Form <input> elements must have labels](https://dequeuniversity.com/rules/axe/4.4/label) */
-      "aria-label": this._type_id,
+      "aria-label": this._type_id_,
     });
     this.assignStylo({
       display: "none",
@@ -304,11 +317,12 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     });
     this.reset_$(cr_x);
 
-    this.on("focus", this.#onFocus);
-    this.on("blur", this.#onBlur);
-    // this.on( "keydown", this.#onKeyDown );
-    this.on("keyup", this.#onKeyUp);
-    // this.on("input", this.#onInput);
+    //jjjj TOCLEANUP
+    // this.on("focus", this.#onFocus);
+    // this.on("blur", this.#onBlur);
+    // // this.on( "keydown", this.#onKeyDown );
+    // this.on("keyup", this.#onKeyUp);
+    // // this.on("input", this.#onInput);
     this.on("compositionend", () => this.el$.value = "");
   }
   static create(coo_x: EdtrBase, cr_x?: CaretRvM) {
@@ -318,23 +332,22 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  /**
-   * @headconst @param cr_x
-   */
+  /** @headconst @param cr_x */
   reset_$(cr_x?: CaretRvM) {
     if (this.#proactive) {
-      this.#caretrvm![1].reset();
-      /* Then other shadow carets are not `enabled()` automatically because
+      this.#caretrvm![1].reset_Moo();
+      /* Then other shadow carets are in-`active` automatically because
       `#caretrvm![1].nCb === 0` */
     } else if (this.active) {
       this.disable_$();
     }
     this.#caretrvm = cr_x;
     if (cr_x) {
-      cr_x[1].registHandler(this.#onRanvalChange);
+      cr_x[1].registHandler(this._onRanvalChange);
       cr_x[1].forceOnce = true; //!
     }
 
+    //jjjj TOCLEANUP
     // this.el$.assignStylo({
     //   zIndex: this.#zCssc,
 
@@ -359,53 +372,55 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
 
   // createCaretRvM_$() {
   //   /*#static*/ if (INOUT) {
-  //     assert(!this.enabled);
+  //     assert(!this.active);
   //   }
   //   this.#caretrvm = [this, new RanvalMo()];
-  //   this.#caretrvm[1].registHandler(this.#onRanvalChange);
+  //   this.#caretrvm[1].registHandler(this._onRanvalChange);
   //   this.#caretrvm[1].forceOnce = true; //!
   //   /*#static*/ if (INOUT) {
-  //     assert(this.enabled && this.#proactive);
+  //     assert(this.active && this.#proactive);
   //   }
   //   return this.#caretrvm;
   // }
 
   /**
-   * No effects on the proactive caret, only hiding.
+   * No effects on the proactive caret, only hiding.\
    * For the proactive caret, use reset_$() to reset it.
    */
-  disable_$() {
+  @out((self: Caret) => {
+    assert((!self.active || self.#proactive) && !self.#shown);
+  })
+  disable_$(): void {
     this.hideAll();
     if (!this.#proactive) {
-      this.#caretrvm?.[1].removeHandler(this.#onRanvalChange);
+      this.#caretrvm?.[1].removeHandler(this._onRanvalChange);
       this.#caretrvm = undefined;
-    }
-    /*#static*/ if (INOUT) {
-      assert((!this.active || this.#proactive) && !this.#shown);
     }
   }
 
-  /**
-   * @const @param rv_x
-   */
-  #onRanvalChange = (rv_x: Ranval) => {
+  /** @const @param rv_x */
+  @bind
+  @traceOut(_TRACE && EDITOR)
+  private _onRanvalChange(rv_x: Ranval) {
     /*#static*/ if (_TRACE && EDITOR) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.#onRanvalChange([${rv_x}]) >>>>>>>`,
+        `${global.indent}>>>>>>> ${this._type_id_}._onRanvalChange([${rv_x}]) >>>>>>>`,
       );
     }
-    this.ranval.become(rv_x);
+    this.ranval.become_Array(rv_x);
     /*#static*/ if (CYPRESS) {
-      this.el$["cy.any"] = this.ranval.toString();
+      this.el$["cy.any"] = rv_x.toString();
     }
-    this.#eran = this.edtr.getERanBy_$(this.ranval, this.#eran);
+    this.#eran = this.edtr.getERanOf_$(rv_x, this.#eran);
     // if( !this.#eran.focusCtnr.isText ) { this.hide(); return; }
     // console.log(this.#eran);
-    using fat_rv = g_ranval_fac.oneMore().reset(rv_x.focusLidx, rv_x.focusLoff);
+    using fat_rv = g_ranval_fac.oneMore()
+      .setRanval(rv_x.focusLidx, rv_x.focusLoff);
     fat_rv.focusLoff += 1;
-    this.#fat_eran = this.edtr.getERanBy_$(fat_rv, this.#fat_eran);
+    this.#fat_eran = this.edtr.getERanOf_$(fat_rv, this.#fat_eran);
 
     this.draw_$();
+
     // if (this.#st === CaretState.hidden) {
     if (this.#proactive && this.#focused) {
       this.blink();
@@ -416,9 +431,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     if (!this.#eran.collapsed) {
       this.#showSelec();
     }
-    /*#static*/ if (_TRACE && EDITOR) global.outdent;
-    return;
-  };
+  }
 
   /**
    * Cf. `onRanvalChange()`:\
@@ -431,13 +444,15 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
       assert(this.active);
     }
     const rv_0 = this.#caretrvm![1].val;
-    using rv_ = g_ranval_fac.oneMore().become(rv_0);
-    this.#eran = this.edtr.getERanBy_$(rv_, this.#eran);
-    using fat_rv = g_ranval_fac.oneMore().reset(rv_0.focusLidx, rv_0.focusLoff);
+    using rv_u = rv_0.usingDup();
+    this.#eran = this.edtr.getERanOf_$(rv_u, this.#eran);
+    using fat_rv = g_ranval_fac.oneMore()
+      .setRanval(rv_0.focusLidx, rv_0.focusLoff);
     fat_rv.focusLoff += 1;
-    this.#fat_eran = this.edtr.getERanBy_$(fat_rv, this.#fat_eran);
+    this.#fat_eran = this.edtr.getERanOf_$(fat_rv, this.#fat_eran);
 
     this.draw_$();
+
     this.stare();
     if (!this.#eran.collapsed) {
       this.#showSelec();
@@ -445,73 +460,71 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  #onFocus = (evt_x: FocusEvent) => {
-    /*#static*/ if (_TRACE && EDITOR) {
-      console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.#onFocus() >>>>>>>`,
-      );
-    }
-    /*#static*/ if (_TRACE && EDITOR) global.outdent;
-    return;
-  };
-  #onBlur = (evt_x: FocusEvent) => {
-    /*#static*/ if (_TRACE && EDITOR) {
-      console.log(`${global.indent}>>>>>>> ${this._type_id}.#onBlur() >>>>>>>`);
-    }
-    /*#static*/ if (_TRACE && EDITOR) global.outdent;
-    return;
-  };
+  //jjjj TOCLEANUP
+  // #onFocus = (evt_x: FocusEvent) => {
+  //   /*#static*/ if (_TRACE && EDITOR) {
+  //     console.log(
+  //       `${global.indent}>>>>>>> ${this._type_id_}.#onFocus() >>>>>>>`,
+  //     );
+  //   }
+  //   /*#static*/ if (_TRACE && EDITOR) global.outdent;
+  //   return;
+  // };
+  // #onBlur = (evt_x: FocusEvent) => {
+  //   /*#static*/ if (_TRACE && EDITOR) {
+  //     console.log(`${global.indent}>>>>>>> ${this._type_id_}.#onBlur() >>>>>>>`);
+  //   }
+  //   /*#static*/ if (_TRACE && EDITOR) global.outdent;
+  //   return;
+  // };
 
-  // #onKeyDown = ( evt:KeyboardEvent ) =>
-  // {
-  //   // #if _TRACE
-  //     console.log(`>>>>>>> Caret.#onKeyDown() >>>>>>>`);
-  //   // #endif
-  // }
-  #onKeyUp = (evt_x: KeyboardEvent) => {
-    /*#static*/ if (_TRACE && EDITOR) {
-      console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.#onKeyUp() >>>>>>>`,
-      );
-      console.log(`${global.dent}value = "${this.el$.value}"`);
-    }
-    // this.el$.value = "";
-    /*#static*/ if (_TRACE && EDITOR) global.outdent;
-    return;
-  };
+  //jjjj TOCLEANUP
+  // #onKeyUp = (evt_x: KeyboardEvent) => {
+  //   /*#static*/ if (_TRACE && EDITOR) {
+  //     console.log(
+  //       `${global.indent}>>>>>>> ${this._type_id_}.#onKeyUp() >>>>>>>`,
+  //     );
+  //     console.log(`${global.dent}value = "${this.el$.value}"`);
+  //   }
+  //   // this.el$.value = "";
+  //   /*#static*/ if (_TRACE && EDITOR) global.outdent;
+  //   return;
+  // };
 
-  /** @deprecated */
-  #onInput = (evt_x: Event) => {
-    /*#static*/ if (_TRACE && EDITOR) {
-      console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.#onInput() >>>>>>>`,
-      );
-      console.log(
-        `${global.dent}inputType = "${(evt_x as InputEvent).inputType}"`,
-      );
-      console.log(`${global.dent}data = "${(evt_x as InputEvent).data}"`);
-    }
-    if (!(evt_x instanceof InputEvent)) {
-      /*#static*/ if (_TRACE && EDITOR) global.outdent;
-      return;
-    }
+  //jjjj TOCLEANUP
+  // /** @deprecated */
+  // #onInput = (evt_x: Event) => {
+  //   /*#static*/ if (_TRACE && EDITOR) {
+  //     console.log(
+  //       `${global.indent}>>>>>>> ${this._type_id_}.#onInput() >>>>>>>`,
+  //     );
+  //     console.log(
+  //       `${global.dent}inputType = "${(evt_x as InputEvent).inputType}"`,
+  //     );
+  //     console.log(`${global.dent}data = "${(evt_x as InputEvent).data}"`);
+  //   }
+  //   if (!(evt_x instanceof InputEvent)) {
+  //     /*#static*/ if (_TRACE && EDITOR) global.outdent;
+  //     return;
+  //   }
 
-    evt_x.preventDefault();
+  //   evt_x.preventDefault();
 
-    switch (evt_x.inputType) {
-      case "insertText":
-        // case "deleteContentBackward":
-        this.el$.value = "";
-        break;
-    }
-    /*#static*/ if (_TRACE && EDITOR) global.outdent;
-    return;
-  };
+  //   switch (evt_x.inputType) {
+  //     case "insertText":
+  //       // case "deleteContentBackward":
+  //       this.el$.value = "";
+  //       break;
+  //   }
+  //   /*#static*/ if (_TRACE && EDITOR) global.outdent;
+  //   return;
+  // };
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  /**
-   * @headconst @param sel_x
-   */
+  /** @headconst @param sel_x */
+  @out((self: Caret) => {
+    assert(self.#eran);
+  })
   setERanBySel_$(sel_x: Selection) {
     /*#static*/ if (INOUT) {
       assert(sel_x.focusNode && sel_x.anchorNode);
@@ -528,33 +541,36 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
         new ELoc(sel_x.anchorNode!, sel_x.anchorOffset),
       );
     }
-    /*#static*/ if (INOUT) {
-      assert(this.#eran);
-    }
   }
 
-  /**
-   * `in( this.#caretrvm )`
-   * @headconst @param rv_x [COPIED]
-   * @const @param forceOnce_x
-   */
-  setByRanval(rv_x: Ranval, forceOnce_x = false) {
-    /*#static*/ if (_TRACE && EDITOR) {
-      console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.setByRanval([${rv_x}], ${forceOnce_x}) >>>>>>>`,
-      );
-    }
-    // if( !this.#caretrvm ) this.createCaretRvM_$( bufr_x );
-    this.#caretrvm![1].forceOnce = forceOnce_x || !!this.#ranval_kept;
-    this.#caretrvm![1].val = this.#ranval_kept ?? rv_x;
-    /*#static*/ if (_TRACE && EDITOR) global.outdent;
-    return;
-  }
+  //jjjj TOCLEANUP
+  // /**
+  //  * `in( this.#caretrvm )`
+  //  * @const @param rv_x [COPIED]
+  //  * @const @param force_x
+  //  */
+  // @traceOut(_TRACE && EDITOR)
+  // setByRanval(rv_x: Ranval, force_x?: "force"): void {
+  //   /*#static*/ if (_TRACE && EDITOR) {
+  //     console.log(
+  //       `${global.indent}>>>>>>> ${this._type_id_}.setByRanval([${rv_x}]${
+  //         force_x ? `, "${force_x}"` : ""
+  //       }) >>>>>>>`,
+  //     );
+  //   }
+  //   // if( !this.#caretrvm ) this.createCaretRvM_$( bufr_x );
+  //   //jjjj TOCLEANUP
+  //   // this.#caretrvm![1].forceOnce = forceOnce_x || !!this.#ranval_kept;
+  //   // this.#caretrvm![1].val = this.#ranval_kept ?? rv_x;
+  //   if (force_x) this.#caretrvm![1].force();
+  //   this.#caretrvm![1].val = rv_x;
+  // }
 
+  @traceOut(_TRACE && EDITOR)
   draw_$() {
     /*#static*/ if (_TRACE && EDITOR) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.draw_$() >>>>>>>`,
+        `${global.indent}>>>>>>> ${this._type_id_}.draw_$() >>>>>>>`,
       );
     }
     // console.log( this.el$.isConnected );
@@ -563,9 +579,11 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
       assert(this.#eran);
     }
     this.#drawFocus();
-    this.#drawRange();
-    /*#static*/ if (_TRACE && EDITOR) global.outdent;
-    return;
+    //jjjj TOCLEANUP
+    // if (this.#focusMoved)
+    if (!this.realBody!.suppressDrawRangeOnce_$) {
+      this.#drawRange();
+    }
   }
 
   /**
@@ -595,13 +613,14 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     const edtr = this.edtr;
     const wm_ = this.coo._writingMode;
     /**
-     * blockSizei
+     * blockSize
      *
      * ! Firefox does not correctly implement vertical `writingMode` about this.
      */
     const bs_ = wm_ & WritingDir.h ? h_x : w_x;
     /** inlineSize */
     const is_ = Math.clamp(1, bs_ * .1, 5);
+    // console.log(`%crun here: bs_: ${bs_}, is_: ${is_}`, `color:${LOG_cssc.runhere}`);
     // const scrollLeft_save = edtr.el.scrollLeft;
     // const scrollTop_save = edtr.el.scrollTop;
     // const edtrWidth_save = edtr.el.clientWidth;
@@ -674,67 +693,86 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   }
 
   /**
+  //jjjj TOCLEANUP
+  //  * Also assign `#lastFat`, `#lastSin`, `#focusMoved`
    * `in( this.#eran )`
    */
+  @traceOut(_TRACE && EDITOR)
   #drawFocus() {
     /*#static*/ if (_TRACE && EDITOR) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id}.#drawFocus() >>>>>>>`,
+        `${global.indent}>>>>>>> ${this._type_id_}.#drawFocus() >>>>>>>`,
       );
     }
     const edtr = this.edtr;
-    // console.log(`${global.dent}vInline_$ = ${this.vInline_$.fixTo(1)}`);
-    const rec = this.#eran!.getRecSync_$();
-    // console.log( rec );
+    const sin = this.#eran!.getRecSync_$();
+    sin.x -= edtr.vpLeft;
+    sin.y -= edtr.vpTop;
+    const fat = this.#fat_eran!.syncRange_$().getBoundingClientRect();
+    fat.x -= edtr.vpLeft;
+    fat.y -= edtr.vpTop;
+    const tin = this.#eran!.getRecSync_$(Endpt.anchr);
+    tin.x -= edtr.vpLeft;
+    tin.y -= edtr.vpTop;
+
+    /* In chrome, there are strange cases that `sin.width` is very large, e.g.
+    "abc אמנון" with `rv_x` being "[0-4,0-5)". */
+    if (Number.apxG(sin.width, fat.width)) sin.width = 0;
+    if (Number.apxG(sin.height, fat.height)) sin.height = 0;
+    /* ~ */
+
+    //jjjj TOCLEANUP
+    // this.#focusMoved = !this.#lastFat || !this.#lastSin ||
+    //   !this.#lastFat.apxE(fat) ||
+    //   !Number.apxE(this.#lastSin.left, sin.left) ||
+    //   !Number.apxE(this.#lastSin.top, sin.top);
+    // if (!this.#focusMoved) return;
+    // this.#lastFat = fat;
+    // this.#lastSin = sin;
+    // // console.log(`${global.dent}🚀 ~ Caret ~ #drawFocus ~ fat: ${fat}`);
+    // // console.log(`${global.dent}🚀 ~ Caret ~ #drawFocus ~ sin: ${sin}`);
+
     this.#setPosSiz(
       this.el$,
-      rec.left - edtr.vpLeft,
-      rec.top - edtr.vpTop,
-      rec.width,
-      rec.height,
-      // rec[$ovlap],
+      sin.left,
+      sin.top,
+      sin.width,
+      sin.height,
+      // sin[$ovlap],
     );
-    // const rec1 = this.#eran.getRecSync_$();
-    // if( rec1.left !== rec.left || rec1.top !== rec.top )
-    // {
-    //   console.log( {rec,rec1} );
-    // }
-
-    const range = this.#fat_eran!.syncRange_$();
-    const fat = range.getBoundingClientRect();
     this.#fat_el.assignStylo({
-      top: `${fat.top - edtr.vpTop}px`,
-      left: `${fat.left - edtr.vpLeft}px`,
+      top: `${fat.top}px`,
+      left: `${fat.left}px`,
       zIndex: this.#zCssc,
 
       width: `${fat.width}px`,
       height: `${fat.height}px`,
       outlineColor: this.#fatOlCssc,
     });
+    this.#setPosSiz(
+      this.#anchr_el,
+      tin.left,
+      tin.top,
+      tin.width,
+      tin.height,
+      // tin[$ovlap],
+    );
 
-    if (!this.keepVLInlineOnce_$) {
-      // this.vInline_$ = edtr.writingMode & WritingDir.h
-      //   ? rec.left - edtr.vpLeft
-      //   : rec.top - edtr.vpTop;
-      /* It's better to use midpoint because `EdtrScrolr.prevRow()`,
-      EdtrScrolr._nextRow()` use midpoints. */
-      this.vInline_$ = this.coo._writingMode & WritingDir.h
-        ? (fat.left + fat.right) / 2 - edtr.vpLeft
-        : (fat.top + fat.bottom) / 2 - edtr.vpTop;
+    if (!this.keepInlineOnce_$) {
+      this.inline_$ = genInlineMidOf(this.coo._writingMode)(sin);
+      // console.log("🚀 ~ Caret ~ #drawFocus ~ inline_$:", this.inline_$);
     }
-    this.keepVLInlineOnce_$ = false;
-    // console.log(`${global.dent}vInline_$ = ${this.vInline_$.fixTo(1)}`);
-    /*#static*/ if (_TRACE && EDITOR) global.outdent;
-    return;
+    this.keepInlineOnce_$ = false;
   }
 
-  /**
-   * `in( this.#eran )`
-   */
+  /** `in( this.#eran )` */
+  @traceOut(_TRACE && EDITOR)
   #drawRange() {
-    // // #if _TRACE
-    //   console.log(`${global.indent}>>>>>>> ${this._type_id}.#drawRange() >>>>>>>`);
-    // // #endif
+    /*#static*/ if (_TRACE && EDITOR) {
+      console.log(
+        `${global.indent}>>>>>>> ${this._type_id_}.#drawRange() >>>>>>>`,
+      );
+    }
     const edtr = this.edtr;
     if (this.#eran!.collapsed) {
       this.#hideSelec();
@@ -753,20 +791,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
           rec[$ovlap],
         );
       }
-
-      const rec = this.#eran!.getRecSync_$(ERanEndpoint.anchr);
-      this.#setPosSiz(
-        this.#anchr_el,
-        rec.left - edtr.vpLeft,
-        rec.top - edtr.vpTop,
-        rec.width,
-        rec.height,
-        // rec[$ovlap],
-      );
     }
-    // // #if _TRACE
-    //   global.outdent;
-    // // #endif
   }
 }
 

@@ -6,7 +6,7 @@
 import { INOUT, TESTING } from "../../global.ts";
 import type { id_t, lnum_t, loff_t, uint16 } from "../alias.ts";
 import { BufrDir, llen_MAX, MAX_lnum } from "../alias.ts";
-import { Bidi } from "../Bidi.ts";
+import { Bidi, type Bidir } from "../Bidi.ts";
 import { assert, out } from "../util/trace.ts";
 import type { Tok } from "./alias.ts";
 import type { Bufr } from "./Bufr.ts";
@@ -21,11 +21,11 @@ import type { TSeg } from "./TSeg.ts";
  *
  * primaryconst: const exclude `lidx$`
  */
-export class Line {
+export class Line implements Bidir {
   static #ID = 0 as id_t;
   readonly id = ++Line.#ID as id_t;
   /** @final */
-  get _type_id() {
+  get _type_id_() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -69,7 +69,10 @@ export class Line {
   }
 
   readonly bidi = new Bidi();
-  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
+  //jjjj TOCLEANUP
+  // eline: ELineBase | undefined;
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
    * ! `lidx$` must be nondecreasing, however valid or not
@@ -86,23 +89,21 @@ export class Line {
       assert(!this.removed);
       assert(this.linked$ !== linked_x);
     }
-    if (this.linked$) {
-      this.bufr$!.lineN_$--;
-    } else {
-      this.bufr$!.lineN_$++;
-    }
+    if (this.linked$) this.bufr$!.lineN_$--;
+    else this.bufr$!.lineN_$++;
     this.linked$ = linked_x;
   }
 
   protected prevLine$: Line | undefined;
-  protected nextLine$: Line | undefined;
   get prevLine() {
     return this.prevLine$;
   }
+
+  protected nextLine$: Line | undefined;
   get nextLine() {
     return this.nextLine$;
   }
-  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /* #frstToken_m */
   /**
@@ -110,15 +111,11 @@ export class Line {
    * is not.
    */
   #frstToken_m = new Map<Lexr<any>, Token<any>>();
-  /**
-   * `out( ret; !ret || ret.frstLine === this )`
-   */
+  /** `out( ret; !ret || ret.frstLine === this )` */
   frstTokenBy<T extends Tok>(lexr_x: Lexr<T>): Token<T> | undefined {
     return this.#frstToken_m.get(lexr_x);
   }
-  /**
-   * `out( ret; !ret || ret.lastLine === this )`
-   */
+  /** `out( ret; !ret || ret.lastLine === this )` */
   strtTokenBy<T extends Tok>(lexr_x: Lexr<T>): Token<T> | undefined {
     let ret: Token<T> | undefined;
     let tk_ = this.frstTokenBy(lexr_x);
@@ -150,15 +147,11 @@ export class Line {
    * is not.
    */
   #lastToken_m = new Map<Lexr<any>, Token<any>>();
-  /**
-   * `out( ret; !ret || ret.lastLine === this )`
-   */
+  /** `out( ret; !ret || ret.lastLine === this )` */
   lastTokenBy<T extends Tok>(lexr_x: Lexr<T>): Token<T> | undefined {
     return this.#lastToken_m.get(lexr_x);
   }
-  /**
-   * `out( ret; !ret || ret.frstLine === this )`
-   */
+  /** `out( ret; !ret || ret.frstLine === this )` */
   stopTokenBy<T extends Tok>(lexr_x: Lexr<T>): Token<T> | undefined {
     let ret: Token<T> | undefined;
     let tk_ = this.lastTokenBy(lexr_x);
@@ -183,47 +176,48 @@ export class Line {
   }
   // hasStop_$( lexr_x:Lexr ) { return this.#lastToken_m.has(lexr_x); }
   /* ~ */
-  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /* #strtTSeg_m */
   #strtTSeg_m = new Map<Tfmr, TSeg>();
-  strtTSeg_$(tfmr_x: Tfmr): TSeg | undefined {
+  frstTSeg_$(tfmr_x: Tfmr): TSeg | undefined {
     return this.#strtTSeg_m.get(tfmr_x);
   }
-  strtByTSeg_$(tseg_x: TSeg) {
+  frstByTSeg_$(tseg_x: TSeg) {
     this.#strtTSeg_m.set(tseg_x.tfmr_$, tseg_x);
   }
-  isStrtByTSeg_$(tseg_x: TSeg) {
+  isFrstByTSeg_$(tseg_x: TSeg) {
     return this.#strtTSeg_m.get(tseg_x.tfmr_$) === tseg_x;
   }
-  delStrtTSeg_$(tfmr_x: Tfmr) {
+  delFrstTSeg_$(tfmr_x: Tfmr) {
     this.#strtTSeg_m.delete(tfmr_x);
   }
   /* ~ */
 
   /* #stopTSeg_m */
   #stopTSeg_m = new Map<Tfmr, TSeg>();
-  stopTSeg_$(tfmr_x: Tfmr): TSeg | undefined {
+  lastTSeg_$(tfmr_x: Tfmr): TSeg | undefined {
     return this.#stopTSeg_m.get(tfmr_x);
   }
-  stopByTSeg_$(tseg_x: TSeg) {
+  lastByTSeg_$(tseg_x: TSeg) {
     this.#stopTSeg_m.set(tseg_x.tfmr_$, tseg_x);
   }
-  isStopByTSeg_$(tseg_x: TSeg) {
+  isLastByTSeg_$(tseg_x: TSeg) {
     return this.#stopTSeg_m.get(tseg_x.tfmr_$) === tseg_x;
   }
-  delStopTSeg_$(tfmr_x: Tfmr) {
+  delLastTSeg_$(tfmr_x: Tfmr) {
     this.#stopTSeg_m.delete(tfmr_x);
   }
   /* ~ */
 
+  /** @headconst @param tfmr_x */
+  @out((self: Line, _, args) => {
+    assert(self.frstTSeg_$(args[0]) === undefined);
+    assert(self.lastTSeg_$(args[0]) === undefined);
+  })
   delTSegBdryOf(tfmr_x: Tfmr) {
-    this.strtTSeg_$(tfmr_x)?.revokeSelf_$();
-    this.stopTSeg_$(tfmr_x)?.revokeSelf_$();
-    /*#static*/ if (INOUT) {
-      assert(this.strtTSeg_$(tfmr_x) === undefined);
-      assert(this.stopTSeg_$(tfmr_x) === undefined);
-    }
+    this.frstTSeg_$(tfmr_x)?.revokeSelf_$();
+    this.lastTSeg_$(tfmr_x)?.revokeSelf_$();
   }
 
   delTSegBdry() {
@@ -237,13 +231,11 @@ export class Line {
     this.#stopTSeg_m.clear();
   }
 
-  /**
-   * @headconst @param tseg_x
-   */
+  /** @headconst @param tseg_x */
   hasTSeg(tseg_x: TSeg) {
     const tfmr = tseg_x.tfmr_$;
-    const strtTSeg = this.strtTSeg_$(tfmr);
-    const stopTSeg = this.stopTSeg_$(tfmr);
+    const strtTSeg = this.frstTSeg_$(tfmr);
+    const stopTSeg = this.lastTSeg_$(tfmr);
     // if (!strtTSeg || !stopTSeg) return true;
     if (!strtTSeg || !stopTSeg) return false;
 
@@ -272,15 +264,13 @@ export class Line {
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  /**
-   * @const @param text_x
-   */
-  @out((_, self: Line) => {
+  /** @const @param text_x */
+  @out((self: Line) => {
     assert(self.text$.length < llen_MAX);
   })
   resetText_$(text_x?: string): this {
     this.text$ = text_x ?? "";
-    this.bidi.reset(this.text$, this.dir);
+    this.bidi.reset_Bidi(this.text$, this.dir);
     /*#static*/ if (!TESTING) {
       this.bidi.validate();
     }
@@ -297,7 +287,7 @@ export class Line {
     // /*#static*/ if (_TRACE) {
     //   console.log([
     //     global.indent,
-    //     `>>>>>>> ${this._type_id}.splice_$( ${strt_x}, ${stop_x}, `,
+    //     `>>>>>>> ${this._type_id_}.splice_$( ${strt_x}, ${stop_x}, `,
     //     newt_x === undefined ? "" : `"${newt_x}"`,
     //     " ) >>>>>>>",
     //   ].join(""));
@@ -336,8 +326,8 @@ export class Line {
 
   /**
    * `in( !this.removed )`
-   * @primaryconst
    * @final
+   * @primaryconst
    */
   invalLidx$() {
     /*#static*/ if (INOUT) {
@@ -376,8 +366,8 @@ export class Line {
   }
 
   /**
-   * @primaryconst
    * @final
+   * @primaryconst
    */
   get lidx_1(): lnum_t {
     /*#static*/ if (INOUT) {
@@ -470,10 +460,8 @@ export class Line {
     );
   }
 
-  /**
-   * @const @param ret_ln_x
-   */
-  @out((ret: any, self: Line) => {
+  /** @const @param ret_ln_x */
+  @out((self: Line, ret: any) => {
     assert(ret.linked$);
     assert(ret === self.prevLine$);
     assert(ret.nextLine$ === self);
@@ -504,10 +492,8 @@ export class Line {
     ret_ln_x.#inval_lidx_selfup();
     return ret_ln_x;
   }
-  /**
-   * @const @param ret_ln_x
-   */
-  @out((ret: any, self: Line) => {
+  /** @const @param ret_ln_x */
+  @out((self: Line, ret: any) => {
     assert(ret.linked$);
     assert(ret === self.nextLine$);
     assert(ret.prevLine$ === self);
@@ -539,7 +525,7 @@ export class Line {
     return ret_ln_x;
   }
 
-  @out((_, self: Line) => {
+  @out((self: Line) => {
     assert(
       self.removed ||
         self === self.bufr$!.frstLine_$ &&
@@ -547,7 +533,7 @@ export class Line {
     );
   })
   removeSelf_$(): void {
-    /* `strtTSeg_$?`, `stopTSeg_$?` could be useful in `Tfmr.adjust_$()` even
+    /* `frstTSeg_$?`, `lastTSeg_$?` could be useful in `Tfmr.adjust_$()` even
     after `this.removed`.*/
     // this.delTSegBdryOf();
 
@@ -596,7 +582,7 @@ export class Line {
   //  */
   // tmap_$(tstrt_x: loff_t, tstop_x: loff_t) {
   //   const ret: Ranval[] = [];
-  //   let tseg = this.strtTSeg_$;
+  //   let tseg = this.frstTSeg_$;
   //   if (tseg) {
   //     let valve = 100;
   //     do {
@@ -614,17 +600,17 @@ export class Line {
   //       }
 
   //       tseg = tseg.nextTSeg_$;
-  //     } while (tseg && tseg !== this.stopTSeg_$ && --valve);
+  //     } while (tseg && tseg !== this.lastTSeg_$ && --valve);
   //     assert(valve);
   //   }
   //   return ret;
   // }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  get _info(): string {
-    return `${this._type_id}, ${this.bufr$?._type_id ?? "-"}, ` +
-      `prev: ${this.prevLine$?._type_id ?? "-"}, ` +
-      `next: ${this.nextLine$?._type_id ?? "-"}`;
+  get _info_(): string {
+    return `${this._type_id_}, ${this.bufr$?._type_id_ ?? "-"}, ` +
+      `prev: ${this.prevLine$?._type_id_ ?? "-"}, ` +
+      `next: ${this.nextLine$?._type_id_ ?? "-"}`;
   }
 }
 /*80--------------------------------------------------------------------------*/

@@ -17,9 +17,10 @@ export class Unre<T extends {} | null> {
   static #ID = 0 as id_t;
   readonly id = ++Unre.#ID as id_t;
   /** @final */
-  get _type_id() {
+  get _type_id_() {
     return `${this.constructor.name}_${this.id}`;
   }
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   readonly #Len: uint;
   get LenMax() {
@@ -48,7 +49,7 @@ export class Unre<T extends {} | null> {
   }
 
   /** @const */
-  _repr(): Record<string, unknown> {
+  _repr_(): Record<string, unknown> {
     return {
       ary: this.ary$,
       ran: `[${this.i_0$}, ${this.i_1$})`,
@@ -56,9 +57,7 @@ export class Unre<T extends {} | null> {
     };
   }
 
-  /**
-   * @const @param len_x
-   */
+  /** @const @param len_x */
   constructor(len_x: uint) {
     /*#static*/ if (INOUT) {
       assert(1 <= len_x);
@@ -67,7 +66,7 @@ export class Unre<T extends {} | null> {
     this.ary$ = new Array<T>(this.#Len);
   }
 
-  reset() {
+  resetUnre() {
     this.i$ = this.i_1$ = this.i_0$;
     this.lastUR$ = LastUR.bakw;
   }
@@ -93,6 +92,7 @@ export class Unre<T extends {} | null> {
     ret.lastUR$ = this.lastUR$;
     return ret;
   }
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @const */
   #loopPlusOne(j_x: uint): uint {

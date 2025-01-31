@@ -29,6 +29,7 @@ export function createColranQRaw(dim_x: uint): ColranQRaw {
 export class ColranQ extends Moo<ColranQ> {
   static #ID = 0 as id_t;
   override readonly id = ++ColranQ.#ID as id_t;
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   // readonly dim: uint;
   readonly #colran_a: Colran[];
@@ -38,12 +39,10 @@ export class ColranQ extends Moo<ColranQ> {
 
   readonly modified_mo = new Moo({
     val: false,
-    _name: `ColranQ_${this.id}.modified_mo`,
+    _name_: `ColranQ_${this.id}.modified_mo`,
   });
 
-  /**
-   * @const @param raw_x
-   */
+  /** @const @param raw_x */
   constructor(raw_x: ColranQRaw) {
     super({ val: null as any });
 
@@ -56,12 +55,12 @@ export class ColranQ extends Moo<ColranQ> {
       return ret;
     });
 
-    this.set(this);
+    this.setMoo(this);
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   #r = () => {
-    this.refresh();
+    this.refreshMoo();
   };
 
   #onQModified = (_x: boolean) => {
@@ -85,9 +84,7 @@ export class ColranQ extends Moo<ColranQ> {
     this.#colran_a.push(colran_);
   }
 
-  /**
-   * @const @param _x
-   */
+  /** @const @param _x */
   delete(_x: int) {
     const deleted_a_ = this.#colran_a.splice(_x, 1);
     if (!deleted_a_.length) return;
@@ -101,7 +98,7 @@ export class ColranQ extends Moo<ColranQ> {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   toJSON(): ColranQRaw {
-    this.modified_mo.set(false); //!
+    this.modified_mo.setMoo(false); //!
     return this.#colran_a.map((_y) => _y.toJSON());
   }
 }

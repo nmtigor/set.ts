@@ -101,23 +101,23 @@ export class Set extends SetSN {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override toString() {
-    return `${this._info} ( ${
+    return `${this._info_} ( ${
       new Array(this.#paren).fill("(").join("")
     }${this.#unpanenSet}${new Array(this.#paren).fill(")").join("")})`;
   }
 
-  override _repr() {
+  override _repr_() {
     const unpanenSet = this.#unpanenSet instanceof SetTk
       ? this.#unpanenSet.toString()
-      : this.#unpanenSet._repr();
+      : this.#unpanenSet._repr_();
     return this.#paren
       ? [
-        this._info,
+        this._info_,
         new Array(this.#paren).fill("(").join(""),
         unpanenSet,
         new Array(this.#paren).fill(")").join(""),
       ]
-      : [this._info, unpanenSet];
+      : [this._info_, unpanenSet];
   }
 }
 /*80--------------------------------------------------------------------------*/

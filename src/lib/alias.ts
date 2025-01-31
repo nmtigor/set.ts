@@ -62,7 +62,6 @@ export const MAX_lnum = 1_000_000 as lnum_t;
 /** Type of unix timestamp */
 export type ts_t = Brand_int64<"ts_t">;
 export const zTs = zInt64;
-/*49-------------------------------------------*/
 
 /** Recommand [0,1] */
 export type Ratio = number;
@@ -77,21 +76,17 @@ export const zRatio = z.number().finite();
 // export type Hex8 = `${HexDigitChar}${HexDigitChar}`;
 
 /**
- * Dull string
+ * Dull string\
  * String of characters 0x20 ~ 0x0_126
  */
 export type Dulstr = string;
 // export type Dulstr = Brand<string, "Dulstr">; //jjjj try to use this
 
-/**
- * Type of `"(😄)"[0]`, `"(😄)"[1]`, `"(😄)"[2]`, etc
- */
+/** Type of `"(😄)"[0]`, `"(😄)"[1]`, `"(😄)"[2]`, etc */
 export type UChr = string;
 // export type UChr = Brand<string, "UChr">; //jjjj try to use this
 
-/**
- * Type of each element of `[..."(😄)"]`
- */
+/** Type of each element of `[..."(😄)"]` */
 export type Chr = Brand<string, "Chr">;
 
 // deno-fmt-ignore
@@ -117,17 +112,14 @@ export type dot2d_t = [x: number, y: number];
 export type dim2d_t = [widt: number, high: number];
 export type rect_t = TupleOf<number, 4>;
 
-export type IntegerArray =
-  | Int8Array
+export type IntArray = Int8Array | Int16Array | Int32Array;
+export type UintArray =
   | Uint8Array
   | Uint8ClampedArray
-  | Int16Array
   | Uint16Array
-  | Int32Array
   | Uint32Array;
-export type FloatArray =
-  | Float32Array
-  | Float64Array;
+export type IntegerArray = IntArray | UintArray;
+export type FloatArray = Float32Array | Float64Array;
 export type TypedArray = IntegerArray | FloatArray;
 /*80--------------------------------------------------------------------------*/
 
@@ -148,9 +140,7 @@ export type CSSStyleName = keyof {
 
 export type CSSStyle = Partial<Record<CSSStyleName, string | number>>;
 
-/**
- * @deprecated Use `CSSStyle` instead.
- */
+/** @deprecated Use `CSSStyle` instead. */
 export type Style = Record<string, string>;
 /*64----------------------------------------------------------*/
 
@@ -189,13 +179,18 @@ export const scrollO: ScrollToOptions = {
 };
 /*80--------------------------------------------------------------------------*/
 
-export interface Runr {
+export type Runr = {
   run(): void | Promise<void>;
-}
+};
 // export class DumRunr implements Runr {
 //   run() {}
 // }
 /*80--------------------------------------------------------------------------*/
+
+export const enum Endpt {
+  focus = 1,
+  anchr,
+}
 
 export const enum Sortart {
   asc,
@@ -215,16 +210,19 @@ export const enum Pointer {
 }
 /*80--------------------------------------------------------------------------*/
 
-export type UpdateTheme_PUT = {
-  theme_j: string;
-};
+// export type UpdateTheme_PUT = {
+//   theme_j: string;
+// };
 /*80--------------------------------------------------------------------------*/
 
 export type Constructor<T = object> = new (...args: any[]) => T;
 export type AbstractConstructor<T = object> = abstract new (
   ...args: any[]
 ) => T;
-export type Func<This = any> = (this: This, ...args: any[]) => any;
+export type Func<This = any, Return = any, Args extends any[] = any[]> = (
+  this: This,
+  ...args: Args
+) => Return;
 // export type Id<T> = (_x: T) => T;
 /*80--------------------------------------------------------------------------*/
 
@@ -261,8 +259,8 @@ export type IndexOf<T extends readonly any[], S extends number[] = []> =
 //#region ArrEl<>
 /* Ref. https://stackoverflow.com/questions/41253310/typescript-retrieve-element-type-information-from-array-type */
 
-export type ArrEl<ArrayType extends readonly unknown[]> = ArrayType extends
-  readonly (infer ElementType)[] ? ElementType : never;
+export type ArrEl<Arr extends readonly unknown[]> = Arr extends
+  readonly (infer El)[] ? El : never;
 //#endregion
 
 //#region Prettify<>
