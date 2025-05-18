@@ -21,7 +21,7 @@ export class Intersect extends BinaryOp {
       rhs_x.parent_$ = this;
       this.rhs$ = rhs_x;
     } else {
-      this.setErr(Err.lack_of_intersect_rhs);
+      this.setErr(Err.intersect_lack_of_rhs);
     }
 
     this.ensureBdry();

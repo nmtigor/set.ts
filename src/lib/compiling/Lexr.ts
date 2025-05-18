@@ -473,7 +473,8 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     /*#static*/ if (INOUT) {
       assert(LEN && newRan_a_x[0].bufr === this.bufr$);
     }
-    const tk_s = new Set<Token<T>>();
+    const anchr_s = new Set<Token<T>>();
+    const focus_s = new Set<Token<T>>();
     /* Adjusting each of `newRan_a_x`, not just `newRan_a_x[0]`,
     `newRan_a_x.at(-1)!`, is because unrelated tokens also need to be adjusted. */
     /* MUST be in (non-reverse) order, because following tokens and
@@ -489,10 +490,11 @@ export abstract class Lexr<T extends Tok = BaseTok> {
           let tk_: Token<T> | undefined = this.#strtLexTk_a[i];
           do {
             tk_.sntStopLoc.line_$ = strtLn_tgt;
+            focus_s.add(tk_);
             if (tk_.sntFrstLine === strtLn_src) {
               tk_.sntStrtLoc.line_$ = strtLn_tgt;
+              anchr_s.add(tk_);
             }
-            tk_s.add(tk_);
 
             if (tk_ === strtLn_src.frstTokenBy(this)) {
               strtLn_src.delFrstTokenBy_$(this);
@@ -524,10 +526,11 @@ export abstract class Lexr<T extends Tok = BaseTok> {
           let tk_: Token<T> | undefined = this.#stopLexTk_a[i];
           do {
             tk_.sntStrtLoc.set_Loc(stopLn_tgt, tk_.sntStrtLoff + dtLoff);
+            anchr_s.add(tk_);
             if (tk_.sntLastLine === stopLn_src) {
               tk_.sntStopLoc.set_Loc(stopLn_tgt, tk_.sntStopLoff + dtLoff);
+              focus_s.add(tk_);
             }
-            tk_s.add(tk_);
 
             if (
               tk_ === stopLn_src.frstTokenBy(this) && strtLn_tgt !== stopLn_tgt
@@ -545,11 +548,11 @@ export abstract class Lexr<T extends Tok = BaseTok> {
         }
       }
     }
-    /* Since in (non-reverse) order, so `syncRanval()` can not be called in
-    above loop, because otherwise it could calc `lidx_1` on `removed` Line.  */
-    for (const tk of tk_s) {
-      tk.syncRanval(); // Recalc the new one
-    }
+    /* Since in (non-reverse) order, so `syncRanvalAnchr()`, `syncRanvalFocus()`
+    can not be called in above loop, because otherwise they could calc `lidx_1`
+    on `removed` Line.  */
+    for (const tk of anchr_s) tk.syncRanvalAnchr();
+    for (const tk of focus_s) tk.syncRanvalFocus();
 
     if (this.hasErr) {
       /*#static*/ if (INOUT) {
@@ -566,11 +569,11 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   // get stoplocNew$_() { return this.stoplocNew_; }
 
   /** Assign `curLoc$` */
-  protected prelex$() {
+  protected prelex$(): void {
     this.curLoc$.become_Loc(this.strtLexTk$.sntStopLoc);
   }
 
-  protected suflex$(_valve_x: uint) {}
+  protected suflex$(_valve_x: uint): void {}
 
   /**
    * Lex [ strtLexTk$.stopLoc, stopLexTk$.strtLoc )
@@ -612,7 +615,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   // }
 
   /**
-   * Lex [ strtLexTk$.stopLoc, stopLexTk$.strtLoc )\
+   * Lex [ `strtLexTk$.sntStopLoc`, `stopLexTk$.sntStrtLoc` )\
   //  * `in( this.#valve > 0 )`
    * @final
    */
@@ -645,8 +648,8 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   }
 
   /** @final */
-  protected reachLexBdry$(): LocCompared {
-    return this.curLoc$.locGE(this.stopLexTk$.sntStrtLoc);
+  protected reachLexBdry$(): boolean {
+    return this.curLoc$.posGE(this.stopLexTk$.sntStrtLoc);
   }
   /** @final */
   protected atRigtBdry$(): LocCompared {
@@ -679,7 +682,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
           this.curLoc$.posSE(this.stopLexTk$.sntStrtLoc),
       );
     }
-    if (this.reachLexBdry$() === LocCompared.yes) {
+    if (this.reachLexBdry$()) {
       return this.stopLexTk$;
     }
 

@@ -73,12 +73,10 @@ export class SetPazr extends Pazr<SetTok> {
     // this.newSn_$ = this.root$;
     // if (this.hasErr) console.log("_err: ", this._err);
     // // else console.log(`root$: ${this.root$}`);
-    // else console.log("root$: ", this.root$!._repr());
+    // else console.log("root$: ", this.root$!._repr_());
   }
 
-  /**
-   * @headconst @param _x
-   */
+  /** @headconst @param _x */
   @traceOut(_TRACE)
   pazSet_$(_x = {} as PazSet_): Set {
     assert(this.#valve--, `Loop ${SetPazr.#VALVE} times`);
@@ -132,7 +130,7 @@ export class SetPazr extends Pazr<SetTok> {
       //   if (_x.lhs.isErr) this.errSn_sa$.add(_x.lhs);
       //   return _x.lhs;
       // }
-      this.#pazLhs(_x as Required<PazSet_>);
+      this.#pazLhs(_x as PazSet_ & { selfParen: Paren });
       if (this.reachPazBdry$()) return _x.lhs!;
 
       const p_ = this.#pazClozParen(_x as Required<PazSet_>);
@@ -196,9 +194,9 @@ export class SetPazr extends Pazr<SetTok> {
     let ret: Rel | undefined;
     if (this.reachPazBdry$()) {
       ret = new Rel(srcSn, jnr_1);
-      unexpTk_a.forEach((tk_y) => {
-        ret!.setErr(`${Err.unexpected_token_for_rel}: ${tk_y}`);
-      });
+      for (const tk of unexpTk_a) {
+        ret.setErr(`${Err.rel_unexpected_token}: ${tk}`);
+      }
       this.errSn_sa$.add(ret);
       return ret;
     }
@@ -224,9 +222,9 @@ export class SetPazr extends Pazr<SetTok> {
     }
     if (this.reachPazBdry$()) {
       ret = new Rel(srcSn, jnr_1, relSn, jnr_2);
-      unexpTk_a.forEach((tk_y) => {
-        ret!.setErr(`${Err.unexpected_token_for_rel}: ${tk_y}`);
-      });
+      for (const tk of unexpTk_a) {
+        ret.setErr(`${Err.rel_unexpected_token}: ${tk}`);
+      }
       this.errSn_sa$.add(ret);
       return ret;
     }
@@ -238,9 +236,9 @@ export class SetPazr extends Pazr<SetTok> {
       this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
       if (this.reachPazBdry$()) {
         ret = new Rel(srcSn, jnr_1, relSn, jnr_2, undefined);
-        unexpTk_a.forEach((tk_y) => {
-          ret!.setErr(`${Err.unexpected_token_for_rel}: ${tk_y}`);
-        });
+        for (const tk of unexpTk_a) {
+          ret.setErr(`${Err.rel_unexpected_token}: ${tk}`);
+        }
         if (ret.isErr) this.errSn_sa$.add(ret);
         return ret;
       }
@@ -262,9 +260,9 @@ export class SetPazr extends Pazr<SetTok> {
         break;
     }
     ret = new Rel(srcSn, jnr_1, relSn, jnr_2, tgtSn);
-    unexpTk_a.forEach((tk_y) => {
-      ret!.setErr(`${Err.unexpected_token_for_rel}: ${tk_y}`);
-    });
+    for (const tk of unexpTk_a) {
+      ret.setErr(`${Err.rel_unexpected_token}: ${tk}`);
+    }
     if (ret.isErr) this.errSn_sa$.add(ret);
     return ret;
   }
@@ -376,10 +374,8 @@ export class SetPazr extends Pazr<SetTok> {
     return new QuotkeySeq(tk_a);
   }
 
-  /**
-   * @headconst @param _x
-   */
-  #pazLhs(_x: Required<PazSet_>): void {
+  /** @headconst @param _x */
+  #pazLhs(_x: PazSet_ & { selfParen: Paren }): void {
     for (const sn of this.unrelSn_sa_$) {
       if (sn instanceof Set && sn.frstToken === this.strtPazTk$) {
         this.strtPazTk$ = sn.lastToken.nextToken_$!;

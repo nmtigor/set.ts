@@ -4,9 +4,9 @@
  ******************************************************************************/
 
 import { INOUT, PRF } from "../../global.ts";
+import type { BufrDir, int } from "../alias.ts";
 import type {
   id_t,
-  int,
   lcol_t,
   lnum_t,
   loff_t,
@@ -15,7 +15,6 @@ import type {
   uint16,
 } from "../alias.ts";
 import { assert } from "../util/trace.ts";
-import { BufrDir } from "../alias.ts";
 import type { Bidir } from "../Bidi.ts";
 import type { Line } from "./Line.ts";
 import { Ranval } from "./Ranval.ts";
@@ -107,7 +106,7 @@ export class Loc {
   }
 
   get dir(): BufrDir {
-    return this.bufr?.dir ?? BufrDir.ltr;
+    return this.bufr?.dir ?? "ltr";
   }
 
   //jjjj TOCLEANUP
@@ -603,7 +602,7 @@ export class Loc {
     this.loff_$ = bidi.lastLogal;
     if (ret) return true;
 
-    ln_1 = DIR === BufrDir.ltr ? this.line.prevLine : this.line.nextLine;
+    ln_1 = DIR === "ltr" ? this.line.prevLine : this.line.nextLine;
     if (!ln_1) return false;
 
     this.line_$ = ln_1;
@@ -630,7 +629,7 @@ export class Loc {
     this.loff_$ = bidi.lastLogal;
     if (ret) return true;
 
-    ln_1 = DIR === BufrDir.ltr ? this.line.nextLine : this.line.prevLine;
+    ln_1 = DIR === "ltr" ? this.line.nextLine : this.line.prevLine;
     if (!ln_1) return false;
 
     this.line_$ = ln_1;

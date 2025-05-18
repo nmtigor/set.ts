@@ -14,9 +14,7 @@ import { assert } from "@fe-lib/util/trace.ts";
 
 /** @final */
 export class Rel extends SetSN {
-  /**
-   * If `undefined`, must `hasErr`.
-   */
+  /** If `undefined`, must `hasErr`. */
   #src: Key | SetTk | undefined;
   get src() {
     return this.#src;
@@ -24,9 +22,7 @@ export class Rel extends SetSN {
 
   readonly jnr_1;
 
-  /**
-   * If `undefined`, must `hasErr`.
-   */
+  /** If `undefined`, must `hasErr`. */
   #rel: Key | SetTk | undefined;
   get rel() {
     return this.#rel;
@@ -34,9 +30,7 @@ export class Rel extends SetSN {
 
   readonly jnr_2: SetTk | undefined;
 
-  /**
-   * If `undefined`, must `hasErr`.
-   */
+  /** If `undefined`, must `hasErr`. */
   #tgt: Key | SetTk | undefined;
   get tgt() {
     return this.#tgt;
@@ -78,30 +72,28 @@ export class Rel extends SetSN {
     if (src_x) {
       if (src_x instanceof Key) src_x.parent_$ = this;
       this.#src = src_x;
-    } else {
-      this.setErr(Err.lack_of_rel_src);
     }
     this.jnr_1 = jnr_1_x;
     if (rel_x) {
       if (rel_x instanceof Key) rel_x.parent_$ = this;
       this.#rel = rel_x;
-    } else {
-      this.setErr(Err.lack_of_rel_rel);
     }
     if (jnr_2_x) {
       this.jnr_2 = jnr_2_x;
     } else {
-      this.setErr(Err.lack_of_rel_2nd);
+      this.setErr(Err.rel_lack_of_2nd);
     }
     if (tgt_x) {
       if (tgt_x instanceof Key) tgt_x.parent_$ = this;
       this.#tgt = tgt_x;
-    } else {
-      this.setErr(Err.lack_of_rel_tgt);
+    }
+    if (!src_x && !rel_x && !tgt_x) {
+      this.setErr(Err.rel_lack_of_srt);
     }
 
     this.ensureBdry();
   }
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override replaceChild(oldSn_x: SetSN, newSn_x: SetSN) {
     /*#static*/ if (INOUT) {

@@ -350,17 +350,11 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   //   this.#enlargeBdries(origStrtTk, origStopTk);
   // }
 
-  /**
-   * `in( this.strtPazTk$ && this.stopPazTk$ )`
-   * @final
-   */
+  /** @final */
   protected reachPazBdry$(): boolean {
-    return this.strtPazTk$.posGE(this.stopPazTk$!);
+    return this.strtPazTk$.posGE(this.stopPazTk$);
   }
-  /**
-   * `in( this.strtPazTk$ && this.stopPazTk$ )`
-   * @final
-   */
+  /** @final */
   overRigtBdry(): boolean {
     return this.strtPazTk$.posG(this.stopPazTk$!);
   }
@@ -380,13 +374,12 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     }
   }
 
-  /** `in( this.strtPazTk$ && this.stopPazTk$ && !this.reachPazBdry$() )` */
+  /** `in( !this.reachPazBdry$() )` */
   protected abstract paz_impl$(): void;
 
   //jjjj TOCLEANUP
   // /**
   //  * Adjust `strtPazTk$`, `stopPazTk$` by `sn_x`\
-  //  * `in( this.strtPazTk$ && this.stopPazTk$ )`
   //  * @final
   //  * @headconst @param sn_x
   //  */

@@ -4,12 +4,13 @@
  ******************************************************************************/
 
 import { INOUT } from "../../global.ts";
-import type { int, loff_t, TupleOf, uint } from "../alias.ts";
+import type { int } from "../alias.ts";
+import type { loff_t, TupleOf, uint } from "../alias.ts";
 import { type Less, SortedArray, SortedIdo } from "../util/SortedArray.ts";
 import { assert, fail, out } from "../util/trace.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import type { Loc } from "./Loc.ts";
-import { Snt } from "./Snt.ts";
+import { type _OldInfo_, Snt, SortedSnt_id } from "./Snt.ts";
 import type { Token } from "./Token.ts";
 import type { Tok } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
@@ -28,13 +29,7 @@ export class SortedStnod_depth extends SortedArray<Stnode<any>> {
 }
 
 /** @final */
-export class SortedStnod_id extends SortedIdo<Stnode<any>> {
-  _repr_(): string[] {
-    const ret: string[] = [];
-    for (const v of this) ret.push(v._oldInfo_);
-    return ret;
-  }
-}
+export class SortedStnod_id extends SortedSnt_id<Stnode<any>> {}
 
 export type CalcCommonO_ = {
   unrelSn_sa?: SortedStnod_id;
@@ -45,9 +40,7 @@ export type CalcCommonO_ = {
 /** >=1 */
 const FilterDepth_ = 2;
 
-/**
- * primaryconst: const exclude `#depth`, `frstToken$`, `lastToken$`
- */
+/** primaryconst: const exclude `#depth`, `frstToken$`, `lastToken$` */
 export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /* parent_$ */
   parent_$: Stnode<T> | undefined;
@@ -215,7 +208,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   get _err_(): string[] {
     return this.#errMsg_a.filter(Boolean);
   }
-  /** @fianl */
+  /** @final */
   get isErr(): boolean {
     return !!this.#errMsg_a[0];
   }
@@ -317,7 +310,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
 
   /**
    * ! Do not use `frstToken` and `lastToken`, because this will be called in
-   * ! `Pazr.pazmrk_$()()`.
+   *  `Pazr.pazmrk_$()()`.
    * @final
    */
   invalidateBdry(): this {
@@ -407,7 +400,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
 
   /**
    * Count Stnode error only. Do not count Token error.
-   * @fianl
+   * @final
    */
   get hasErr_1(): boolean {
     if (this.isErr) return true;
@@ -424,13 +417,13 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
 
   /**
    * @final
-   * @out @param sn_a
+   * @out @param outSn_a
    * @headconst @param except_x
    * @const @param fd_x
    * @return same as `hasErr_1`
    */
   filterTo(
-    sn_a: Stnode<T>[],
+    outSn_a: Stnode<T>[],
     except_x?: Stnode<T>,
     fd_x = FilterDepth_,
   ): boolean {
@@ -442,22 +435,22 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
       for (const sn of c_a) {
         ret ||= fd_x === 1
           ? sn.hasErr_1
-          : sn.filterTo(sn_a, except_x, fd_x - 1);
+          : sn.filterTo(outSn_a, except_x, fd_x - 1);
       }
     }
     if (ret) return true;
 
     if (this.isErr) ret = true;
-    else sn_a.push(this);
+    else outSn_a.push(this);
     return ret;
   }
   /** @see {@linkcode filterTo()} */
-  filterChildrenTo(sn_a: Stnode<T>[], except_x?: Stnode<T>): boolean {
+  filterChildrenTo(outSn_a: Stnode<T>[], except_x?: Stnode<T>): boolean {
     let ret = false;
     const c_a = this.children;
     if (c_a?.length) {
       for (const sn of c_a) {
-        ret ||= sn.filterTo(sn_a, except_x);
+        ret ||= sn.filterTo(outSn_a, except_x);
       }
     }
     ret ||= this.isErr;
@@ -668,14 +661,18 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   // /** @final */
   // get _oldInfo_(): string {
   //   return `${this._info}[ ` +
-  //     `${this.frstToken$?._name}${this.frstToken$?.oldRanval}, ` +
-  //     `${this.lastToken$?._name}${this.lastToken$?.oldRanval} ]`;
+  //     `${this.frstToken$?._name_}${this.frstToken$?.oldRanval}, ` +
+  //     `${this.lastToken$?._name_}${this.lastToken$?.oldRanval} ]`;
   // }
   /** @final */
-  override get _oldInfo_(): string {
-    return this.frstToken === this.lastToken
-      ? `${this._info_} [ ${this.frstToken._oldInfo_} ]`
-      : `${this._info_} [ ${this.frstToken._oldInfo_}, ${this.lastToken._oldInfo_} ]`;
+  override get _oldInfo_(): _OldInfo_ {
+    const frstOldInfo = this.frstToken._oldInfo_;
+    return {
+      sort: frstOldInfo.sort,
+      info: this.frstToken === this.lastToken
+        ? `${this._info_} [ ${frstOldInfo.info} ]`
+        : `${this._info_} [ ${frstOldInfo.info}, ${this.lastToken._oldInfo_.info} ]`,
+    };
   }
   /** @final */
   get _newInfo_(): string {

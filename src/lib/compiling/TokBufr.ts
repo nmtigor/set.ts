@@ -3,8 +3,7 @@
  * @license MIT
  ******************************************************************************/
 
-import type { lnum_t } from "../alias.ts";
-import { BufrDir } from "../alias.ts";
+import type { BufrDir, lnum_t } from "../alias.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import { Bufr } from "./Bufr.ts";
 import type { Ranval } from "./Ranval.ts";
@@ -17,7 +16,6 @@ import type { Tok } from "./alias.ts";
 /** @final */
 export class TokBufr<T extends Tok = BaseTok> extends Bufr {
   readonly tabsize: 2 | 4 | 8;
-  readonly #srcname: string;
 
   override get frstLine() {
     return this.frstLine_$ as TokLine<T>;
@@ -35,18 +33,18 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
 
   /**
    * @const @param text_x
-   * @const @param srcname_x
+   * @const @param dir_x
+   * @headconst @param fh_x
    * @const @param tabsize_x
    */
   constructor(
     text_x?: string,
-    dir_x = BufrDir.ltr,
+    dir_x = "ltr" as BufrDir,
+    fh_x?: FileSystemFileHandle,
     tabsize_x: 2 | 4 | 8 = 4,
-    srcname_x = "",
   ) {
-    super(text_x, dir_x);
+    super(text_x, dir_x, fh_x);
     this.tabsize = tabsize_x;
-    this.#srcname = srcname_x;
 
     //jjjj TOCLEANUP
     // this.dir_mo.registHandler((n_y) => {

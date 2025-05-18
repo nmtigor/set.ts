@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { INOUT } from "../../global.ts";
-import type { id_t, int, uint } from "../alias.ts";
+import type { id_t, uint } from "../alias.ts";
+import type { int } from "../alias.ts";
 import "../jslang.ts";
 import { assert, fail } from "./trace.ts";
 /*80--------------------------------------------------------------------------*/

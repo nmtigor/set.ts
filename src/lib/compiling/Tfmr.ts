@@ -14,6 +14,7 @@ import { TBufr } from "./TBufr.ts";
 import { TSeg, TSegFac } from "./TSeg.ts";
 /*80--------------------------------------------------------------------------*/
 
+//kkkk lazy to optimize loading speed
 export abstract class Tfmr {
   static #ID = 0 as id_t;
   /** @final */
@@ -75,7 +76,7 @@ export abstract class Tfmr {
     this.tbufr$ = tbufr_x ?? new TBufr(this.bufr$);
 
     if (this.tseg_fac$) {
-      this.tseg_fac$.setTSegFac(this, "hard");
+      this.tseg_fac$.set_TSegFac(this, "hard");
     } else {
       this.tseg_fac$ = new TSegFac(this);
     }
@@ -87,8 +88,7 @@ export abstract class Tfmr {
     // } else {
     //   this.curTSeg$ = undefined;
     // }
-    this.curTSeg$ = undefined;
-    this.stopTSeg$ = this.curTSeg$;
+    this.stopTSeg$ = this.curTSeg$ = undefined;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

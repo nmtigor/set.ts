@@ -4,7 +4,7 @@
  ******************************************************************************/
 
 import { INOUT } from "@fe-src/global.ts";
-import { isWhitespaceUCod } from "../../util/general.ts";
+import { isWhitespaceUCod } from "../../util/string.ts";
 import { assert, out } from "../../util/trace.ts";
 import { Lexr } from "../Lexr.ts";
 import { LocCompared } from "../Loc.ts";
@@ -83,19 +83,20 @@ export class SetLexr extends Lexr<SetTok> {
     return ret;
   }
 
-  #scanQuotkey(out_x: SetTk): void {
+  /** @out @param retTk_x */
+  @out((_, ret) => {
+    assert(ret.value === SetTok.quotkey);
+  })
+  private _scanQuotkey(retTk_x: SetTk): SetTk {
     /*#static*/ if (INOUT) {
-      assert(
-        this.reachLexBdry$() !== LocCompared.yes &&
-          this.curLoc$.ucod === /* '"' */ 0x22,
-      );
+      assert(!this.reachLexBdry$() && this.curLoc$.ucod === /* '"' */ 0x22);
     }
     const VALVE = 10_000;
     let valve = VALVE;
     do {
       const ucod = this.curLoc$.forw_ucod();
       if (this.atRigtBdry$() === LocCompared.yes) {
-        out_x.setErr(Err.double_quoted_string)
+        retTk_x.setErr(Err.double_quoted_string)
           .setStop(this.curLoc$, SetTok.quotkey);
         break;
       }
@@ -105,22 +106,19 @@ export class SetLexr extends Lexr<SetTok> {
       ) {
         this.curLoc$.forw();
         if (this.atRigtBdry$() === LocCompared.yes) {
-          out_x.setErr(Err.double_quoted_string)
+          retTk_x.setErr(Err.double_quoted_string)
             .setStop(this.curLoc$, SetTok.quotkey);
           break;
         }
         continue;
       }
       if (ucod === /* '"' */ 0x22) {
-        out_x.setStop(this.curLoc$.forw(), SetTok.quotkey);
+        retTk_x.setStop(this.curLoc$.forw(), SetTok.quotkey);
         break;
       }
     } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
-
-    /*#static*/ if (INOUT) {
-      assert(out_x.value === SetTok.quotkey);
-    }
+    return retTk_x;
   }
 
   /** @out @param retTk_x */
@@ -129,7 +127,7 @@ export class SetLexr extends Lexr<SetTok> {
   })
   private _scanFuzykey(retTk_x: SetTk): SetTk {
     /*#static*/ if (INOUT) {
-      assert(this.reachLexBdry$() !== LocCompared.yes);
+      assert(!this.reachLexBdry$());
     }
     const VALVE = 1_000;
     let valve = VALVE;
@@ -183,7 +181,7 @@ export class SetLexr extends Lexr<SetTok> {
     }
     switch (ucod) {
       case /* '"' */ 0x22:
-        this.#scanQuotkey(retTk);
+        this._scanQuotkey(retTk);
         break;
       case /* "?" */ 0x3F:
         retTk.setStop(this.curLoc$.forw(), SetTok.question);

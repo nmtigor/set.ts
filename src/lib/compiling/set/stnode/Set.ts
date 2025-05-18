@@ -20,9 +20,7 @@ export type UnparenSet = Intersect | Subtract | Union | BinaryErr | Rel | Key;
 
 /** @final */
 export class Set extends SetSN {
-  /**
-   * If `this.#unpanenSet instanceof SetTk`, must `hasErr`.
-   */
+  /** If `this.#unpanenSet instanceof SetTk`, must `hasErr`. */
   #unpanenSet: UnparenSet | SetTk;
   get unpanenSet() {
     return this.#unpanenSet;
@@ -80,7 +78,7 @@ export class Set extends SetSN {
     super();
     this.#unpanenSet = unparnSet_x;
     if (unparnSet_x instanceof SetTk) {
-      this.setErr(`${Err.unexpected_token_for_set}: ${unparnSet_x}`);
+      this.setErr(`${Err.set_unexpected_token}: ${unparnSet_x}`);
     } else {
       unparnSet_x.parent_$ = this;
     }

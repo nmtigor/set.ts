@@ -6,13 +6,13 @@
 import type { Chr, Dulstr, lnum_t, loff_t, uint32 } from "../alias.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import type { JSLangTok } from "./jslang/JSLangTok.ts";
-import type { LaTeXTok } from "./latex/LaTeXTok.ts";
 import type { MdextTok } from "./mdext/MdextTok.ts";
 import type { PDFTok } from "./pdf/PDFTok.ts";
 import type { PlainTok } from "./plain/PlainTok.ts";
 import type { RMLTok } from "./rml/RMLTok.ts";
 import type { SetTok } from "./set/SetTok.ts";
 import type { URITok } from "./uri/URITok.ts";
+import type { HTMLTok } from "./html/HTMLTok.ts";
 /*80--------------------------------------------------------------------------*/
 
 export type Locval = [lnum_t, loff_t];
@@ -45,15 +45,15 @@ export type sig_t = uint32;
  * JSLangTok: BaseTok ∪ [400,600)
  */
 export type Tok =
-  | BaseTok
-  | PlainTok
-  | SetTok
-  | URITok
-  | MdextTok
-  | PDFTok
-  | LaTeXTok
-  | RMLTok
-  | JSLangTok;
+  | BaseTok // <= 100
+  | PlainTok // <= 200
+  | SetTok // <= 300
+  | URITok // <= 400
+  | MdextTok // <= 500
+  | PDFTok // <= 600
+  | RMLTok // <= 800
+  | JSLangTok // <= 1000
+  | HTMLTok; // <= 1100
 
 /** Dulling map */
 export type Dulmap = Map<Chr, Dulstr | Dulstr[]>;
@@ -64,21 +64,19 @@ export const enum Err {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /* Set */
-  unexpected_token_for_set = "Unexpected token for Set",
+  set_unexpected_token = "Unexpected token for Set",
   lack_of_closing_paren = "Lack of closing parentheses",
   lack_of_opening_paren = "Lack of opening parentheses",
   /* BinaryOp */
-  lack_of_subtract_rhs = "Lack of Subtract rhs",
-  lack_of_intersect_rhs = "Lack of Intersect rhs",
-  lack_of_union_rhs = "Lack of Union rhs",
-  lack_of_err_rhs = "Lack of BinaryErr rhs",
+  subtract_lack_of_rhs = "In Subtract, lack of rhs",
+  intersect_lack_of_rhs = "In Intersect, lack of rhs",
+  union_lack_of_rhs = "In Union, lack of rhs",
+  binaryerr_lack_of_rhs = "In BinaryErr, lack of rhs",
   invalid_binary_op = "Invalid binary op",
   /* Rel */
-  unexpected_token_for_rel = "Unexpected token for Rel",
-  lack_of_rel_src = "Lack of Rel src",
-  lack_of_rel_rel = "Lack of Rel rel",
-  lack_of_rel_tgt = "Lack of Rel tgt",
-  lack_of_rel_2nd = 'Lack of Rel 2nd joiner ">"',
+  rel_unexpected_token = "Unexpected token for Rel",
+  rel_lack_of_srt = "In Rel, lack of src or rel ro tgt",
+  rel_lack_of_2nd = 'In Rel, lack of 2nd joiner ">"',
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /* SetextHeading */

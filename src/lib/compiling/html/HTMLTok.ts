@@ -1,19 +1,18 @@
 /** 80**************************************************************************
- * @module lib/compiling/set/alias
+ * @module lib/compiling/uri/HTMLTok
  * @license MIT
  ******************************************************************************/
 
-import type { uint } from "../../alias.ts";
+import { BaseTok } from "../BaseTok.ts";
 /*80--------------------------------------------------------------------------*/
 
-/** Operator precedence */
-export const enum Oprec {
-  lowest = 1,
-  err,
-  union, // ∪
-  intersect, // ∩
-  subtract, // \
-}
+enum HTMLTok_ {
+  _ = 1000,
 
-export type Paren = uint;
+  _max,
+}
+console.assert(HTMLTok_._max <= 1100);
+
+export type HTMLTok = BaseTok | HTMLTok_;
+export const HTMLTok = { ...BaseTok, ...HTMLTok_ };
 /*80--------------------------------------------------------------------------*/

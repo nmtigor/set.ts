@@ -13,19 +13,19 @@ import type { LexdInfo } from "./Lexr.ts";
 import { Lexr } from "./Lexr.ts";
 import type { Loc } from "./Loc.ts";
 import { Ranval } from "./Ranval.ts";
-import { Snt } from "./Snt.ts";
+import { type _OldInfo_, Snt } from "./Snt.ts";
 import { Stnode } from "./Stnode.ts";
 import type { TokLine } from "./TokLine.ts";
 import type { TokRan } from "./TokRan.ts";
 import type { Tok } from "./alias.ts";
 import { JSLangTok } from "./jslang/JSLangTok.ts";
-import { LaTeXTok } from "./latex/LaTeXTok.ts";
 import { MdextTok } from "./mdext/MdextTok.ts";
 import { PDFTok } from "./pdf/PDFTok.ts";
 import { PlainTok } from "./plain/PlainTok.ts";
 import { RMLTok } from "./rml/RMLTok.ts";
 import { SetTok } from "./set/SetTok.ts";
 import { URITok } from "./uri/URITok.ts";
+import { HTMLTok } from "./html/HTMLTok.ts";
 /*80--------------------------------------------------------------------------*/
 
 type NErr_ = 2;
@@ -175,25 +175,27 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   set value(_x: T) {
     this.#value = _x;
     /*#static*/ if (DEV) {
-      if (_x <= BaseTok._max) {
-        (this as any)._valvename = BaseTok[_x];
-      } else if (_x <= PlainTok._max) {
-        (this as any)._valvename = PlainTok[_x];
-      } else if (_x <= SetTok._max) {
-        (this as any)._valvename = SetTok[_x];
-      } else if (_x <= URITok._max) {
-        (this as any)._valvename = URITok[_x];
-      } else if (_x <= MdextTok._max) {
-        (this as any)._valvename = MdextTok[_x];
-      } else if (_x <= PDFTok._max) {
-        (this as any)._valvename = PDFTok[_x];
-      } else if (_x <= LaTeXTok._max) {
-        (this as any)._valvename = LaTeXTok[_x];
-      } else if (_x <= RMLTok._max) {
-        (this as any)._valvename = RMLTok[_x];
-      } else if (_x <= JSLangTok._max) {
-        (this as any)._valvename = JSLangTok[_x];
-      }
+      (this as any)._valvename_ = _x <= BaseTok._max
+        ? BaseTok[_x]
+        : _x <= PlainTok._max
+        ? PlainTok[_x]
+        : _x <= SetTok._max
+        ? SetTok[_x]
+        : _x <= URITok._max
+        ? URITok[_x]
+        : _x <= MdextTok._max
+        ? MdextTok[_x]
+        : _x <= PDFTok._max
+        ? MdextTok[_x]
+        : _x <= PDFTok._max
+        ? PDFTok[_x]
+        : _x <= RMLTok._max
+        ? RMLTok[_x]
+        : _x <= JSLangTok._max
+        ? JSLangTok[_x]
+        : _x <= HTMLTok._max
+        ? HTMLTok[_x]
+        : "unknown";
     }
   }
   lexdInfo: LexdInfo | null = null;
@@ -242,7 +244,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
-   * `this` is a DIRECT boundary token of `stnode`.
+   * `this` is a DIRECT boundary token of `stnod_$`.
    */
   stnod_$: Stnode<T> | undefined;
 
@@ -297,11 +299,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
    * @const @param strtLoc_x
    * @const @param stopLoc_x
    */
-  reset_Token(
-    value_x: T,
-    strtLoc_x?: Loc,
-    stopLoc_x?: Loc,
-  ): this {
+  reset_Token(value_x: T, strtLoc_x?: Loc, stopLoc_x?: Loc): this {
     if (strtLoc_x) this.setStrt(strtLoc_x);
     if (stopLoc_x) this.setStop(stopLoc_x);
     this.value = value_x;
@@ -744,26 +742,42 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //   this.stnod_$ = undefined;
   //   return this.nextToken_$;
   // }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
+  /**
+   * Non-undefined if `this` is one of tokens as env for next-level-compiling\
+   * `strtBdry` aligns with the start of first such token.
+   */
+  strtBdry?: Token<BaseTok.strtBdry>;
+  /**
+   * Non-undefined if `this` is one of tokens as env for next-level-compiling\
+   * `stopBdry` aligns with the stop of last such token.
+   */
+  stopBdry?: Token<BaseTok.stopBdry>;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  get _name(): string {
+  get _name_(): string {
     return BaseTok[this.value] ??
       PlainTok[this.value] ??
       SetTok[this.value] ??
       URITok[this.value] ??
       MdextTok[this.value] ??
       PDFTok[this.value] ??
-      LaTeXTok[this.value] ??
       RMLTok[this.value] ??
-      JSLangTok[this.value];
+      JSLangTok[this.value] ??
+      HTMLTok[this.value] ?? "unknown";
   }
 
   override toString() {
-    return `${this._name}${this.ran_$}${this.lexdInfo ? this.lexdInfo : ""}`;
+    return `${this._name_}${this.ran_$}${this.lexdInfo ? this.lexdInfo : ""}`;
   }
 
-  override get _oldInfo_(): string {
-    return `${this._name}${this.#oldRanval ?? `*${this.ran_$}`}`;
+  override get _oldInfo_(): _OldInfo_ {
+    const rv_ = this.#oldRanval ?? this.ran_$.toRanval();
+    return {
+      sort: [rv_.anchrLidx, rv_.anchrLoff],
+      info: `${this._name_}${this.#oldRanval ? "" : "*"}${rv_}`,
+    };
   }
 
   /**
@@ -799,7 +813,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     return [prev_a, this.toString(), next_a];
   }
 
-  // get _repr(): [string | undefined, string, string | undefined] {
+  // get _repr_(): [string | undefined, string, string | undefined] {
   //   return [
   //     this.prevToken_$?.toString(),
   //     this.toString(),
@@ -841,14 +855,14 @@ export const MdextTk = Token<MdextTok>;
 export type PDFTk = Token<PDFTok>;
 export const PDFTk = Token<PDFTok>;
 
-export type LaTeXTk = Token<LaTeXTok>;
-export const LaTeXTk = Token<LaTeXTok>;
-
 export type RMLTk = Token<RMLTok>;
 export const RMLTk = Token<RMLTok>;
 
 export type JSLangTk = Token<JSLangTok>;
 export const JSLangTk = Token<JSLangTok>;
+
+export type HTMLTk = Token<HTMLTok>;
+export const HTMLTk = Token<HTMLTok>;
 /*80--------------------------------------------------------------------------*/
 
 //kkkk Use a `TokenFac` (ref. `TSegFac`).

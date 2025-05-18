@@ -4,17 +4,18 @@
  ******************************************************************************/
 
 import { DEV, INOUT } from "../../global.ts";
-import { LastCb_i, Moo, type MooHandler } from "../Moo.ts";
-import type { id_t, lnum_t, ts_t, uint } from "../alias.ts";
-import { BufrDir, MAX_lnum } from "../alias.ts";
+import { Boor, LastCb_i, Moo, type MooHandler } from "../Moo.ts";
+import type { id_t, lnum_t, uint } from "../alias.ts";
+import type { BufrDir, ts_t } from "../alias.ts";
+import { MAX_lnum } from "../alias.ts";
 import type { EdtrBaseScrolr } from "../editor/EdtrBase.ts";
 import { SortedIdo } from "../util/SortedArray.ts";
 import { Unre } from "../util/Unre.ts";
-import { linesOf } from "../util/general.ts";
+import { linesOf } from "../util/string.ts";
 import { assert, out } from "../util/trace.ts";
 import { Line } from "./Line.ts";
 import type { Ran } from "./Ran.ts";
-import { g_ranval_fac, type Ranval } from "./Ranval.ts";
+import { g_ranval_fac } from "./Ranval.ts";
 import { Repl, type Replin } from "./Repl.ts";
 import { ReplActr } from "./ReplActr.ts";
 import type { sig_t } from "./alias.ts";
@@ -38,23 +39,25 @@ export class Bufr {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /* dir_mo */
-  readonly dir_mo = new Moo({ val: BufrDir.ltr, active: true });
+  readonly dir_mo = new Moo({ val: "ltr" as BufrDir, active: true });
   get dir() {
     return this.dir_mo.val;
   }
 
-  #onDir = (): void => {
+  #onDir = (n_x: BufrDir): void => {
     // const rv_a = this.edtr_sa.map((edtr_y) =>
     //   (edtr_y as EdtrBaseScrolr).proactiveCaret.ranval
     // );
     // console.log(rv_a);
-    this.refreshBufr();
+    this.refresh_Bufr();
     /* Notice, `invalidate_bcr()` should be called firstly for all `edtr_sa`,
     because setting `mc_.caretrvm![1]` in one `eds` will impact other `eds`s
     immediately. */
     this.edtr_sa.forEach((eds) => (eds as EdtrBaseScrolr).invalidate_bcr());
     for (let i = this.edtr_sa.length; i--;) {
       const eds = this.edtr_sa.at(i) as EdtrBaseScrolr;
+      eds.coo.el.dir = n_x;
+
       const mc_ = eds.proactiveCaret;
       if (mc_.shown) {
         // mc_.caretrvm![1].force().val = rv_a[i];
@@ -82,16 +85,16 @@ export class Bufr {
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /* modified */
-  readonly modified_mo = new Moo({ val: false });
+  readonly modified_br_Bufr = new Boor();
   get modified() {
-    return this.modified_mo.val;
+    return this.modified_br_Bufr.val;
   }
   /**
    * Also update `lastRead_ts` if `modified_x`
    * @const @param modified_x
    */
   set modified(modified_x: boolean) {
-    this.modified_mo.val = modified_x;
+    this.modified_br_Bufr.val = modified_x;
     if (modified_x) {
       this.updateLastReadTs();
     } else {
@@ -147,22 +150,23 @@ export class Bufr {
   /* repl_mo */
   readonly repl_mo = new Moo({ val: BufrReplState.idle });
 
-  #onReplStateChange:
-    | ((newval: BufrReplState, oldval: BufrReplState) => void)
-    | undefined;
-  set onReplStateChange(
-    _x: ((newval: BufrReplState, oldval: BufrReplState) => void) | undefined,
-  ) {
-    if (_x === this.#onReplStateChange) return;
+  //jjjj TOCLEANUP
+  // #onReplStateChange:
+  //   | ((newval: BufrReplState, oldval: BufrReplState) => void)
+  //   | undefined;
+  // set onReplStateChange(
+  //   _x: ((newval: BufrReplState, oldval: BufrReplState) => void) | undefined,
+  // ) {
+  //   if (_x === this.#onReplStateChange) return;
 
-    if (this.#onReplStateChange) {
-      this.repl_mo.removeHandler(this.#onReplStateChange);
-    }
-    if (_x) {
-      this.repl_mo.registHandler(_x);
-    }
-    this.#onReplStateChange = _x;
-  }
+  //   if (this.#onReplStateChange) {
+  //     this.repl_mo.removeHandler(this.#onReplStateChange);
+  //   }
+  //   if (_x) {
+  //     this.repl_mo.registHandler(_x);
+  //   }
+  //   this.#onReplStateChange = _x;
+  // }
   /* ~ */
 
   readonly repl_actr = new ReplActr(this);
@@ -215,11 +219,13 @@ export class Bufr {
   };
   addEdtr(_x: EdtrBaseScrolr) {
     this.edtr_sa.add(_x);
-    _x.active_mo.registHandler(this.#onEdtrActive);
+    _x.activ_mo.registHandler(this.#onEdtrActive);
   }
   remEdtr(_x: EdtrBaseScrolr) {
     this.edtr_sa.delete(_x);
-    _x.active_mo.removeHandler(this.#onEdtrActive);
+    _x.activ_mo.removeHandler(this.#onEdtrActive);
+
+    _x.reset_EdtrBaseScrolr(); //!
   }
 
   #curEdtrId = 0 as id_t;
@@ -228,16 +234,33 @@ export class Bufr {
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  /** @const @param text_x */
-  constructor(text_x?: string | undefined, dir_x = BufrDir.ltr) {
-    this.dir_mo.setMoo(dir_x)
+  #filehandle;
+  get filehandle() {
+    return this.#filehandle;
+  }
+
+  /**
+   * @const @param text_x
+   * @const @param dir_x
+   * @headconst @param fh_x
+   */
+  constructor(
+    text_x?: string | undefined,
+    dir_x = "ltr" as BufrDir,
+    fh_x?: FileSystemFileHandle,
+  ) {
+    this.dir_mo.set_Moo(dir_x)
       .registHandler(this.#onDir, { i: LastCb_i });
 
     this.frstLine_$ = this.createLine();
     this.frstLine_$.linked_$ = true;
     this.lastLine_$ = this.frstLine_$;
-
     if (text_x) this.setLines(text_x);
+
+    this.repl_mo.registHandler((n_y) => this.repl_actr.to(n_y));
+
+    this.#filehandle = fh_x;
+
     // // #if DEV && !TESTING
     //   reportBuf( text_a );
     // // #endif
@@ -268,7 +291,7 @@ export class Bufr {
     assert(valve, `Loop ${VALVE}±1 times`);
     line!.removeSelf_$();
 
-    this.modified_mo.reset_Moo();
+    this.modified_br_Bufr.reset_Boor();
     this.#lastRepl = this.#repl_saved = undefined;
 
     for (const ran of this.oldRan_a_$) ran[Symbol.dispose]();
@@ -276,12 +299,13 @@ export class Bufr {
 
     this.#doState = BufrDoState.idle;
 
-    this.#doq.resetUnre();
+    this.#doq.reset_Unre();
     this.canUndo_mo.reset_Moo();
     this.canRedo_mo.reset_Moo();
 
     this.repl_mo.reset_Moo();
-    this.#onReplStateChange = undefined;
+    //jjjj TOCLEANUP
+    // this.#onReplStateChange = undefined;
 
     this.repl_actr.fina();
 
@@ -289,12 +313,8 @@ export class Bufr {
 
     /*#static*/ if (DEV) {
       assert(this.#sigPool === 0xffff_ffff); //kkkk
-    }
-
-    /*#static*/ if (DEV) {
       assert(this.edtr_sa.length === 0); //kkkk
     }
-
     return this;
   }
 
@@ -419,22 +439,21 @@ export class Bufr {
   /**
    * @const @param replin_x [COPIED]
    *    If `Replin[]`, `.rv`s MUST be disjoint!.
-   * @const @param edtrId_x
    */
-  Do(replin_x: Replin | Replin[], edtrId_x = 0 as id_t): void {
+  Do(replin_x: Replin | Replin[]): void {
     const doState_save = this.#doState;
     this.#doState = BufrDoState.doing;
-    this.#curEdtrId = edtrId_x;
+    // this.#curEdtrId = edtrId_x;
 
     this.#lastRepl = new Repl(this, replin_x);
     this.#lastRepl.replFRun();
     this.modified = true;
 
     this.#doq.add(this.#lastRepl);
-    // console.log(this.#doq._repr);
+    // console.log(this.#doq._repr_);
     this.#updateDoCap();
 
-    this.#curEdtrId = 0 as id_t;
+    // this.#curEdtrId = 0 as id_t;
     this.#doState = doState_save;
   }
 
@@ -442,7 +461,7 @@ export class Bufr {
    * To trigger `repl_mo`s callbacks
    * @const @param text_x
    */
-  refreshBufr(text_x?: string): void {
+  refresh_Bufr(text_x?: string): void {
     const doState_save = this.#doState;
     this.#doState = BufrDoState.doing;
 
@@ -472,12 +491,12 @@ export class Bufr {
   }
 
   /** @const @param edtrId_x */
-  undo(edtrId_x = 0 as id_t): boolean {
+  undo(): boolean {
     const ret = this.#doq.canGetUn();
     if (ret) {
       const doState_save = this.#doState;
       this.#doState = BufrDoState.undoing;
-      this.#curEdtrId = edtrId_x;
+      // this.#curEdtrId = edtrId_x;
 
       // this.#doq.getUn().replBRun();
       // this.#updateDoCap();
@@ -488,18 +507,18 @@ export class Bufr {
 
       this.#updateDoCap();
 
-      this.#curEdtrId = 0 as id_t;
+      // this.#curEdtrId = 0 as id_t;
       this.#doState = doState_save;
     }
     return ret;
   }
   /** @const @param edtrId_x */
-  redo(edtrId_x = 0 as id_t): boolean {
+  redo(): boolean {
     const ret = this.#doq.canGetRe();
     if (ret) {
       const doState_save = this.#doState;
       this.#doState = BufrDoState.redoing;
-      this.#curEdtrId = edtrId_x;
+      // this.#curEdtrId = edtrId_x;
 
       this.#lastRepl = this.#doq.getRe();
       this.#lastRepl.replFRun();
@@ -507,7 +526,7 @@ export class Bufr {
 
       this.#updateDoCap();
 
-      this.#curEdtrId = 0 as id_t;
+      // this.#curEdtrId = 0 as id_t;
       this.#doState = doState_save;
     }
     return ret;

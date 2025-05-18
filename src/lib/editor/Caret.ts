@@ -31,10 +31,10 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   override readonly id = ++Caret.#ID as id_t;
 
   /* Pale */
-  #proactiveBg = Pale.get("lib.editor.Caret.proactiveBg");
-  #passiveBg = Pale.get("lib.editor.Caret.passiveBg");
-  #proactiveFatOl = Pale.get("lib.editor.Caret.proactiveFatOl");
-  #passiveFatOl = Pale.get("lib.editor.Caret.passiveFatOl");
+  #proactiveBg_p = Pale.get("lib.editor.Caret.proactiveBg");
+  #passiveBg_p = Pale.get("lib.editor.Caret.passiveBg");
+  #proactiveFatOl_p = Pale.get("lib.editor.Caret.proactiveFatOl");
+  #passiveFatOl_p = Pale.get("lib.editor.Caret.passiveFatOl");
   #onProactiveBgCssc = (_x: Cssc) => {
     if (this.#proactive) {
       this.el$.style.backgroundColor = _x;
@@ -54,16 +54,16 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     if (!this.#proactive) this.#fat_el.style.outlineColor = _x;
   };
   override observeTheme() {
-    this.#proactiveBg.registCsscHandler(this.#onProactiveBgCssc);
-    this.#passiveBg.registCsscHandler(this.#onPassiveBgCssc);
-    this.#proactiveFatOl.registCsscHandler(this.#onProactiveFatOlCssc);
-    this.#passiveFatOl.registCsscHandler(this.#onPassiveFatOlCssc);
+    this.#proactiveBg_p.registCsscHandler(this.#onProactiveBgCssc);
+    this.#passiveBg_p.registCsscHandler(this.#onPassiveBgCssc);
+    this.#proactiveFatOl_p.registCsscHandler(this.#onProactiveFatOlCssc);
+    this.#passiveFatOl_p.registCsscHandler(this.#onPassiveFatOlCssc);
   }
   /* ~ */
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   get edtr() {
-    return this.coo._scrolr;
+    return this.coo$._scrolr;
   }
 
   /* #caretrvm */
@@ -89,34 +89,34 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     return this === this.realBody;
   }
   get #bgCssc() {
-    return this.#proactive ? this.#proactiveBg.cssc : this.#passiveBg.cssc;
+    return this.#proactive ? this.#proactiveBg_p.cssc : this.#passiveBg_p.cssc;
   }
   get #fatOlCssc() {
     return this.#proactive
-      ? this.#proactiveFatOl.cssc
-      : this.#passiveFatOl.cssc;
+      ? this.#proactiveFatOl_p.cssc
+      : this.#passiveFatOl_p.cssc;
   }
   get #zCssc() {
     return this.#proactive ? Caret_proactive_z : Caret_passive_z;
   }
   /* ~ */
 
-  /* #focused */
+  /* #focusd */
   /** For main caret only */
-  #focused = false;
+  #focusd = false;
   @traceOut(_TRACE && EDITOR)
-  set focused(_x: boolean) {
+  private _setFocusd(_x: boolean): void {
     /*#static*/ if (_TRACE && EDITOR) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id_}.focused( ${_x} ) >>>>>>>`,
+        `${global.indent}>>>>>>> ${this._type_id_}._setFocusd( ${_x}) >>>>>>>`,
       );
     }
-    if (this.#focused === _x) return;
+    if (this.#focusd === _x) return;
 
-    this.#focused = _x;
+    this.#focusd = _x;
 
     // if (this.#st !== CaretState.hidden) {
-    if (this.#proactive && this.#focused) {
+    if (this.#proactive && this.#focusd) {
       this.blink();
     } else {
       this.stare();
@@ -124,7 +124,18 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     // }
 
     //jjjj TOCLEANUP
-    // if (this.#focused) this.#ranval_kept = undefined; //!
+    // if (this.#focusd) this.#ranval_kept = undefined; //!
+  }
+
+  #setFocusd_to: number | undefined;
+  set focusd_a100(_x: boolean) {
+    if (this.#setFocusd_to !== undefined) {
+      clearTimeout(this.#setFocusd_to);
+    }
+    this.#setFocusd_to = setTimeout(() => {
+      this._setFocusd(_x);
+    }, 100);
+    // this._setFocusd(_x);
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -217,13 +228,13 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   }
   /* ~ */
 
+  @out((self: Caret) => {
+    assert(!self.#shown);
+  })
   hideAll() {
     if (this.#shown) {
       this.hide();
       this.#hideSelec();
-    }
-    /*#static*/ if (INOUT) {
-      assert(!this.#shown);
     }
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
@@ -260,15 +271,15 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   /* ~ */
 
   /* For dragging selection */
-  rv_ctnr_$: Ranval | undefined;
+  rv_ctnr: Ranval | undefined;
   rv_drag_$: Ranval | undefined;
   /* ~ */
 
   /**
    * @headconst @param coo_x
-   * @headconst @param cr_x
+   * @headconst @param crm_x
    */
-  private constructor(coo_x: EdtrBase, cr_x?: CaretRvM) {
+  private constructor(coo_x: EdtrBase, crm_x?: CaretRvM) {
     super(coo_x, html("input"));
     this.#selec_fac = new SelecFac(coo_x);
 
@@ -315,25 +326,25 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
       display: "none",
       position: "absolute",
     });
-    this.reset_$(cr_x);
+    this.reset_$(crm_x);
 
+    this.on("focus", this._onFocus);
+    this.on("blur", this._onBlur);
     //jjjj TOCLEANUP
-    // this.on("focus", this.#onFocus);
-    // this.on("blur", this.#onBlur);
     // // this.on( "keydown", this.#onKeyDown );
     // this.on("keyup", this.#onKeyUp);
     // // this.on("input", this.#onInput);
     this.on("compositionend", () => this.el$.value = "");
   }
-  static create(coo_x: EdtrBase, cr_x?: CaretRvM) {
-    const ret = new Caret(coo_x, cr_x);
-    /*#static*/ if (DEV) ret.observeTheme();
+  static create(coo_x: EdtrBase, crm_x?: CaretRvM) {
+    const ret = new Caret(coo_x, crm_x);
+    ret.observeTheme();
     return ret;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  /** @headconst @param cr_x */
-  reset_$(cr_x?: CaretRvM) {
+  /** @headconst @param crm_x */
+  reset_$(crm_x?: CaretRvM) {
     if (this.#proactive) {
       this.#caretrvm![1].reset_Moo();
       /* Then other shadow carets are in-`active` automatically because
@@ -341,10 +352,10 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     } else if (this.active) {
       this.disable_$();
     }
-    this.#caretrvm = cr_x;
-    if (cr_x) {
-      cr_x[1].registHandler(this._onRanvalChange);
-      cr_x[1].forceOnce = true; //!
+    this.#caretrvm = crm_x;
+    if (crm_x) {
+      crm_x[1].registHandler(this._onRanvalChange);
+      crm_x[1].forceOnce = true; //!
     }
 
     //jjjj TOCLEANUP
@@ -390,12 +401,13 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   @out((self: Caret) => {
     assert((!self.active || self.#proactive) && !self.#shown);
   })
-  disable_$(): void {
+  disable_$(): this {
     this.hideAll();
     if (!this.#proactive) {
       this.#caretrvm?.[1].removeHandler(this._onRanvalChange);
       this.#caretrvm = undefined;
     }
+    return this;
   }
 
   /** @const @param rv_x */
@@ -404,7 +416,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   private _onRanvalChange(rv_x: Ranval) {
     /*#static*/ if (_TRACE && EDITOR) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id_}._onRanvalChange([${rv_x}]) >>>>>>>`,
+        `${global.indent}>>>>>>> ${this._type_id_}._onRanvalChange( [${rv_x}]) >>>>>>>`,
       );
     }
     this.ranval.become_Array(rv_x);
@@ -422,7 +434,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     this.draw_$();
 
     // if (this.#st === CaretState.hidden) {
-    if (this.#proactive && this.#focused) {
+    if (this.#proactive && this.#focusd) {
       this.blink();
     } else {
       this.stare();
@@ -460,23 +472,30 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  //jjjj TOCLEANUP
-  // #onFocus = (evt_x: FocusEvent) => {
-  //   /*#static*/ if (_TRACE && EDITOR) {
-  //     console.log(
-  //       `${global.indent}>>>>>>> ${this._type_id_}.#onFocus() >>>>>>>`,
-  //     );
-  //   }
-  //   /*#static*/ if (_TRACE && EDITOR) global.outdent;
-  //   return;
-  // };
-  // #onBlur = (evt_x: FocusEvent) => {
-  //   /*#static*/ if (_TRACE && EDITOR) {
-  //     console.log(`${global.indent}>>>>>>> ${this._type_id_}.#onBlur() >>>>>>>`);
-  //   }
-  //   /*#static*/ if (_TRACE && EDITOR) global.outdent;
-  //   return;
-  // };
+  @bind
+  // @traceOut(_TRACE && EDITOR)
+  private _onFocus(_evt_x: FocusEvent) {
+    // /*#static*/ if (_TRACE && EDITOR) {
+    //   console.log(
+    //     `${global.indent}>>>>>>> ${this._type_id_}._onFocus() >>>>>>>`,
+    //   );
+    // }
+    this.focusd_a100 = true;
+  }
+  @bind
+  // @traceOut(_TRACE && EDITOR)
+  private _onBlur(_evt_x: FocusEvent) {
+    // /*#static*/ if (_TRACE && EDITOR) {
+    //   console.log(
+    //     `${global.indent}>>>>>>> ${this._type_id_}._onBlur() >>>>>>>`,
+    //   );
+    // }
+    // console.log(`${global.dent}edtr.dragingM: ${this.edtr.dragingM}`);
+    // console.log(`${global.dent}edtr.draggedM: ${this.edtr.draggedM}`);
+    if (!this.edtr.dragingM) {
+      this.focusd_a100 = false;
+    }
+  }
 
   //jjjj TOCLEANUP
   // #onKeyUp = (evt_x: KeyboardEvent) => {
@@ -611,7 +630,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     //   h_x: h_x.fixTo(1),
     // });
     const edtr = this.edtr;
-    const wm_ = this.coo._writingMode;
+    const wm_ = this.coo$._writingMode;
     /**
      * blockSize
      *
@@ -653,7 +672,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     // }
 
     //jjjj should be able to configure if synchronize views or not
-    // if( this !== this.coo.caret ) return;
+    // if( this !== this.coo$.caret ) return;
 
     // if (edtr.el.scrollTop > y_x) {
     //   if (this.#proactive) {
@@ -759,7 +778,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     );
 
     if (!this.keepInlineOnce_$) {
-      this.inline_$ = genInlineMidOf(this.coo._writingMode)(sin);
+      this.inline_$ = genInlineMidOf(this.coo$._writingMode)(sin);
       // console.log("🚀 ~ Caret ~ #drawFocus ~ inline_$:", this.inline_$);
     }
     this.keepInlineOnce_$ = false;

@@ -4,8 +4,8 @@
  ******************************************************************************/
 
 import { INOUT, TESTING } from "../../global.ts";
-import type { id_t, lnum_t, loff_t, uint16 } from "../alias.ts";
-import { BufrDir, llen_MAX, MAX_lnum } from "../alias.ts";
+import type { BufrDir, id_t, lnum_t, loff_t, uint16 } from "../alias.ts";
+import { llen_MAX, MAX_lnum } from "../alias.ts";
 import { Bidi, type Bidir } from "../Bidi.ts";
 import { assert, out } from "../util/trace.ts";
 import type { Tok } from "./alias.ts";
@@ -65,7 +65,7 @@ export class Line implements Bidir {
   /* ~ */
 
   get dir(): BufrDir {
-    return this.bufr$?.dir ?? BufrDir.ltr;
+    return this.bufr$?.dir ?? "ltr";
   }
 
   readonly bidi = new Bidi();

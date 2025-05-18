@@ -12,7 +12,7 @@ FuzykeySeq:
 Key:
     (QuotkeySeq | FuzykeySeq)+
 Rel:
-    (Key | \?) \s* > \s* (Key | \?) \s* > \s* (Key | \?)
+    (Key | \?)? \s* > \s* (Key | \?)? \s* > \s* (Key | \?)?
 Substract:
     Set \s* \ \s* Set
 Intersect:
@@ -42,11 +42,6 @@ within the dirty node. So it is very efficient for editing.
 
 ```bash
 cd /path_to/set.ts/src/test
-deno test --allow-read --allow-net
+# deno 2.3.1
+deno test -RN # 2 passed (15 steps)
 ```
-
-### Known issue
-
-Using Deno 2.1.8 causes "segmentation fault" in one-line error message! ([#25192](https://github.com/denoland/deno/issues/25192))
-
-Downgrading to 1.45.5 (`deno upgrade --version 1.45.5`) works fine.

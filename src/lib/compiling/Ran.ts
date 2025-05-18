@@ -241,7 +241,7 @@ export class Ran {
   }
 
   /**
-   * `in( this.bufr )`
+   * `in( this.bufr)`
    * @final
    * @const
    */

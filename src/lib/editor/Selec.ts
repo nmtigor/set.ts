@@ -96,11 +96,11 @@ class Selec extends HTMLVuu<EdtrBase, HTMLSpanElement> {
   }
 
   reuse_Selec(): this {
-    /*#static*/ if (DEV) this.observeTheme();
+    this.observeTheme();
     return this;
   }
   reset_Selec(): this {
-    /*#static*/ if (DEV) this.unobserveTheme();
+    this.unobserveTheme();
     return this;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -176,6 +176,7 @@ export class SelecFac extends Factory<Selec> {
   //     this.produce(0);
   //   }
   // }
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @implement */
   protected createVal$() {

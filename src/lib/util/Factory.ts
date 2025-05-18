@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { INOUT } from "../../global.ts";
-import type { int, uint } from "../alias.ts";
+import type { uint } from "../alias.ts";
+import type { int } from "../alias.ts";
 import { assert } from "./trace.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -47,9 +48,7 @@ export abstract class Factory<V> {
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  /**
-   * Create and use
-   */
+  /** Create and use */
   protected abstract createVal$(i_x: uint): V;
 
   /**
