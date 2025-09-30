@@ -3,18 +3,19 @@
  * @license MIT
  ******************************************************************************/
 
-import { assert } from "@fe-lib/util/trace.ts";
-import { INOUT } from "@fe-src/global.ts";
-import { SetSN } from "../SetSN.ts";
+import { assert } from "@fe-lib/util.ts";
+import { INOUT } from "@fe-src/preNs.ts";
 import type { SetTk } from "../../Token.ts";
 import { FuzykeySeq } from "./FuzykeySeq.ts";
 import { QuotkeySeq } from "./QuotkeySeq.ts";
+import { SetSN } from "./SetSN.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
 export class Key extends SetSN {
+  #children;
   override get children(): (FuzykeySeq | QuotkeySeq)[] {
-    return this.children$ as (FuzykeySeq | QuotkeySeq)[];
+    return this.#children;
   }
 
   override get frstToken(): SetTk {
@@ -29,7 +30,7 @@ export class Key extends SetSN {
       assert(sn_a.length);
     }
     super();
-    this.children$ = sn_a;
+    this.#children = sn_a;
 
     for (const sn of sn_a) sn.parent_$ = this;
   }

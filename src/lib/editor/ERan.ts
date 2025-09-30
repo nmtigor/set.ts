@@ -3,13 +3,12 @@
  * @license MIT
  ******************************************************************************/
 
-import { LOG_cssc } from "../../alias.ts";
-import { INOUT, PRF } from "../../global.ts";
+import { INOUT } from "../../preNs.ts";
 import type { id_t, loff_t, uint } from "../alias.ts";
 import { Endpt } from "../alias.ts";
 import { $facil_node, $ovlap } from "../symbols.ts";
+import { assert, fail } from "../util.ts";
 import { Factory } from "../util/Factory.ts";
-import { assert, fail } from "../util/trace.ts";
 import { ELoc } from "./ELoc.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -81,8 +80,8 @@ export class ERan {
   // dp_$ = Edran_DP.none; /** used by Caret.#drawFocus() */
 
   /**
-   * @headconst @param focusELoc_x [COPIED]
-   * @headconst @param anchrELoc_x [COPIED]
+   * @headmovd @const @param focusELoc_x
+   * @headmovd @const @param anchrELoc_x
    */
   constructor(focusELoc_x: ELoc, anchrELoc_x?: ELoc) {
     this.#focusELoc = focusELoc_x;
@@ -193,7 +192,7 @@ export class ERan {
   /**
    * Assign `#range` only.\
    * ! Range's start is always ahead of end, otherwise `collapsed`.
-   * @return synchronized `#range`
+   * @borrow @return synchronized `#range`
    */
   syncRange_$(): Range {
     const ctnr = this.anchrCtnr;
@@ -258,12 +257,12 @@ const enum EdranCollapseTo {
 class ERanFac_ extends Factory<ERan> {
   /** @implement */
   protected createVal$() {
-    /*#static*/ if (PRF) {
-      console.log(
-        `%c# of cached ERan instances: ${this.val_a$.length + 1}`,
-        `color:${LOG_cssc.performance}`,
-      );
-    }
+    // /*#static*/ if (PRF) {
+    //   console.log(
+    //     `%c# of cached ERan instances: ${this.val_a$.length + 1}`,
+    //     `color:${LOG_cssc.performance}`,
+    //   );
+    // }
     return new ERan(new ELoc(document, 0));
   }
 

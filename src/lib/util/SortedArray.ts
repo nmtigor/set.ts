@@ -3,11 +3,10 @@
  * @license MIT
  ******************************************************************************/
 
-import { INOUT } from "../../global.ts";
-import type { id_t, uint } from "../alias.ts";
-import type { int } from "../alias.ts";
+import { INOUT } from "../../preNs.ts";
+import type { id_t, int, uint } from "../alias.ts";
 import "../jslang.ts";
-import { assert, fail } from "./trace.ts";
+import { assert, fail } from "../util.ts";
 /*80--------------------------------------------------------------------------*/
 
 export type Less<T> = (a: T, b: T) => boolean;
@@ -41,7 +40,7 @@ export class SortedArray<T> extends Array<T> {
     this.#tmp_a ??= [];
     return this.#tmp_a;
   }
-  get _tmp_a() {
+  get _tmp_a_() {
     return this.#tmp_a;
   }
 
@@ -50,9 +49,9 @@ export class SortedArray<T> extends Array<T> {
    * Helper. Set by `includes()`
    */
   #index: uint = 0;
-  get _index() {
-    return this.#index;
-  }
+  // get _index_() {
+  //   return this.#index;
+  // }
 
   #sorted: boolean;
   get sorted() {
@@ -167,7 +166,7 @@ export class SortedArray<T> extends Array<T> {
    * @const @param jdx_x
    * @const @param len_x
    */
-  #find_j = (val_x: T, jdx_x: uint, len_x: uint): boolean => {
+  #find_j(val_x: T, jdx_x: uint, len_x: uint): boolean {
     let ret = false;
     if (len_x === 1) {
       if (this.#less(this[jdx_x], val_x)) {
@@ -190,7 +189,7 @@ export class SortedArray<T> extends Array<T> {
       }
     }
     return ret;
-  };
+  }
 
   /**
    * Return index of smallest one greater equal than `val_x
@@ -238,7 +237,7 @@ export class SortedArray<T> extends Array<T> {
   /**
    * Newly add, keeping sorted
    * @headconst @param val_x
-   * @return Return the index of the added;
+   * @return the index of the added;
    *    if already exist, return `-1`
    */
   add(val_x: T): uint | -1 {
@@ -254,13 +253,12 @@ export class SortedArray<T> extends Array<T> {
     }
     return had ? -1 : this.#index;
   }
-  /**
-   * @headconst @param val_a_x
-   */
-  add_O(val_a_x?: T[]): void {
+  /** @headconst @param val_a_x */
+  add_O(val_a_x?: T[]): this {
     if (val_a_x) {
       for (const v of val_a_x) this.add(v);
     }
+    return this;
   }
 
   /**
@@ -384,9 +382,7 @@ export class SortedArray<T> extends Array<T> {
       }
     }
   }
-  /**
-   * @primaryconst
-   */
+  /** @primaryconst */
   resort(): this {
     if (this.#sorted) return this;
 

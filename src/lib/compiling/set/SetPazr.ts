@@ -3,13 +3,14 @@
  * @license MIT
  ******************************************************************************/
 
-import { assert, fail, traceOut } from "@fe-lib/util/trace.ts";
-import { _TRACE, global, INOUT } from "@fe-src/global.ts";
+import { assert, fail } from "@fe-lib/util.ts";
+import { trace, traceOut } from "@fe-lib/util/trace.ts";
+import { _TRACE, INOUT } from "@fe-src/preNs.ts";
 import type { uint } from "../../alias.ts";
 import { Pazr } from "../Pazr.ts";
-import { SetTk } from "../Token.ts";
+import type { SetTk } from "../Token.ts";
+import { Token } from "../Token.ts";
 import { Err } from "../alias.ts";
-import type { SetSN } from "./SetSN.ts";
 import { SetTok } from "./SetTok.ts";
 import { Oprec, type Paren } from "./alias.ts";
 import { BinaryErr, BinaryOp } from "./stnode/BinaryOp.ts";
@@ -19,6 +20,7 @@ import { Key } from "./stnode/Key.ts";
 import { QuotkeySeq } from "./stnode/QuotkeySeq.ts";
 import { Rel } from "./stnode/Rel.ts";
 import { Set, type UnparenSet } from "./stnode/Set.ts";
+import type { SetSN } from "./stnode/SetSN.ts";
 import { Subtract } from "./stnode/Subtract.ts";
 import { Union } from "./stnode/Union.ts";
 /*80--------------------------------------------------------------------------*/
@@ -40,6 +42,11 @@ export class SetPazr extends Pazr<SetTok> {
   // }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
+  /*
+  jjjj consider using "binding power"
+  ref. [Pratt Parsing](https://youtu.be/0c8b7YfsBKs)
+  The reason is that the idea of "binding power" can be generalized to e.g. jslang!
+  */
   /** @implement */
   protected paz_impl$() {
     this.#valve = SetPazr.#VALVE;
@@ -82,7 +89,7 @@ export class SetPazr extends Pazr<SetTok> {
     assert(this.#valve--, `Loop ${SetPazr.#VALVE} times`);
     /*#static*/ if (_TRACE) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id_}.pazSet_$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._type_id_}.pazSet_$() >>>>>>>`,
       );
     }
     (_x as any).oprec ??= Oprec.lowest;
@@ -103,7 +110,7 @@ export class SetPazr extends Pazr<SetTok> {
       //     if (this.reachPazBdry$()) {
       //       snt = this.strtPazTk$ = curTk_save;
       //       _x.lhs = new Set(snt, 0);
-      //       _x.lhs.setErr(Err.lack_of_closing_paren);
+      //       _x.lhs.setErr(Err.set_no_cloz_paren);
       //       this.errSn_sa$.add(_x.lhs);
       //       return _x.lhs;
       //     }
@@ -125,7 +132,7 @@ export class SetPazr extends Pazr<SetTok> {
       // _x.lhs = new Set(snt, _x.selfParen);
       // if (this.reachPazBdry$()) {
       //   if (_x.selfParen) {
-      //     _x.lhs.setErr(Err.lack_of_closing_paren);
+      //     _x.lhs.setErr(Err.set_no_cloz_paren);
       //   }
       //   if (_x.lhs.isErr) this.errSn_sa$.add(_x.lhs);
       //   return _x.lhs;
@@ -158,7 +165,7 @@ export class SetPazr extends Pazr<SetTok> {
   pazRelKey_$(): Rel | Key | SetTk {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id_}.pazRelKey_$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._type_id_}.pazRelKey_$() >>>>>>>`,
       );
     }
     let srcSn: Key | SetTk | undefined;
@@ -195,7 +202,7 @@ export class SetPazr extends Pazr<SetTok> {
     if (this.reachPazBdry$()) {
       ret = new Rel(srcSn, jnr_1);
       for (const tk of unexpTk_a) {
-        ret.setErr(`${Err.rel_unexpected_token}: ${tk}`);
+        ret.setErr(`${Err.set_rel_unexpected_token}: ${tk}`);
       }
       this.errSn_sa$.add(ret);
       return ret;
@@ -223,7 +230,7 @@ export class SetPazr extends Pazr<SetTok> {
     if (this.reachPazBdry$()) {
       ret = new Rel(srcSn, jnr_1, relSn, jnr_2);
       for (const tk of unexpTk_a) {
-        ret.setErr(`${Err.rel_unexpected_token}: ${tk}`);
+        ret.setErr(`${Err.set_rel_unexpected_token}: ${tk}`);
       }
       this.errSn_sa$.add(ret);
       return ret;
@@ -237,7 +244,7 @@ export class SetPazr extends Pazr<SetTok> {
       if (this.reachPazBdry$()) {
         ret = new Rel(srcSn, jnr_1, relSn, jnr_2, undefined);
         for (const tk of unexpTk_a) {
-          ret.setErr(`${Err.rel_unexpected_token}: ${tk}`);
+          ret.setErr(`${Err.set_rel_unexpected_token}: ${tk}`);
         }
         if (ret.isErr) this.errSn_sa$.add(ret);
         return ret;
@@ -261,7 +268,7 @@ export class SetPazr extends Pazr<SetTok> {
     }
     ret = new Rel(srcSn, jnr_1, relSn, jnr_2, tgtSn);
     for (const tk of unexpTk_a) {
-      ret.setErr(`${Err.rel_unexpected_token}: ${tk}`);
+      ret.setErr(`${Err.set_rel_unexpected_token}: ${tk}`);
     }
     if (ret.isErr) this.errSn_sa$.add(ret);
     return ret;
@@ -271,7 +278,7 @@ export class SetPazr extends Pazr<SetTok> {
   pazKey_$(): Key {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id_}.pazKey_$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._type_id_}.pazKey_$() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -312,7 +319,7 @@ export class SetPazr extends Pazr<SetTok> {
   pazFuzykeySeq_$(): FuzykeySeq {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id_}.pazFuzykeySeq_$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._type_id_}.pazFuzykeySeq_$() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -345,7 +352,7 @@ export class SetPazr extends Pazr<SetTok> {
   pazQuotkeySeq_$(): QuotkeySeq {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${global.indent}>>>>>>> ${this._type_id_}.pazQuotkeySeq_$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._type_id_}.pazQuotkeySeq_$() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -395,7 +402,7 @@ export class SetPazr extends Pazr<SetTok> {
         if (this.reachPazBdry$()) {
           snt = this.strtPazTk$ = curTk_save;
           _x.lhs = new Set(snt, 0);
-          _x.lhs.setErr(Err.lack_of_closing_paren);
+          _x.lhs.setErr(Err.set_no_cloz_paren);
           this.errSn_sa$.add(_x.lhs);
           return;
         }
@@ -417,7 +424,7 @@ export class SetPazr extends Pazr<SetTok> {
     _x.lhs = new Set(snt, _x.selfParen);
     if (this.reachPazBdry$()) {
       if (_x.selfParen) {
-        _x.lhs.setErr(Err.lack_of_closing_paren);
+        _x.lhs.setErr(Err.set_no_cloz_paren);
       }
       if (_x.lhs.isErr) this.errSn_sa$.add(_x.lhs);
     }
@@ -447,7 +454,7 @@ export class SetPazr extends Pazr<SetTok> {
     _x.lhs = new Set(sn_, _x.selfParen);
     if (this.reachPazBdry$()) {
       if (_x.selfParen) {
-        _x.lhs.setErr(Err.lack_of_closing_paren);
+        _x.lhs.setErr(Err.set_no_cloz_paren);
       }
       if (_x.lhs.isErr) this.errSn_sa$.add(_x.lhs);
       return;
@@ -498,12 +505,12 @@ export class SetPazr extends Pazr<SetTok> {
       }
     } else if (paren_1) {
       lhs.paren_$ = lhs.paren + paren_1;
-      lhs.setErr(Err.lack_of_opening_paren);
+      lhs.setErr(Err.set_no_open_paren);
     }
     if (this.reachPazBdry$()) {
       if (ret) {
         lhs.paren_$ = lhs.paren + ret;
-        lhs.setErr(Err.lack_of_closing_paren);
+        lhs.setErr(Err.set_no_cloz_paren);
       }
       return undefined;
     }
@@ -524,7 +531,7 @@ export class SetPazr extends Pazr<SetTok> {
       this.newSn_$ = this.pazKey_$();
     } else if (sn_x instanceof Rel) {
       const snt = this.pazRelKey_$();
-      if (snt instanceof SetTk) this.newSn_$ = undefined;
+      if (snt instanceof Token) this.newSn_$ = undefined;
       else this.newSn_$ = snt;
     } else if (sn_x instanceof Set) {
       this.newSn_$ = this.pazSet_$();

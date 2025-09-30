@@ -3,18 +3,14 @@
  * @license MIT
  ******************************************************************************/
 
-import { assert, fail } from "@fe-lib/util/trace.ts";
-import { INOUT } from "@fe-src/global.ts";
-import { SetSN } from "../SetSN.ts";
-import { SetTk } from "../../Token.ts";
+import { assert } from "@fe-lib/util.ts";
+import { INOUT } from "@fe-src/preNs.ts";
+import type { SetTk } from "../../Token.ts";
+import { SetSN } from "./SetSN.ts";
 /*80--------------------------------------------------------------------------*/
 
 export abstract class SubkeySeq extends SetSN {
   readonly tk_a;
-
-  override get children() {
-    return undefined;
-  }
 
   override get frstToken(): SetTk {
     return this.frstToken$ ??= this.tk_a[0];

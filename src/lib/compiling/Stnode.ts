@@ -3,11 +3,10 @@
  * @license MIT
  ******************************************************************************/
 
-import { INOUT } from "../../global.ts";
-import type { int } from "../alias.ts";
-import type { loff_t, TupleOf, uint } from "../alias.ts";
-import { type Less, SortedArray, SortedIdo } from "../util/SortedArray.ts";
-import { assert, fail, out } from "../util/trace.ts";
+import { INOUT } from "../../preNs.ts";
+import type { int, loff_t, TupleOf, uint } from "../alias.ts";
+import { assert, fail, out } from "../util.ts";
+import { type Less, SortedArray } from "../util/SortedArray.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import type { Loc } from "./Loc.ts";
 import { type _OldInfo_, Snt, SortedSnt_id } from "./Snt.ts";
@@ -77,12 +76,13 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   }
   /* ~ */
 
-  /* children$ */
-  protected children$: Stnode<T>[] | undefined;
+  /* children */
+  // protected children$: Stnode<T>[] | undefined;
   get children(): Stnode<T>[] | undefined {
-    return fail("Not implemented");
+    // return fail("Not implemented");
+    return undefined;
   }
-  _c(i_x: int) {
+  _c_(i_x: int) {
     return this.children?.at(i_x);
   }
 
@@ -117,9 +117,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   //   return ret ?? c_;
   // }
 
-  /**
-   * @return [COPIED]
-   */
+  /** @headmove @return */
   get siblings(): Stnode<T>[] | undefined {
     const s_a = this.parent_$?.children;
     if (!s_a?.length) return undefined;
@@ -213,9 +211,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     return !!this.#errMsg_a[0];
   }
 
-  /**
-   * @const @param errMsg_x
-   */
+  /** @const @param errMsg_x */
   setErr(errMsg_x: string): this {
     for (let i = 0; i < NErr_; ++i) {
       if (!this.#errMsg_a[i]) {
@@ -429,20 +425,20 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   ): boolean {
     if (this === except_x) return false;
 
-    let ret = false;
+    let hasErr = false;
     const c_a = this.children;
     if (c_a?.length) {
       for (const sn of c_a) {
-        ret ||= fd_x === 1
+        hasErr ||= fd_x === 1
           ? sn.hasErr_1
           : sn.filterTo(outSn_a, except_x, fd_x - 1);
       }
     }
-    if (ret) return true;
+    if (hasErr) return true;
 
-    if (this.isErr) ret = true;
+    if (this.isErr) hasErr = true;
     else outSn_a.push(this);
-    return ret;
+    return hasErr;
   }
   /** @see {@linkcode filterTo()} */
   filterChildrenTo(outSn_a: Stnode<T>[], except_x?: Stnode<T>): boolean {
@@ -493,23 +489,25 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   // }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
+  /** Helper */
+  static readonly sn_sa = new SortedStnod_depth();
   /**
-   * @headconst @param sn_sa_x
    * @out @param unrelSn_sa
    * @headconst @param unrelSn_a
    * @out @param debug
+   * @headconst @param sn_sa_x
    * @return `sn_sa_x[0]`
    */
-  @out((_, _1, args) => {
-    const sn_sa = args[0];
+  @out((self: typeof Stnode<any>, _1, args) => {
+    const sn_sa = args[1] ?? self.sn_sa;
     assert(
       sn_sa.length === 1 && sn_sa[0] &&
         (!sn_sa[0].isErr || sn_sa[0].isRoot),
     );
   })
   static calcCommon(
-    sn_sa_x: SortedStnod_depth,
     { unrelSn_sa, unrelSn_a, debug }: CalcCommonO_ = {},
+    sn_sa_x = this.sn_sa,
   ): Stnode<any> {
     /*#static*/ if (INOUT) {
       assert(sn_sa_x.length);

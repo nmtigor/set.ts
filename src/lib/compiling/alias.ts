@@ -60,29 +60,48 @@ export type Dulmap = Map<Chr, Dulstr | Dulstr[]>;
 /*80--------------------------------------------------------------------------*/
 
 export const enum Err {
-  double_quoted_string = "Double quoted string does not closed.",
+  double_quoted_string_open = "Double quoted string does not closed.",
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /* Set */
   set_unexpected_token = "Unexpected token for Set",
-  lack_of_closing_paren = "Lack of closing parentheses",
-  lack_of_opening_paren = "Lack of opening parentheses",
-  /* BinaryOp */
-  subtract_lack_of_rhs = "In Subtract, lack of rhs",
-  intersect_lack_of_rhs = "In Intersect, lack of rhs",
-  union_lack_of_rhs = "In Union, lack of rhs",
-  binaryerr_lack_of_rhs = "In BinaryErr, lack of rhs",
-  invalid_binary_op = "Invalid binary op",
-  /* Rel */
-  rel_unexpected_token = "Unexpected token for Rel",
-  rel_lack_of_srt = "In Rel, lack of src or rel ro tgt",
-  rel_lack_of_2nd = 'In Rel, lack of 2nd joiner ">"',
-  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+  set_no_cloz_paren = "In Set, no closing parentheses.",
+  set_no_open_paren = "In Set, no opening parentheses.",
 
-  /* SetextHeading */
-  unexpected_close = "Unexpected close",
+  /* BinaryOp */
+  set_subtract_no_rhs = "In Subtract, no rhs.",
+  set_intersect_no_rhs = "In Intersect, no rhs.",
+  set_union_no_rhs = "In Union, no rhs.",
+  set_binaryerr_no_rhs = "In BinaryErr, no rhs.",
+  set_invalid_binary_op = "In BinaryOp, binary op is invalid.",
+
+  /* Rel */
+  set_rel_unexpected_token = "Unexpected token for Rel",
+  set_rel_no_srt = "In Rel of set, no src or rel or tgt.",
+  set_rel_no_2nd = 'In Rel of set, no 2nd joiner ">".',
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+  /* mdext */
+
+  mdext_unexpected_close = "Unexpected close for Block of mdext",
+
   /* Link */
   //jjjj TOCLEANUP
   // unrecognizable_linkdest = "The link destination is unrecognizable.",
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
+  ipv4_leading_0 = "Redundant leading 0 in one dec-octet field for IPv4",
+  ipv4_exceed_255 = "In IPv4, exceed 255 in one dec-octet field.",
+  ipv6_no_2nd_colon = 'In IPv6, expect 2nd colon of "::".',
+  ipv6_no_enough_h16 = "In IPv6, there are no enough h16.",
+  ipv6_no_h16 = "In IPv6, no h16.",
+  ip_no_open_bracket = "In IPv6 or IPv7, no opening bracket.",
+  ip_no_cloz_bracket = "In IPv6 or IPv7, no closing bracket.",
+
+  uri_invalid_tail = "Invalid tail for URI",
+
+  uri_pathpart_conflict = "In PathPart of uri, path parts conflict.",
+  uri_no_authority = "In PathPart of uri, no authority before path-abempty.",
+  uri_no_scheme = "In URI, no scheme.",
+  uri_unexpected_scheme = "Unexpected token for URI",
 }
 /*80--------------------------------------------------------------------------*/

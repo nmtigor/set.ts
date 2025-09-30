@@ -3,8 +3,8 @@
  * @license MIT
  ******************************************************************************/
 
-import { Stnode } from "../Stnode.ts";
-import type { SetTok } from "./SetTok.ts";
+import { Stnode } from "../../Stnode.ts";
+import type { SetTok } from "../SetTok.ts";
 /*80--------------------------------------------------------------------------*/
 
 export abstract class SetSN extends Stnode<SetTok> {}

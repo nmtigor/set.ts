@@ -16,9 +16,7 @@ import * as Is from "./is.ts";
  */
 // const lt_re_ = /\r\n|\n|\r|\u2028|\u2029/g;
 const lt_re_ = /\r\n|\n|\r/g;
-/**
- * @const @param text_x
- */
+/** @const @param text_x */
 export const linesOf = (text_x: string) => text_x.split(lt_re_);
 // console.log(linesOf("abc\n\n123\n"));
 /*80--------------------------------------------------------------------------*/
@@ -67,7 +65,7 @@ export const isASCIIControl = (_x: uint16): boolean =>
 /**
  * [White space](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#white_space)
  */
-const ws_a_ = [
+export const ws_a = [
   0x9, 0xB, 0xC, 0x20, 0xA0,
   0x0_1680,
   0x0_2000, 0x0_2001, 0x0_2002, 0x0_2003, 0x0_2004, 0x0_2005, 
@@ -77,7 +75,8 @@ const ws_a_ = [
   0x0_FEFF,
 ] as uint16[];
 /** @see {@linkcode isSpaceOrTab()} */
-export const isWhitespaceUCod = (_x: uint16) => ws_a_.indexOf(_x) >= 0;
+export const isWhitespaceUCod = (_x: uint16, a_x: uint16[] = ws_a) =>
+  a_x.indexOf(_x) >= 0;
 
 // /* Not sure if js impls use regexp interning like string. So. */
 // const ws_re_ = /^\s+$/;
@@ -174,10 +173,15 @@ export const uint8FromB64 = (b64_x: string): Uint8Array => {
   return uint8;
 };
 
+/** @const @param b64_x */
+export const decodeB64 = (b64_x: string): string => {
+  return decodeABV(uint8FromB64(b64_x));
+};
+
 /**
  * Ref. https://github.com/denoland/std/blob/e02e89fef3cd7f625e487f76e9d56b8b60137102/encoding/base64url.ts#L31
- * @throw `TypeError`
  * @param b64url_x
+ * @throw `TypeError`
  */
 export const b64FromB64url = (b64url_x: string): string => {
   if (!/^[-_A-Z0-9]*?={0,2}$/i.test(b64url_x)) {
@@ -199,9 +203,18 @@ export const b64FromB64url = (b64url_x: string): string => {
 /**
  * Ref. https://github.com/denoland/std/blob/e02e89fef3cd7f625e487f76e9d56b8b60137102/encoding/base64url.ts#L88
  * @param b64url_x
+ * @throw `TypeError`
  */
 export const uint8FromB64url = (b64url_x: string): Uint8Array => {
   return uint8FromB64(b64FromB64url(b64url_x));
+};
+
+/**
+ * @const @param b64url_x
+ * @throw `TypeError`
+ */
+export const decodeB64url = (b64url_x: string): string => {
+  return decodeABV(uint8FromB64url(b64url_x));
 };
 /*80--------------------------------------------------------------------------*/
 

@@ -3,11 +3,20 @@
  * @license MIT
  ******************************************************************************/
 
-import { INOUT, TESTING } from "../../global.ts";
-import type { BufrDir, id_t, lnum_t, loff_t, uint16 } from "../alias.ts";
-import { llen_MAX, MAX_lnum } from "../alias.ts";
+import { INOUT } from "../../preNs.ts";
+import type {
+  BufrDir,
+  id_t,
+  lnum_t,
+  loff_t,
+  ts_t,
+  UChr,
+  uint,
+  uint16,
+} from "../alias.ts";
+import { lnum_MAX, loff_MAX } from "../alias.ts";
 import { Bidi, type Bidir } from "../Bidi.ts";
-import { assert, out } from "../util/trace.ts";
+import { assert, out } from "../util.ts";
 import type { Tok } from "./alias.ts";
 import type { Bufr } from "./Bufr.ts";
 import type { Lexr } from "./Lexr.ts";
@@ -49,13 +58,21 @@ export class Line implements Bidir {
     return this.text.length;
   }
 
-  /** @final */
-  uchrAt(i_x: loff_t) {
-    return this.text.at(i_x);
+  /**
+   * `in( i_x < this.text.length)`
+   * @final
+   */
+  uchrAt(i_x: loff_t): UChr {
+    return this.text.at(i_x)!;
   }
-  /** @final */
+
+  /** @see {@linkcode uchrAt()} */
   ucodAt(i_x: loff_t): uint16 {
     return this.text.charCodeAt(i_x) as uint16;
+  }
+  /** @see {@linkcode uchrAt()} */
+  codpAt(i_x: loff_t): uint {
+    return this.text.codePointAt(i_x)!;
   }
 
   /** @final */
@@ -68,7 +85,32 @@ export class Line implements Bidir {
     return this.bufr$?.dir ?? "ltr";
   }
 
-  readonly bidi = new Bidi();
+  /* #bidi */
+  readonly #bidi = new Bidi();
+
+  /** @final @implement */
+  get bidi(): Bidi {
+    if (this.#bidi.bidiLastCont_ts < this.#lastCont_ts) {
+      this.#bidi.reset_Bidi(this.text$, this.dir);
+      //jjjj TOCLEANUP
+      // /*#static*/ if (!AUTOTEST) {
+      //   this.#bidi.validate();
+      // }
+    }
+    return this.#bidi;
+  }
+  /* ~ */
+
+  /* lineLastCont_ts */
+  #lastCont_ts = Date.now_1();
+  /** @final */
+  get lineLastCont_ts() {
+    return this.#lastCont_ts;
+  }
+  #updateLastContTs(): ts_t {
+    return this.#lastCont_ts = Date.now_1();
+  }
+  /* ~ */
 
   //jjjj TOCLEANUP
   // eline: ELineBase | undefined;
@@ -266,14 +308,12 @@ export class Line implements Bidir {
 
   /** @const @param text_x */
   @out((self: Line) => {
-    assert(self.text$.length < llen_MAX);
+    assert(self.text$.length < loff_MAX);
   })
   resetText_$(text_x?: string): this {
     this.text$ = text_x ?? "";
-    this.bidi.reset_Bidi(this.text$, this.dir);
-    /*#static*/ if (!TESTING) {
-      this.bidi.validate();
-    }
+
+    this.#updateLastContTs();
     return this;
   }
 
@@ -286,7 +326,7 @@ export class Line implements Bidir {
   splice_$(strt_x: loff_t, stop_x: loff_t, newt_x?: string): void {
     // /*#static*/ if (_TRACE) {
     //   console.log([
-    //     global.indent,
+    //     trace.indent,
     //     `>>>>>>> ${this._type_id_}.splice_$( ${strt_x}, ${stop_x}, `,
     //     newt_x === undefined ? "" : `"${newt_x}"`,
     //     " ) >>>>>>>",
@@ -325,13 +365,13 @@ export class Line implements Bidir {
   }
 
   /**
-   * `in( !this.removed )`
+   * `in( !this.removed)`
    * @final
    * @primaryconst
    */
   invalLidx$() {
     /*#static*/ if (INOUT) {
-      assert(this.bufr$!.maxValidLidx_$ < MAX_lnum - 1);
+      assert(this.bufr$!.maxValidLidx_$ < lnum_MAX - 1);
     }
     this.lidx$ = (this.bufr$!.maxValidLidx_$ + 1) as lnum_t;
   }
@@ -351,7 +391,7 @@ export class Line implements Bidir {
   }
 
   /**
-   * `in( !this.removed )`
+   * `in( !this.removed)`
    * @primaryconst
    */
   #inval_lidx_selfup() {
@@ -406,7 +446,7 @@ export class Line implements Bidir {
   nextLineWith(
     cb_x: (ln_y: Line) => boolean,
     do_x?: (ln_y: Line) => void,
-    valve_x = MAX_lnum,
+    valve_x = lnum_MAX,
   ) {
     // let ln = this.nextLine$;
     // while (ln && !cb_x(ln) && --valve_x) {
@@ -424,7 +464,7 @@ export class Line implements Bidir {
     }
     return undefined;
   }
-  nextNonemptyLine(orCb_x?: (ln_y: Line) => boolean, valve_x = MAX_lnum) {
+  nextNonemptyLine(orCb_x?: (ln_y: Line) => boolean, valve_x = lnum_MAX) {
     return this.nextLineWith(
       (ln_y) => !!ln_y.uchrLen || !!orCb_x?.(ln_y),
       (ln_y) => ln_y.delTSegBdry(),
@@ -434,7 +474,7 @@ export class Line implements Bidir {
   prevLineWith(
     cb_x: (ln_y: Line) => boolean,
     do_x?: (ln_y: Line) => void,
-    valve_x = MAX_lnum,
+    valve_x = lnum_MAX,
   ) {
     // let ln = this.prevLine$;
     // while (ln && !cb_x(ln) && --valve_x) {
@@ -452,7 +492,7 @@ export class Line implements Bidir {
     }
     return undefined;
   }
-  prevNonemptyLine(orCb_x?: (ln_y: Line) => boolean, valve_x = MAX_lnum) {
+  prevNonemptyLine(orCb_x?: (ln_y: Line) => boolean, valve_x = lnum_MAX) {
     return this.prevLineWith(
       (ln_y) => !!ln_y.uchrLen || !!orCb_x?.(ln_y),
       (ln_y) => ln_y.delTSegBdry(),
@@ -533,7 +573,7 @@ export class Line implements Bidir {
     );
   })
   removeSelf_$(): void {
-    /* `frstTSeg_$?`, `lastTSeg_$?` could be useful in `Tfmr.adjust_$()` even
+    /* `frstTSeg_$?`, `lastTSeg_$?` could be useful in `Tfmr.lexadj_$()` even
     after `this.removed`.*/
     // this.delTSegBdryOf();
 
@@ -570,7 +610,7 @@ export class Line implements Bidir {
     this.linked_$ = false;
     this.bufr$ = undefined;
 
-    /* `#frstToken_m`, `#lastToken_m` will be used in `Lexr.adjust_$()` */
+    /* `#frstToken_m`, `#lastToken_m` will be used in `Lexr.lexadj_$()` */
     // /* Because Lexr<T> could keep using to make `this` unreleasable. */
     // this.#frstToken_m.clear();
     // this.#lastToken_m.clear();

@@ -38,10 +38,10 @@ This uses a compiling mechanism, i.e., compile while editing. It finds the
 smallest dirty node, and recompiles that node only, reusing unrelated nodes
 within the dirty node. So it is very efficient for editing.
 
-### unittest
+### Unittest
 
 ```bash
-cd /path_to/set.ts/src/test
-# deno 2.3.1
+cd /path_to/set.ts
+# deno 2.4.3
 deno test -RN # 2 passed (15 steps)
 ```

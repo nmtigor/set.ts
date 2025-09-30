@@ -3,14 +3,13 @@
  * @license MIT
  ******************************************************************************/
 
-import { LOG_cssc } from "../../alias.ts";
-import { PRF } from "../../global.ts";
 import { Moo, type MooEq } from "../Moo.ts";
 import type { lnum_t, loff_t } from "../alias.ts";
 import { Factory } from "../util/Factory.ts";
 import type { Bufr } from "./Bufr.ts";
 import type { Loc } from "./Loc.ts";
-import { g_ran_fac, type Ran } from "./Ran.ts";
+import type { Ran } from "./Ran.ts";
+import { g_ran_fac } from "./RanFac.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
@@ -216,12 +215,12 @@ export class RanvalMo extends Moo<Ranval> {
 class RanvalFac_ extends Factory<Ranval> {
   /** @implement */
   protected createVal$() {
-    /*#static*/ if (PRF) {
-      console.log(
-        `%c# of cached Ranval instances: ${this.val_a$.length + 1}`,
-        `color:${LOG_cssc.performance}`,
-      );
-    }
+    // /*#static*/ if (PRF) {
+    //   console.log(
+    //     `%c# of cached Ranval instances: ${this.val_a$.length + 1}`,
+    //     `color:${LOG_cssc.performance}`,
+    //   );
+    // }
     return new Ranval(0 as lnum_t, 0);
   }
 }

@@ -3,14 +3,14 @@
  * @license MIT
  ******************************************************************************/
 
-import { assert } from "@fe-lib/util/trace.ts";
-import { INOUT } from "@fe-src/global.ts";
+import { assert } from "@fe-lib/util.ts";
+import { INOUT } from "@fe-src/preNs.ts";
 import type { SetTk } from "../../Token.ts";
 import { Err } from "../../alias.ts";
-import { SetSN } from "../SetSN.ts";
 import { SetTok } from "../SetTok.ts";
 import { Oprec } from "../alias.ts";
 import { Set } from "./Set.ts";
+import { SetSN } from "./SetSN.ts";
 /*80--------------------------------------------------------------------------*/
 
 export abstract class BinaryOp extends SetSN {
@@ -32,12 +32,13 @@ export abstract class BinaryOp extends SetSN {
     return this.rhs$;
   }
 
+  #children: Set[] | undefined;
   override get children(): Set[] {
-    if (this.children$) return this.children$ as Set[];
+    if (this.#children) return this.#children;
 
     const ret = [this.lhs$];
     if (this.rhs$) ret.push(this.rhs$);
-    return this.children$ = ret;
+    return this.#children = ret;
   }
 
   override get frstToken(): SetTk {
@@ -49,9 +50,10 @@ export abstract class BinaryOp extends SetSN {
 
   constructor(lhs_x: Set, opTk_x: SetTk) {
     super();
-    lhs_x.parent_$ = this;
     this.lhs$ = lhs_x;
     this.opTk = opTk_x;
+
+    lhs_x.parent_$ = this;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -69,7 +71,7 @@ export abstract class BinaryOp extends SetSN {
       }
       this.rhs$ = newSn_x as Set;
     }
-    this.children$ = undefined;
+    this.#children = undefined;
 
     this.invalidateBdry();
   }
@@ -102,12 +104,12 @@ export class BinaryErr extends BinaryOp {
       );
     }
     super(lhs_x, opTk_x);
-    this.setErr(`${Err.invalid_binary_op}: ${opTk_x}`);
+    this.setErr(`${Err.set_invalid_binary_op}: ${opTk_x}`);
     if (rhs_x) {
       rhs_x.parent_$ = this;
       this.rhs$ = rhs_x;
     } else {
-      this.setErr(Err.binaryerr_lack_of_rhs);
+      this.setErr(Err.set_binaryerr_no_rhs);
     }
 
     this.ensureBdry();

@@ -21,7 +21,7 @@ export class Subtract extends BinaryOp {
       rhs_x.parent_$ = this;
       this.rhs$ = rhs_x;
     } else {
-      this.setErr(Err.subtract_lack_of_rhs);
+      this.setErr(Err.set_subtract_no_rhs);
     }
 
     this.ensureBdry();

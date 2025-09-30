@@ -2,16 +2,16 @@
  * Ref. [[pdf.js]/src/shared/murmurhash3.js](https://github.com/mozilla/pdf.js/blob/master/src/shared/murmurhash3.js)
  *
  * @module lib/util/murmurhash3
- * @license MIT
+ * @license Apache-2.0
  ******************************************************************************/
 
 import type { TypedArray } from "../alias.ts";
 import * as Is from "./is.ts";
 /*80--------------------------------------------------------------------------*/
 
-const SEED = 0xc3d2e1f0;
+const SEED = 0xc3d2_e1f0;
 // Workaround for missing math precision in JS.
-const MASK_HIGH = 0xffff0000;
+const MASK_HIGH = 0xffff_0000;
 const MASK_LOW = 0xffff;
 
 export class MurmurHash3_64 {

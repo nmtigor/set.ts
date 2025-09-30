@@ -21,7 +21,7 @@ export class Union extends BinaryOp {
       rhs_x.parent_$ = this;
       this.rhs$ = rhs_x;
     } else {
-      this.setErr(Err.union_lack_of_rhs);
+      this.setErr(Err.set_union_no_rhs);
     }
 
     this.ensureBdry();

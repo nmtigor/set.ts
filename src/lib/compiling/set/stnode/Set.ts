@@ -3,7 +3,7 @@
  * @license MIT
  ******************************************************************************/
 
-import { SetSN } from "../SetSN.ts";
+import { SetSN } from "./SetSN.ts";
 import { Err } from "../../alias.ts";
 import { SetTok } from "../SetTok.ts";
 import type { Paren } from "../alias.ts";
@@ -12,7 +12,8 @@ import type { Intersect } from "./Intersect.ts";
 import type { Key } from "./Key.ts";
 import type { Rel } from "./Rel.ts";
 import type { Subtract } from "./Subtract.ts";
-import { SetTk } from "../../Token.ts";
+import { Token } from "../../Token.ts";
+import type { SetTk } from "../../Token.ts";
 import type { Union } from "./Union.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -39,18 +40,19 @@ export class Set extends SetSN {
     this.ensureBdry();
   }
 
+  #children: UnparenSet[] | undefined;
   override get children(): UnparenSet[] {
-    if (this.children$) return this.children$ as UnparenSet[];
+    if (this.#children) return this.#children;
 
     const ret: UnparenSet[] = [];
-    if (!(this.#unpanenSet instanceof SetTk)) ret.push(this.#unpanenSet);
-    return this.children$ = ret;
+    if (!(this.#unpanenSet instanceof Token)) ret.push(this.#unpanenSet);
+    return this.#children = ret;
   }
 
   override get frstToken() {
     if (this.frstToken$) return this.frstToken$;
 
-    let ret = this.#unpanenSet instanceof SetTk
+    let ret = this.#unpanenSet instanceof Token
       ? this.#unpanenSet
       : this.#unpanenSet.frstToken;
     for (let i = this.#paren; i--;) {
@@ -63,7 +65,7 @@ export class Set extends SetSN {
   override get lastToken() {
     if (this.lastToken$) return this.lastToken$;
 
-    let ret = this.#unpanenSet instanceof SetTk
+    let ret = this.#unpanenSet instanceof Token
       ? this.#unpanenSet
       : this.#unpanenSet.lastToken;
     for (let i = this.#paren; i--;) {
@@ -77,22 +79,22 @@ export class Set extends SetSN {
   constructor(unparnSet_x: UnparenSet | SetTk, paren_x: Paren) {
     super();
     this.#unpanenSet = unparnSet_x;
-    if (unparnSet_x instanceof SetTk) {
+    this.#paren = paren_x;
+
+    if (unparnSet_x instanceof Token) {
       this.setErr(`${Err.set_unexpected_token}: ${unparnSet_x}`);
     } else {
       unparnSet_x.parent_$ = this;
     }
-    this.#paren = paren_x;
 
-    this.frstBdryTk;
-    this.lastBdryTk;
+    this.ensureBdry();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override replaceChild(_oldSn_x: UnparenSet, newSn_x: UnparenSet) {
     newSn_x.parent_$ = this;
     this.#unpanenSet = newSn_x;
-    this.children$ = undefined;
+    this.#children = undefined;
 
     this.invalidateBdry();
   }
@@ -105,7 +107,7 @@ export class Set extends SetSN {
   }
 
   override _repr_() {
-    const unpanenSet = this.#unpanenSet instanceof SetTk
+    const unpanenSet = this.#unpanenSet instanceof Token
       ? this.#unpanenSet.toString()
       : this.#unpanenSet._repr_();
     return this.#paren
