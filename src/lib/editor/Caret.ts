@@ -4,7 +4,7 @@
  ******************************************************************************/
 
 import { _TRACE, CYPRESS, DEBUG, EDITOR, INOUT } from "../../preNs.ts";
-import type { id_t, lnum_t } from "../alias.ts";
+import type { Id_t, lnum_t } from "../alias_v.ts";
 import { Endpt, WritingDir } from "../alias.ts";
 import type { Cssc } from "../color/alias.ts";
 import { Pale } from "../color/Pale.ts";
@@ -28,8 +28,8 @@ export type CaretRvM = [proactiveCaret: Caret, ranval_mo: RanvalMo];
 
 /** @final */
 export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
-  static #ID = 0 as id_t;
-  override readonly id = ++Caret.#ID as id_t;
+  static #ID = 0 as Id_t;
+  override readonly id = ++Caret.#ID as Id_t;
 
   /* Pale */
   #proactiveBg_p = Pale.get("lib.editor.Caret.proactiveBg");

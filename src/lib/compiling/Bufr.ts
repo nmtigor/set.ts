@@ -5,8 +5,9 @@
 
 import { DEBUG, INOUT } from "../../preNs.ts";
 import { Boor, LastCb_i, Moo, type MooHandler } from "../Moo.ts";
-import type { BufrDir, id_t, lnum_t, ts_t, uint } from "../alias.ts";
-import { lnum_MAX } from "../alias.ts";
+import type { Id_t, lnum_t, Ts_t } from "../alias_v.ts";
+import type { BufrDir, uint } from "../alias.ts";
+import { lnum_MAX } from "../alias_v.ts";
 import type { EdtrBaseScrolr } from "../editor/EdtrBase.ts";
 import { assert, out } from "../util.ts";
 import { SortedIdo } from "../util/SortedArray.ts";
@@ -29,8 +30,8 @@ import { BufrDoState, BufrReplState } from "./alias.ts";
  * @using
  */
 export class Bufr {
-  static #ID = 0 as id_t;
-  readonly id = ++Bufr.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Bufr.#ID as Id_t;
   /** @final */
   get _type_id_() {
     return `${this.constructor.name}_${this.id}`;
@@ -73,6 +74,7 @@ export class Bufr {
   }
   maxValidLidx_$: lnum_t | -1 = -1;
 
+  //jjjj consider use `DoublyLList<Line>`
   frstLine_$: Line;
   get frstLine() {
     return this.frstLine_$;
@@ -177,8 +179,8 @@ export class Bufr {
   get bufrLastCont_ts() {
     return this.#lastCont_ts;
   }
-  #updateLastContTs(): ts_t {
-    return this.#lastCont_ts = Date.now_1();
+  #updateLastContTs(): Ts_t {
+    return this.#lastCont_ts = Date.now_1() as Ts_t;
   }
   /* ~ */
 
@@ -217,7 +219,7 @@ export class Bufr {
     i_x,
   ) => {
     if (n_x) this.#curEdtrId = i_x!.id;
-    else if (this.#curEdtrId === i_x!.id) this.#curEdtrId = 0 as id_t;
+    else if (this.#curEdtrId === i_x!.id) this.#curEdtrId = 0 as Id_t;
   };
   addEdtr(_x: EdtrBaseScrolr) {
     this.edtr_sa.add(_x);
@@ -230,7 +232,7 @@ export class Bufr {
     _x.reset_EdtrBaseScrolr(); //!
   }
 
-  #curEdtrId = 0 as id_t;
+  #curEdtrId = 0 as Id_t;
   get curEdtrId() {
     return this.#curEdtrId;
   }
@@ -453,7 +455,7 @@ export class Bufr {
     // console.log(this.#doq._repr_);
     this.#updateDoCap();
 
-    // this.#curEdtrId = 0 as id_t;
+    // this.#curEdtrId = 0 as Id_t;
     this.#doState = doState_save;
   }
 
@@ -507,7 +509,7 @@ export class Bufr {
 
       this.#updateDoCap();
 
-      // this.#curEdtrId = 0 as id_t;
+      // this.#curEdtrId = 0 as Id_t;
       this.#doState = doState_save;
     }
     return ret;
@@ -526,7 +528,7 @@ export class Bufr {
 
       this.#updateDoCap();
 
-      // this.#curEdtrId = 0 as id_t;
+      // this.#curEdtrId = 0 as Id_t;
       this.#doState = doState_save;
     }
     return ret;
@@ -534,7 +536,7 @@ export class Bufr {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   get _lineIds() {
-    const lineId_a: id_t[] = [];
+    const lineId_a: Id_t[] = [];
 
     let line = this.frstLine;
     let valve = 1000;

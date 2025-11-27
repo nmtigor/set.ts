@@ -5,7 +5,8 @@
 
 import * as Is from "@fe-lib/util/is.ts";
 import { INOUT } from "@fe-src/preNs.ts";
-import type { loff_t, uint16 } from "../alias.ts";
+import type { UInt16 } from "../alias_v.ts";
+import type { loff_t } from "../alias.ts";
 import { assert } from "../util.ts";
 import type { Line } from "./Line.ts";
 /*80--------------------------------------------------------------------------*/
@@ -17,7 +18,7 @@ import type { Line } from "./Line.ts";
  * @const @param stop_x
  */
 export const frstNon = (
-  ucod_x: uint16 | uint16[] | ((_: uint16) => boolean),
+  ucod_x: UInt16 | UInt16[] | ((_: UInt16) => boolean),
   ln_x: Line,
   strt_x: loff_t = 0,
   stop_x: loff_t = ln_x.uchrLen,
@@ -50,7 +51,7 @@ export const frstNon = (
  * @const @param stop_x
  */
 export const lastNon = (
-  ucod_x: uint16 | uint16[] | ((_: uint16) => boolean),
+  ucod_x: UInt16 | UInt16[] | ((_: UInt16) => boolean),
   ln_x: Line,
   strt_x: loff_t = 0,
   stop_x: loff_t = ln_x.uchrLen,

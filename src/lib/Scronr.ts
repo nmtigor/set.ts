@@ -3,12 +3,12 @@
  * @license MIT
  ******************************************************************************/
 
-import { LOG_cssc } from "../alias.ts";
 import { global } from "../global.ts";
 import { _TRACE, INOUT, RESIZ } from "../preNs.ts";
 import { Moo } from "./Moo.ts";
-import type { BufrDir, id_t, SetLayoutP, unum } from "./alias.ts";
+import type { BufrDir, SetLayoutP, unum } from "./alias.ts";
 import {
+  LOG_cssc,
   MouseButton,
   Scrobar_z,
   Scrod_z,
@@ -16,6 +16,7 @@ import {
   WritingDir,
   WritingMode,
 } from "./alias.ts";
+import type { Id_t } from "./alias_v.ts";
 import type { Colr } from "./color/Colr.ts";
 import { Pale } from "./color/Pale.ts";
 import type { Cssc } from "./color/alias.ts";
@@ -31,8 +32,8 @@ const ScronrRefresh_to_ = 500;
 
 /** Scroll container */
 export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
-  static #ID = 0 as id_t;
-  override readonly id = ++Scronr.#ID as id_t;
+  static #ID = 0 as Id_t;
+  override readonly id = ++Scronr.#ID as Id_t;
 
   /* Pale */
   /* 2 #scrod_p */
@@ -672,8 +673,8 @@ export abstract class Scrolr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
 
 /** Scroll rod */
 abstract class Scrod_<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
-  // static #ID = 0 as id_t;
-  // override readonly id = ++Scrod_.#ID as id_t;
+  // static #ID = 0 as Id_t;
+  // override readonly id = ++Scrod_.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   static readonly Thik = 2;
@@ -816,8 +817,8 @@ export const ScrobarHide_to = 2_000;
 
 /** Scrollbar */
 abstract class Scrobar_<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
-  // static #ID = 0 as id_t;
-  // override readonly id = ++Scrobar_.#ID as id_t;
+  // static #ID = 0 as Id_t;
+  // override readonly id = ++Scrobar_.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   readonly host;

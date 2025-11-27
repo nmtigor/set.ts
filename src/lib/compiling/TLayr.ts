@@ -3,7 +3,8 @@
  * @license MIT
  ******************************************************************************/
 
-import type { Chr, Dulstr } from "../alias.ts";
+import type { Chr } from "../alias_v.ts";
+import type { Dulstr } from "../alias.ts";
 import * as Is from "../util/is.ts";
 import type { Dulmap } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/

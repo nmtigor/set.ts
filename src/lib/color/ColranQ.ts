@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import * as v from "@valibot/valibot";
-import type { id_t, int, uint } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
+import type { int, uint } from "../alias.ts";
 import { Boor, Runr } from "../Moo.ts";
 import type { ColranRaw } from "./Colran.ts";
 import { Colran, createColranRaw, vColranRaw } from "./Colran.ts";
@@ -23,8 +24,8 @@ export function createColranQRaw(dim_x: uint): ColranQRaw {
  * @final
  */
 export class ColranQ extends Runr<unknown, ColranQ> {
-  static #ID = 0 as id_t;
-  readonly id = ++ColranQ.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++ColranQ.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   // readonly dim: uint;

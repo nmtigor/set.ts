@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { INOUT, PRF } from "../../preNs.ts";
-import type { id_t, lnum_t, loff_t } from "../alias.ts";
+import type { Id_t, lnum_t } from "../alias_v.ts";
+import type { loff_t } from "../alias.ts";
 import { Endpt } from "../alias.ts";
 import { assert, out, space } from "../util.ts";
 import { g_count } from "../util/performance.ts";
@@ -45,8 +46,8 @@ export type Ranpo = { anchr: RanpData_; focus: RanpData_ };
 
 /** */
 export class Ran {
-  static #ID = 0 as id_t;
-  readonly id = ++Ran.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Ran.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /* #ranval */

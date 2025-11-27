@@ -3,7 +3,6 @@
  * @license MIT
  ******************************************************************************/
 
-import { LOG_cssc } from "../../alias.ts";
 import {
   _COLR,
   _TRACE,
@@ -15,8 +14,9 @@ import {
 } from "../../preNs.ts";
 import { LastCb_i, Moo } from "../Moo.ts";
 import { Scrolr, Scronr } from "../Scronr.ts";
-import type { BufrDir, CSSStyle, id_t, lnum_t, ts_t, uint } from "../alias.ts";
-import { MouseButton, WritingMode } from "../alias.ts";
+import type { BufrDir, CSSStyle, uint } from "../alias.ts";
+import { LOG_cssc, MouseButton, WritingMode } from "../alias.ts";
+import type { Id_t, lnum_t, Ts_t } from "../alias_v.ts";
 import { Pale } from "../color/Pale.ts";
 import type { Cssc } from "../color/alias.ts";
 import type { Bufr } from "../compiling/Bufr.ts";
@@ -77,8 +77,8 @@ export interface EdtrBaseCI extends CooInterface {
 
 export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
   extends HTMLVCo<CI, HTMLDivElement> {
-  static #ID = 0 as id_t;
-  override readonly id = ++EdtrBase.#ID as id_t;
+  static #ID = 0 as Id_t;
+  override readonly id = ++EdtrBase.#ID as Id_t;
 
   /* Pale */
   readonly #fg_p = Pale.get("lib.editor.Edtr.fg");
@@ -142,8 +142,8 @@ export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
   get lastSize_ts() {
     return this.#lastSize_ts;
   }
-  updateLastSizeTs(): ts_t {
-    return this.#lastSize_ts = Date.now_1();
+  updateLastSizeTs(): Ts_t {
+    return this.#lastSize_ts = Date.now_1() as Ts_t;
   }
 
   /** */
@@ -263,8 +263,8 @@ export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
 
 /** @final */
 export class EdtrScronr<CI extends EdtrBaseCI> extends Scronr<EdtrBase<CI>> {
-  static #ID = 0 as id_t;
-  override readonly id = ++EdtrScronr.#ID as id_t;
+  static #ID = 0 as Id_t;
+  override readonly id = ++EdtrScronr.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @headconst @param coo_x */
@@ -312,8 +312,8 @@ export class EdtrScronr<CI extends EdtrBaseCI> extends Scronr<EdtrBase<CI>> {
  */
 export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   extends Scrolr<EdtrBase<CI>> {
-  static #ID = 0 as id_t;
-  override readonly id = ++EdtrBaseScrolr.#ID as id_t;
+  static #ID = 0 as Id_t;
+  override readonly id = ++EdtrBaseScrolr.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   readonly type: EdtrType;

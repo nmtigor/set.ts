@@ -5,15 +5,15 @@
 
 import * as v from "@valibot/valibot";
 import type { ArrEl, Ratio, uint8 } from "../alias.ts";
-import { vRatio, vUint8 } from "../alias.ts";
+import { vRatio, vuint8 } from "../alias_v.ts";
 import { html } from "../dom.ts";
 /*80--------------------------------------------------------------------------*/
 
 export type red_t = uint8;
-export const vRed = vUint8;
+export const vred_t = vuint8;
 
 export type alpha_t = Ratio;
-export const vAlpha = v.pipe(vRatio, v.minValue(0), v.maxValue(1));
+export const valpha_t = v.pipe(vRatio, v.minValue(0), v.maxValue(1));
 
 export type rgb_t = [red_t, red_t, red_t];
 export type rgba_t = [red_t, red_t, red_t, alpha_t];
@@ -22,17 +22,17 @@ export type rgba_t = [red_t, red_t, red_t, alpha_t];
 export type hue_t = number;
 //jjjj TOCLEANUP
 // export const zHue = z.number().min(0).lt(360);
-export const vHue = v.pipe(v.number(), v.minValue(0), v.ltValue(360));
+export const vhue_t = v.pipe(v.number(), v.minValue(0), v.ltValue(360));
 /** [0,100] */
 export type chroma_t = number;
 //jjjj TOCLEANUP
 // export const zChroma = z.number().min(0).max(100);
-export const vChroma = v.pipe(v.number(), v.minValue(0), v.maxValue(100));
+export const vchroma_t = v.pipe(v.number(), v.minValue(0), v.maxValue(100));
 /** [0,100] */
 export type tone_t = number;
 //jjjj TOCLEANUP
 // export const zTone = z.number().min(0).max(100);
-export const vTone = v.pipe(v.number(), v.minValue(0), v.maxValue(100));
+export const vtone_t = v.pipe(v.number(), v.minValue(0), v.maxValue(100));
 /*64----------------------------------------------------------*/
 
 /** "#123456" */

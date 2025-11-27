@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
-import type { id_t, loff_t, uint } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
+import type { loff_t, uint } from "../alias.ts";
 import { Endpt } from "../alias.ts";
 import { $facil_node, $ovlap } from "../symbols.ts";
 import { assert, fail } from "../util.ts";
@@ -28,8 +29,8 @@ declare global {
  * @final
  */
 export class ERan {
-  static #ID = 0 as id_t;
-  readonly id = ++ERan.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++ERan.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /* #anchrELoc */

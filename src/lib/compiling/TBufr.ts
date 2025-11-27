@@ -3,7 +3,7 @@
  * @license MIT
  ******************************************************************************/
 
-import type { lnum_t } from "../alias.ts";
+import type { lnum_t } from "../alias_v.ts";
 import { assert } from "../util.ts";
 import { Bufr } from "./Bufr.ts";
 import { TLVert } from "./TLayr.ts";

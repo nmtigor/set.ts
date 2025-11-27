@@ -131,7 +131,7 @@ export function isClick(
 }
 /*64----------------------------------------------------------*/
 
-/** in millisecond */
+/** in milliseconds */
 export const HoldDuration = 1_000;
 /*64----------------------------------------------------------*/
 
@@ -188,24 +188,11 @@ export type Keybinding =
   | `${Key}+${Key | UChr}`
   | `${Key}+${Key}+${Key | UChr}`;
 /*80--------------------------------------------------------------------------*/
+/* be */
 
-export const LOG_cssc = {
-  selectionchange: "#cb9b8b",
-  selectionchange_1: "#ff8257",
-
-  xstate_transition: "#2196f3",
-  xstate_entry: "#1ba39a",
-  xstate_exit: "#506e6c",
-  resiz: "#fdf717",
-  intrs: "#adfd17",
-
-  performance: "#00ff00",
-
-  runhere: "#ff0000",
-
-  testinfo: "#fffc62ff",
+export type UpdateTheme_PUT = {
+  theme_j: string;
 };
-/*80--------------------------------------------------------------------------*/
 
 /* Adding, deleting, order-changing values of `BeReturn` or its sub-enum need to
 change all dbs correspondingly. */

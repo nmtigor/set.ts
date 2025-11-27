@@ -165,12 +165,3 @@ export const g_onunhandledrejection = (evt_x: PromiseRejectionEvent) => {
   }
 };
 /*80--------------------------------------------------------------------------*/
-
-/*
-Before runtimes support it natively...
-
-Ref. https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/#using-declarations-and-explicit-resource-management
-*/
-(Symbol as any).dispose ??= Symbol("Symbol.dispose");
-(Symbol as any).asyncDispose ??= Symbol("Symbol.asyncDispose");
-/*80--------------------------------------------------------------------------*/

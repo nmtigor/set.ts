@@ -3,7 +3,8 @@
  * @license MIT
  ******************************************************************************/
 
-import type { lnum_t, loff_t } from "../alias.ts";
+import type { lnum_t } from "../alias_v.ts";
+import type { loff_t } from "../alias.ts";
 import type { Tok } from "./alias.ts";
 import { Loc } from "./Loc.ts";
 import type { TokBufr } from "./TokBufr.ts";

@@ -4,7 +4,7 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
-import type { id_t } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
 import { assert, out } from "../util.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import type { Lexr } from "./Lexr.ts";
@@ -17,8 +17,8 @@ import type { PlainTok } from "./plain/PlainTok.ts";
 /*80--------------------------------------------------------------------------*/
 
 export abstract class Pazr<T extends Tok = BaseTok> {
-  static #ID = 0 as id_t;
-  readonly id = ++Pazr.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Pazr.#ID as Id_t;
   /** @final */
   get _type_id_() {
     return `${this.constructor.name}_${this.id}`;

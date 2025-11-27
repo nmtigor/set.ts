@@ -5,7 +5,7 @@
 
 import type { Keybinding } from "../../alias.ts";
 import { Key } from "../../alias.ts";
-import type { ts_t } from "../alias.ts";
+import type { Ts_t } from "../alias_v.ts";
 /*80--------------------------------------------------------------------------*/
 
 export const enum EdtrType {
@@ -19,7 +19,7 @@ export const enum EdtrType {
 export type FSRec = {
   fat: DOMRect;
   sin: DOMRect;
-  uts: ts_t;
+  uts: Ts_t;
 };
 /*80--------------------------------------------------------------------------*/
 /* zIndex */

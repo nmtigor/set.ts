@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { _TRACE, CYPRESS, DEBUG, INOUT } from "../../preNs.ts";
-import type { id_t, lnum_t, loff_t } from "../alias.ts";
+import type { Id_t, lnum_t } from "../alias_v.ts";
+import type { loff_t } from "../alias.ts";
 import { WritingMode } from "../alias.ts";
 import { Bidi, type Bidir } from "../Bidi.ts";
 import type { Line } from "../compiling/Line.ts";
@@ -47,8 +48,8 @@ export class TailV extends TextV {
 export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   extends HTMLVuu<EdtrBase<CI>, HTMLDivElement>
   implements Bidir {
-  static #ID = 0 as id_t;
-  override readonly id = ++ELineBase.#ID as id_t;
+  static #ID = 0 as Id_t;
+  override readonly id = ++ELineBase.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   bline_$;

@@ -4,17 +4,10 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
-import type {
-  BufrDir,
-  id_t,
-  lnum_t,
-  loff_t,
-  ts_t,
-  UChr,
-  uint,
-  uint16,
-} from "../alias.ts";
-import { lnum_MAX, loff_MAX } from "../alias.ts";
+import type { Id_t, lnum_t, Ts_t, UInt16 } from "../alias_v.ts";
+import type { BufrDir, loff_t, UChr, uint } from "../alias.ts";
+import { lnum_MAX } from "../alias_v.ts";
+import { loff_MAX } from "../alias.ts";
 import { Bidi, type Bidir } from "../Bidi.ts";
 import { assert, out } from "../util.ts";
 import type { Tok } from "./alias.ts";
@@ -31,8 +24,8 @@ import type { TSeg } from "./TSeg.ts";
  * primaryconst: const exclude `lidx$`
  */
 export class Line implements Bidir {
-  static #ID = 0 as id_t;
-  readonly id = ++Line.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Line.#ID as Id_t;
   /** @final */
   get _type_id_() {
     return `${this.constructor.name}_${this.id}`;
@@ -67,8 +60,8 @@ export class Line implements Bidir {
   }
 
   /** @see {@linkcode uchrAt()} */
-  ucodAt(i_x: loff_t): uint16 {
-    return this.text.charCodeAt(i_x) as uint16;
+  ucodAt(i_x: loff_t): UInt16 {
+    return this.text.charCodeAt(i_x) as UInt16;
   }
   /** @see {@linkcode uchrAt()} */
   codpAt(i_x: loff_t): uint {
@@ -107,8 +100,8 @@ export class Line implements Bidir {
   get lineLastCont_ts() {
     return this.#lastCont_ts;
   }
-  #updateLastContTs(): ts_t {
-    return this.#lastCont_ts = Date.now_1();
+  #updateLastContTs(): Ts_t {
+    return this.#lastCont_ts = Date.now_1() as Ts_t;
   }
   /* ~ */
 

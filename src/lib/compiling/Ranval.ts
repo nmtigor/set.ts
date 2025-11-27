@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { Moo, type MooEq } from "../Moo.ts";
-import type { lnum_t, loff_t } from "../alias.ts";
+import type { lnum_t } from "../alias_v.ts";
+import type { loff_t } from "../alias.ts";
 import { Factory } from "../util/Factory.ts";
 import type { Bufr } from "./Bufr.ts";
 import type { Loc } from "./Loc.ts";
@@ -15,8 +16,8 @@ import { g_ran_fac } from "./RanFac.ts";
 /** @final */
 export class Ranval extends Array<lnum_t | loff_t> {
   /* Adding `id` needs to change comparisons in "Repl_test.ts" correspondingly. */
-  // static #ID = 0 as id_t;
-  // readonly id = ++Ranval.#ID as id_t;
+  // static #ID = 0 as Id_t;
+  // readonly id = ++Ranval.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   // override readonly length = 4; // TypeError: Cannot redefine property: length

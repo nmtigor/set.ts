@@ -3,7 +3,8 @@
  * @license MIT
  ******************************************************************************/
 
-import type { id_t, uint } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
+import type { uint } from "../alias.ts";
 import type { Cssc } from "../color/alias.ts";
 import { Pale } from "../color/Pale.ts";
 import { HTMLVuu } from "../cv.ts";
@@ -20,8 +21,8 @@ import type { EdtrBase } from "./EdtrBase.ts";
 
 /** @final */
 class Selec extends HTMLVuu<EdtrBase, HTMLSpanElement> {
-  static #ID = 0 as id_t;
-  override readonly id = ++Selec.#ID as id_t;
+  static #ID = 0 as Id_t;
+  override readonly id = ++Selec.#ID as Id_t;
 
   /* Pale */
   #proactiveBgSelec_p = Pale.get("lib.editor.Selec.proactiveBgSelec");

@@ -15,7 +15,7 @@ import { SetTok } from "./SetTok.ts";
 
 /** @final */
 export class SetLexr extends Lexr<SetTok> {
-  /** Fuzykey `uint16` which needs to escape using `\` */
+  /** Fuzykey `UInt16` which needs to escape using `\` */
   static #esc_a = [0x5C, 0x3E, 0x3F, 0x22, 0x28, 0x29]; // ["\\", ">", "?", '"', "(", ")"]
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

@@ -5,8 +5,9 @@
 
 import * as v from "@valibot/valibot";
 import { INOUT } from "../../preNs.ts";
-import type { id_t, lnum_t, loff_t, uint } from "../alias.ts";
-import { vUint } from "../alias.ts";
+import type { Id_t, lnum_t } from "../alias_v.ts";
+import type { loff_t, uint } from "../alias.ts";
+import { vuint } from "../alias_v.ts";
 import { assert, out } from "../util.ts";
 import { Factory } from "../util/Factory.ts";
 import { Line } from "./Line.ts";
@@ -21,8 +22,8 @@ import { TLoc } from "./TLoc.ts";
  * @final
  */
 export class TSeg {
-  static #ID = 0 as id_t;
-  readonly id = ++TSeg.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++TSeg.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   // /**
@@ -348,8 +349,8 @@ export class TSeg {
 
   _Repr_(prevN_x?: uint, nextN_x?: uint): [string[], string, string[]] {
     /*#static*/ if (INOUT) {
-      if (prevN_x !== undefined) v.parse(vUint, prevN_x);
-      if (nextN_x !== undefined) v.parse(vUint, nextN_x);
+      if (prevN_x !== undefined) v.parse(vuint, prevN_x);
+      if (nextN_x !== undefined) v.parse(vuint, nextN_x);
     }
     const prev_a: string[] = [],
       next_a: string[] = [];

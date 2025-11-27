@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
-import type { Chr, Dulstr, loff_t } from "../alias.ts";
+import type { Chr } from "../alias_v.ts";
+import type { Dulstr, loff_t } from "../alias.ts";
 import { assert } from "../util.ts";
 import { Line } from "./Line.ts";
 import type { TBufr } from "./TBufr.ts";

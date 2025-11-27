@@ -4,8 +4,9 @@
  ******************************************************************************/
 
 import { _TRACE, INOUT } from "../../preNs.ts";
-import type { id_t, ldt_t, loff_t, uint, uint16 } from "../alias.ts";
-import { lnum_MAX } from "../alias.ts";
+import type { Id_t, ldt_t, UInt16 } from "../alias_v.ts";
+import type { loff_t, uint } from "../alias.ts";
+import { lnum_MAX } from "../alias_v.ts";
 import "../jslang.ts";
 import { assert, out } from "../util.ts";
 import { SortedIdo } from "../util/SortedArray.ts";
@@ -27,8 +28,8 @@ import { frstNon } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
 export abstract class Lexr<T extends Tok = BaseTok> {
-  static #ID = 0 as id_t;
-  readonly id = ++Lexr.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Lexr.#ID as Id_t;
   /** @final */
   get _type_id_() {
     return `${this.constructor.name}_${this.id}`;
@@ -852,7 +853,9 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    * @return `true` if continue; `false` if `atRigtBdry$() === LocCompared.yes`.
    *  Whatever `true` or `false`, `curLoc$` will be at the right place.
    */
-  protected skipWhitespace$(ucod_x: uint16 | uint16[] = ws_a): boolean {
+  protected skipWhitespace$(
+    ucod_x: UInt16 | UInt16[] = ws_a as UInt16[],
+  ): boolean {
     let ret = true;
     const VALVE = 1_000;
     let valve = VALVE;
@@ -1025,7 +1028,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     return ret_a.join("");
   }
 
-  get _tkId_a_(): id_t[] {
+  get _tkId_a_(): Id_t[] {
     let tk_ = this.frstLexTk;
     const ret_a = [tk_.id];
 
@@ -1044,8 +1047,8 @@ export abstract class Lexr<T extends Tok = BaseTok> {
 /*80--------------------------------------------------------------------------*/
 
 export abstract class LexdInfo {
-  static #ID = 0 as id_t;
-  readonly id = ++LexdInfo.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++LexdInfo.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   destructor() {}

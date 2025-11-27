@@ -4,7 +4,7 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
-import type { lnum_t } from "../alias.ts";
+import type { lnum_t } from "../alias_v.ts";
 import { assert } from "../util.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import { Bufr } from "./Bufr.ts";

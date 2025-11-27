@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { CYPRESS } from "../preNs.ts";
-import type { CSSStyle, id_t } from "./alias.ts";
+import type { Id_t } from "./alias_v.ts";
+import type { CSSStyle } from "./alias.ts";
 import { svg } from "./dom.ts";
 import { mix } from "./jslang.ts";
 import type { ReportedError } from "./util/trace.ts";
@@ -56,8 +57,8 @@ declare global {
  * Vuu ⊆ Coo
  */
 export abstract class Vuu<C extends Coo = Coo, E extends Element = Element> {
-  static #ID = 0 as id_t;
-  readonly id = ++Vuu.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Vuu.#ID as Id_t;
   get _type_() {
     return this.constructor.name;
   }

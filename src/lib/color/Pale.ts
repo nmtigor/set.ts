@@ -6,8 +6,8 @@
 import * as v from "@valibot/valibot";
 import { INOUT } from "../../preNs.ts";
 import { Boor, Moo, type MooHandler } from "../Moo.ts";
-import type { id_t } from "../alias.ts";
-import { vInt } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
+import { vint } from "../alias_v.ts";
 import { assert, warn } from "../util.ts";
 import type { PaleCoorRaw, PaleName } from "./PaleCoor.ts";
 import { createPaleCoorRaw, PaleCoor, vPaleCoorRaw } from "./PaleCoor.ts";
@@ -16,7 +16,7 @@ import type { CsscHexNorm } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
 
 export type PaleCidx = -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
-const zPaleCidx_ = v.pipe(vInt, v.minValue(-1), v.maxValue(7));
+const zPaleCidx_ = v.pipe(vint, v.minValue(-1), v.maxValue(7));
 
 export type PaleRaw = {
   coors: PaleCoorRaw[];
@@ -47,8 +47,8 @@ export type PaleColr = [PaleName, PaleCidx];
 
 /** @final */
 export class Pale {
-  static #ID = 0 as id_t;
-  readonly id = ++Pale.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Pale.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   // #constructing = false;

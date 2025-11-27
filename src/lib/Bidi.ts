@@ -11,7 +11,8 @@
  ******************************************************************************/
 
 import { _TRACE, INOUT } from "../preNs.ts";
-import type { BufrDir, Chr, id_t, loff_t, ts_t, uint, uint8 } from "./alias.ts";
+import type { Chr, Id_t, Ts_t } from "./alias_v.ts";
+import type { BufrDir, loff_t, uint, uint8 } from "./alias.ts";
 import { ChrTyp } from "./alias.ts";
 import { canonicalOf, chrTypOf, closingOf, openingOf } from "./loadBidi.ts";
 import { assert, out } from "./util.ts";
@@ -971,8 +972,8 @@ function getReorderedIndices(
 
 /** @final */
 export class Bidi {
-  static #ID = 0 as id_t;
-  readonly id = ++Bidi.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Bidi.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   #text!: string;
@@ -1178,12 +1179,12 @@ export class Bidi {
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /* bidiLastCont_ts */
-  #lastCont_ts = 0 as ts_t;
+  #lastCont_ts = 0 as Ts_t;
   get bidiLastCont_ts() {
     return this.#lastCont_ts;
   }
-  #updateLastContTs(): ts_t {
-    return this.#lastCont_ts = Date.now_1();
+  #updateLastContTs(): Ts_t {
+    return this.#lastCont_ts = Date.now_1() as Ts_t;
   }
   /* ~ */
 

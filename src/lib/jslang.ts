@@ -4,6 +4,7 @@
  ******************************************************************************/
 
 import { INOUT } from "../preNs.ts";
+import type { ts_t } from "./alias.ts";
 import type {
   AbstractConstructor,
   Constructor,
@@ -11,9 +12,8 @@ import type {
   Func,
   int,
   IntegerArray,
-  ts_t,
   uint,
-  uint64,
+  uint32,
   uint8,
 } from "./alias.ts";
 import { assert } from "./util.ts";
@@ -23,6 +23,10 @@ import * as Is from "./util/is.ts";
 
 declare global {
   interface Object {
+    /**
+     * @headconst @param rhs
+     * @const @param valve_x
+     */
     eql(rhs_x: unknown, valve_x?: uint): boolean;
   }
 
@@ -125,10 +129,6 @@ export function eql(lhs_x: unknown, rhs_x: unknown, valve_x = 100): boolean {
   return eql_impl_(lhs_x, rhs_x);
 }
 
-/**
- * @headconst @param rhs
- * @const @param valve_x
- */
 Reflect.defineProperty(Object.prototype, "eql", {
   value(this: Object, rhs_x: unknown, valve_x = 100) {
     valve_ = valve_x;
@@ -198,7 +198,7 @@ declare global {
      * @const @param len_x
      * @const @param val_x
      */
-    mock<T extends {} | null>(len_x: uint64, val_x?: T): T[];
+    sparse<T extends {} | null>(len_x: uint32, val_x?: T): T[];
   }
 }
 
@@ -248,9 +248,10 @@ Reflect.defineProperty(Array.prototype, "swap", {
   },
 });
 
-Array.mock = (len_x, val_x) => {
-  const a_ = [];
-  a_[len_x - 1] = undefined as any;
+Array.sparse = <T>(len_x: uint32, val_x?: T) => {
+  const a_: T[] = [];
+  // a_[len_x - 1] = undefined as any;
+  a_.length = len_x;
   if (val_x !== undefined) a_.fill(val_x);
   return a_;
 };
@@ -308,8 +309,8 @@ declare global {
     apxGE(f0: number, f1: number): boolean;
 
     /**
-     * [min,max]
-     * ! [min,max) normaally, but could achieve `max` because of `Math.round()`.
+     * [min,max]\
+     * ![min,max) normaally, but could achieve `max` because of `Math.round()`.
      */
     getRandom(max: number, min?: number, fixt?: uint): number;
 
@@ -445,6 +446,20 @@ declare global {
     /** @const @param rhs_x */
     eql(rhs_x: unknown): boolean;
   }
+
+  interface Uint8ArrayConstructor {
+    /** @const @param _x */
+    fromArys(_x: (uint8[] | Uint8Array)[]): Uint8Array;
+
+    // /**
+    //  * @headconst @param rs_x
+    //  * @const @param len_x
+    //  */
+    // fromRsU8(rs_x: ReadableStream<uint8>, len_x?: uint): Promise<Uint8Array>;
+
+    /** @headconst @param rs_x */
+    fromRsU8ary(rs_x: ReadableStream<Uint8Array>): Promise<Uint8Array>;
+  }
 }
 
 Reflect.defineProperty(Int8Array.prototype, "eql", {
@@ -510,6 +525,43 @@ Reflect.defineProperty(Float64Array.prototype, "eql", {
     return faEql_impl_(this, rhs_x);
   },
 });
+
+Uint8Array.fromArys = (_x) => {
+  let totalLen = 0;
+  for (const a_ of _x) totalLen += a_.length;
+
+  const ret = new Uint8Array(totalLen);
+  let ofs = 0;
+  for (const a_ of _x) {
+    ret.set(a_, ofs);
+    ofs += a_.length;
+  }
+  return ret;
+};
+// Uint8Array.fromRsU8 = async (rs_x, len_x = 0) => {
+//   if (len_x > 0) {
+//     const ret = new Uint8Array(len_x);
+//     let l_ = 0;
+//     for await (const chunk of rs_x) ret[l_++] = chunk;
+//     return ret;
+//   } else {
+//     //jjjj TOCLEANUP
+//     // const buf = Array.sparse<uint8>(data_x.length);
+//     // let l_ = 0;
+//     // for await (const chunk of les.readable) buf[l_++] = chunk;
+//     // buf.length = l_;
+//     // return new Uint8Array(buf);
+
+//     const buf: uint8[] = [];
+//     for await (const chunk of rs_x) buf.push(chunk);
+//     return new Uint8Array(buf);
+//   }
+// };
+Uint8Array.fromRsU8ary = async (rs_x) => {
+  const aa_: Uint8Array[] = [];
+  for await (const chunk of rs_x) aa_.push(chunk);
+  return Uint8Array.fromArys(aa_);
+};
 /*80--------------------------------------------------------------------------*/
 /* JSON */
 
@@ -718,9 +770,7 @@ Date.now_1 = () => {
 
 declare global {
   interface Math {
-    /**
-     * If `min > max`, `min` has a higher priority than `max`.
-     */
+    /** If `min > max`, `min` has a higher priority than `max`. */
     clamp(min: number, val: number, max: number): number;
 
     // minn( ...values:(number|bigint)[] ):number|bigint;
@@ -750,8 +800,16 @@ Math.clamp = (min_x: number, val_x: number, max_x: number) =>
 /*80--------------------------------------------------------------------------*/
 
 declare global {
+  interface ReadableStreamDefaultReader<R = any> {
+    [Symbol.dispose](): void;
+  }
+
   interface ReadableStream<R = any> {
     [Symbol.asyncIterator](): AsyncIterableIterator<R>;
+  }
+
+  interface WritableStreamDefaultWriter<W = any> {
+    [Symbol.dispose](): void;
   }
 
   interface WritableStream<W = any> {
@@ -759,31 +817,36 @@ declare global {
   }
 }
 
+ReadableStreamDefaultReader.prototype[Symbol.dispose] = function (this) {
+  this.releaseLock();
+};
+
 /** Ref. https://stackoverflow.com/a/77377871 */
 ReadableStream.prototype[Symbol.asyncIterator] ??= async function* (this) {
-  const reader = this.getReader();
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) return;
-      yield value;
-    }
-  } finally {
-    reader.releaseLock();
+  using reader = this.getReader();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) return;
+    yield value;
   }
 };
 
+WritableStreamDefaultWriter.prototype[Symbol.dispose] = function (this) {
+  this.releaseLock();
+};
+
 WritableStream.prototype[Symbol.asyncDispose] = async function (this) {
+  // console.log(`%crun here: `, `color:red`);
   await this.close();
 };
 /*80--------------------------------------------------------------------------*/
 
 /**
- * class X extends mix( Y, Z )
- * ! Should always companion with an interface declaration
+ * class X extends mix( Y, Z )\
+ * !Should always companion with an interface declaration
  *
  * @param mixins_x
- *  Last element has the highest precedence, and so on.
+ *    Last element has the highest precedence, and so on.
  */
 export function mix<C extends Constructor | AbstractConstructor>(
   Base_x: C,

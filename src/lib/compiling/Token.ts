@@ -5,8 +5,9 @@
 
 import * as v from "@valibot/valibot";
 import { DEBUG, INOUT, PRF } from "../../preNs.ts";
-import type { lnum_t, loff_t, TupleOf, uint } from "../alias.ts";
-import { vUint } from "../alias.ts";
+import type { lnum_t } from "../alias_v.ts";
+import type { loff_t, TupleOf, uint } from "../alias.ts";
+import { vuint } from "../alias_v.ts";
 import { assert, out } from "../util.ts";
 import { g_count } from "../util/performance.ts";
 import type { Err, Tok } from "./alias.ts";
@@ -860,8 +861,8 @@ export class Token<T extends Tok = BaseTok> extends Snt {
 
   _Repr_(prevN_x?: uint, nextN_x?: uint): [string[], string, string[]] {
     /*#static*/ if (INOUT) {
-      if (prevN_x !== undefined) v.parse(vUint, prevN_x);
-      if (nextN_x !== undefined) v.parse(vUint, nextN_x);
+      if (prevN_x !== undefined) v.parse(vuint, prevN_x);
+      if (nextN_x !== undefined) v.parse(vuint, nextN_x);
     }
     const prev_a: string[] = [],
       next_a: string[] = [];

@@ -4,7 +4,7 @@
  ******************************************************************************/
 
 import { _TRACE, INOUT } from "../../preNs.ts";
-import type { id_t, lnum_t } from "../alias.ts";
+import type { Id_t, lnum_t } from "../alias_v.ts";
 import { assert, fail } from "../util.ts";
 import * as Is from "../util/is.ts";
 import { type Less, SortedArray } from "../util/SortedArray.ts";
@@ -32,8 +32,8 @@ class SortedReplin_ extends SortedArray<Replin> {
 
 /** @final */
 export class Repl {
-  static #ID = 0 as id_t;
-  readonly id = ++Repl.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Repl.#ID as Id_t;
   /** @final */
   get _type_id_() {
     return `${this.constructor.name}_${this.id}`;

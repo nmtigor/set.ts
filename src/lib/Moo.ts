@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { INOUT } from "../preNs.ts";
-import type { id_t, int, Runr as IRunr } from "./alias.ts";
+import type { Id_t } from "./alias_v.ts";
+import type { int, Runr as IRunr } from "./alias.ts";
 import { assert } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -202,8 +203,8 @@ type OnO_ = {
  * `Pale.constructor()`).
  */
 export class Moo<T extends {} | null, D = any, I = any> {
-  static #ID = 0 as id_t;
-  readonly id = ++Moo.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Moo.#ID as Id_t;
   readonly _name_: string | undefined;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

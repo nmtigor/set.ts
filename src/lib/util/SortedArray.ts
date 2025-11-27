@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
-import type { id_t, int, uint } from "../alias.ts";
+import type { id_t } from "../alias.ts";
+import type { int, uint } from "../alias.ts";
 import "../jslang.ts";
 import { assert, fail } from "../util.ts";
 /*80--------------------------------------------------------------------------*/
@@ -104,7 +105,7 @@ export class SortedArray<T> extends Array<T> {
   }
 
   /**
-   * If `#sorted`, set `#index`
+   * If `#sorted`, assign `#index`
    * @headconst @param val_x
    */
   override indexOf(val_x: T): uint | -1 {

@@ -4,13 +4,14 @@
  ******************************************************************************/
 
 import { $loff } from "../symbols.ts";
-import type { id_t, loff_t, uint } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
+import type { loff_t, uint } from "../alias.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
 export class ELoc {
-  static #ID = 0 as id_t;
-  readonly id = ++ELoc.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++ELoc.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   ctnr_$: Node;

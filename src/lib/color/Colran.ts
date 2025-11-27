@@ -7,34 +7,34 @@ import { bind } from "@fe-lib/util.ts";
 import { trace, traceOut } from "@fe-lib/util/trace.ts";
 import * as v from "@valibot/valibot";
 import { _TRACE, THEMESETTING } from "../../preNs.ts";
-import { id_t } from "../alias.ts";
+import { Id_t } from "../alias_v.ts";
 import { Boor } from "../Moo.ts";
 import type { alpha_t, chroma_t, hue_t, red_t, tone_t } from "./alias.ts";
-import { vAlpha, vChroma, vHue, vRed, vTone } from "./alias.ts";
+import { valpha_t, vchroma_t, vhue_t, vred_t, vtone_t } from "./alias.ts";
 import type { Colr, ColranTyp } from "./Colr.ts";
 import { hct, rgb } from "./Colr.ts";
 /*80--------------------------------------------------------------------------*/
 
 type RedRan_ = [min: red_t, max: red_t];
-const vRedRan_ = v.tuple([vRed, vRed]);
+const vRedRan_ = v.tuple([vred_t, vred_t]);
 
 type RGBRan_ = [r: RedRan_, g: RedRan_, b: RedRan_];
 const vRGBRan_ = v.tuple([vRedRan_, vRedRan_, vRedRan_]);
 
 type HueRan_ = [min: hue_t, max: hue_t];
-const vHueRan_ = v.tuple([vHue, vHue]);
+const vHueRan_ = v.tuple([vhue_t, vhue_t]);
 
 type ChromaRan_ = [min: chroma_t, max: chroma_t];
-const vChromaRan_ = v.tuple([vChroma, vChroma]);
+const vChromaRan_ = v.tuple([vchroma_t, vchroma_t]);
 
 type ToneRan_ = [min: tone_t, max: tone_t];
-const vToneRan_ = v.tuple([vTone, vTone]);
+const vToneRan_ = v.tuple([vtone_t, vtone_t]);
 
 type HCTRan_ = [h: HueRan_, c: ChromaRan_, t: ToneRan_];
 const vHCTRan_ = v.tuple([vHueRan_, vChromaRan_, vToneRan_]);
 
 type AlphaRan_ = [min: alpha_t, max: alpha_t];
-const vAlphaRan_ = v.tuple([vAlpha, vAlpha]);
+const vAlphaRan_ = v.tuple([valpha_t, valpha_t]);
 
 type RGBARan_ = [r: RedRan_, g: RedRan_, b: RedRan_, a: AlphaRan_];
 const vRGBARan_ = v.tuple([vRedRan_, vRedRan_, vRedRan_, vAlphaRan_]);
@@ -69,8 +69,8 @@ export function createColranRaw(): ColranRaw {
  * @final
  */
 export class Colran {
-  static #ID = 0 as id_t;
-  readonly id = ++Colran.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Colran.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   #typ: ColranTyp;

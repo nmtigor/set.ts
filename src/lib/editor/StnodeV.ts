@@ -5,7 +5,8 @@
 
 import type { Line } from "@fe-cpl/Line.ts";
 import { CYPRESS, INOUT } from "../../preNs.ts";
-import type { id_t, ldt_t, loff_t, uint } from "../alias.ts";
+import type { Id_t, ldt_t } from "../alias_v.ts";
+import type { loff_t, uint } from "../alias.ts";
 import type { BaseTok } from "../compiling/BaseTok.ts";
 import type { Stnode } from "../compiling/Stnode.ts";
 import type { Token } from "../compiling/Token.ts";
@@ -25,9 +26,9 @@ export abstract class StnodeV<
   CI extends EdtrBaseCI = EdtrBaseCI,
   E extends HTMLElement = HTMLElement,
 > extends HTMLVuu<EdtrBase<CI>, E> {
-  static #ID = 0 as id_t;
+  static #ID = 0 as Id_t;
   /** @final */
-  override readonly id = ++StnodeV.#ID as id_t;
+  override readonly id = ++StnodeV.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   static readonly ctorRest = new CtorRest();

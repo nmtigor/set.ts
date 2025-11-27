@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
-import type { id_t, Ratio, uint32, uint8 } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
+import type { Ratio, uint32, uint8 } from "../alias.ts";
 import "../jslang.ts";
 import type { MooHandler } from "../Moo.ts";
 import { Moo } from "../Moo.ts";
@@ -89,8 +90,8 @@ type ColrTyp_ =
 
 /** @final */
 export class Colr {
-  static #ID = 0 as id_t;
-  readonly id = ++Colr.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Colr.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   #hex: CsscHexNorm | undefined;
@@ -194,7 +195,7 @@ export class Colr {
 
   /**
    * Assign `#red`, `#green`, `#blue`, `#alpha`\
-   * `in( this.#hex !== undefined )`
+   * `in( this.#hex !== undefined)`
    */
   #byHex(): void {
     const i_: uint32 = parseInt(this.#hex!.slice(1), 16);
@@ -218,7 +219,7 @@ export class Colr {
 
   /**
    * Assign `#red`, `#green`, `#blue`\
-   * `in( this.#hct?.valid )`
+   * `in( this.#hct?.valid)`
    */
   #byHCT() {
     const argb_ = this.#hct!.toInt();
@@ -580,7 +581,7 @@ export class Colr {
   /**
    * "r50"\
    * Keep `#alpha` unchanged\
-   * `in( zRed.parse(val_x) )`
+   * `in( zRed.parse(val_x))`
    * @const @param val_x
    */
   setRed(val_x: red_t): this {
@@ -606,7 +607,7 @@ export class Colr {
   /**
    * "g50"\
    * Keep `#alpha` unchanged\
-   * `in( zRed.parse(val_x) )`
+   * `in( zRed.parse(val_x))`
    * @const @param val_x
    */
   setGreen(val_x: red_t): this {
@@ -632,7 +633,7 @@ export class Colr {
   /**
    * "b50"\
    * Keep `#alpha` unchanged\
-   * `in( zRed.parse(val_x) )`
+   * `in( zRed.parse(val_x))`
    * @const @param val_x
    */
   setBlue(val_x: red_t): this {
@@ -659,7 +660,7 @@ export class Colr {
   /**
    * "h50"\
    * Keep `#alpha` unchanged\
-   * `in( zHue.parse(val_x) )`
+   * `in( zHue.parse(val_x))`
    * @const @param val_x
    */
   setHue(val_x: hue_t): this {
@@ -687,7 +688,7 @@ export class Colr {
   /**
    * "c50"\
    * Keep `#alpha` unchanged\
-   * `in( zChroma.parse(val_x) )`
+   * `in( zChroma.parse(val_x))`
    * @const @param val_x
    */
   setChroma(val_x: chroma_t): this {
@@ -712,7 +713,7 @@ export class Colr {
   /**
    * "t50"\
    * Keep `#alpha` unchanged\
-   * `in( zTone.parse(val_x) )`
+   * `in( zTone.parse(val_x))`
    * @const @param val_x
    */
   setTone(val_x: tone_t): this {
@@ -764,7 +765,7 @@ export class Colr {
 
   // /**
   //  * "s50"\
-  //  * `in( 0 <= val_x && val_x <= 100 )`
+  //  * `in( 0 <= val_x && val_x <= 100)`
   //  * @deprecated
   //  * @const @param val_x [0,100]
   //  */
@@ -784,7 +785,7 @@ export class Colr {
   // }
   // /**
   //  * "l50"\
-  //  * `in( 0 <= val_x && val_x <= 100 )`
+  //  * `in( 0 <= val_x && val_x <= 100)`
   //  * @deprecated
   //  * @const @param val_x [0,100]
   //  */
@@ -806,7 +807,7 @@ export class Colr {
   /**
    * "a.5"\
    * ! `#name` is not affected\
-   * `in( zAlpha.parse(val_x) )`
+   * `in( zAlpha.parse(val_x))`
    * @const @param val_x
    */
   setAlpha(val_x: alpha_t): this {
@@ -972,8 +973,8 @@ export class Colr {
 // /**
 //  * (L1 + 0.05) / (L2 + 0.05)
 //  * Ref. "contrast ratio" in https://www.w3.org/TR/WCAG20/#glossary
-//  * `in( isColr(colr1) )`
-//  * `in( isColr(colr2) )`
+//  * `in( isColr(colr1))`
+//  * `in( isColr(colr2))`
 //  * @deprecated
 //  * @headconst @param colr1
 //  * @headconst @param colr2

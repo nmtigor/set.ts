@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import * as v from "@valibot/valibot";
-import type { id_t, uint } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
+import type { uint } from "../alias.ts";
 import "../jslang.ts";
 import { fail } from "../util.ts";
 import * as Is from "../util/is.ts";
@@ -82,8 +83,8 @@ export const vColrFnRaw = v.array(vColrStepRaw);
 // }
 
 export class ColrFn extends Array<ColrStep> {
-  static #ID = 0 as id_t;
-  readonly id = ++ColrFn.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++ColrFn.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   // readonly modified_mo = new Moo({

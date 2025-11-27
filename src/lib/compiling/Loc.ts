@@ -4,17 +4,8 @@
  ******************************************************************************/
 
 import { INOUT, PRF } from "../../preNs.ts";
-import type {
-  BufrDir,
-  id_t,
-  int,
-  lcol_t,
-  lnum_t,
-  loff_t,
-  UChr,
-  uint,
-  uint16,
-} from "../alias.ts";
+import type { Id_t, lnum_t, UInt16 } from "../alias_v.ts";
+import type { BufrDir, int, lcol_t, loff_t, UChr, uint } from "../alias.ts";
 import { Endpt } from "../alias.ts";
 import type { Bidir } from "../Bidi.ts";
 import { assert } from "../util.ts";
@@ -26,7 +17,7 @@ import { Ranval } from "./Ranval.ts";
 /*80--------------------------------------------------------------------------*/
 
 export type LocInfo = {
-  ucod: uint16;
+  ucod: UInt16;
   codp: uint;
   /** surrogate leading */
   isSurLead: boolean;
@@ -53,8 +44,8 @@ export type _BidirMap = BidirMap_;
  * primaryconst: const exclude `#info`
  */
 export class Loc {
-  static #ID = 0 as id_t;
-  readonly id = ++Loc.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Loc.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   line_$!: Line;
@@ -244,11 +235,11 @@ export class Loc {
   }
 
   /** @see {@linkcode uchr} */
-  get ucod(): uint16 {
+  get ucod(): UInt16 {
     return (this.overEol || this.reachEob)
-      ? 0 as uint16
+      ? 0 as UInt16
       : this.atEol
-      ? /* "\n" */ 0xA as uint16
+      ? /* "\n" */ 0xA as UInt16
       : this.line_$.ucodAt(this.loff_$);
   }
   /** @see {@linkcode uchr} */
@@ -267,19 +258,19 @@ export class Loc {
   get info_1(): LocInfo {
     this.#info ??= {} as LocInfo;
     if (this.overEol || this.reachEob) {
-      this.#info.ucod = 0 as uint16;
+      this.#info.ucod = 0 as UInt16;
       this.#info.codp = 0;
       this.#info.isSurLead = false;
       this.#info.isSurTral = false;
     } else if (this.atEol) {
-      this.#info.ucod = /* "\n" */ 0xA as uint16;
+      this.#info.ucod = /* "\n" */ 0xA as UInt16;
       this.#info.codp = /* "\n" */ 0xA;
       this.#info.isSurLead = false;
       this.#info.isSurTral = false;
     } else {
       const t_ = this.line_$.text;
       const i_ = this.loff_$;
-      this.#info.ucod = t_.charCodeAt(i_) as uint16;
+      this.#info.ucod = t_.charCodeAt(i_) as UInt16;
       this.#info.codp = t_.codePointAt(i_)!;
       this.#info.isSurLead = t_.isSurLeadAt(i_);
       this.#info.isSurTral = t_.isSurTralAt(i_);
@@ -330,7 +321,7 @@ export class Loc {
     return ret;
   }
   /** @final */
-  ucod_forw(inline_x?: "inline"): uint16 {
+  ucod_forw(inline_x?: "inline"): UInt16 {
     const ret = this.ucod;
     this.forw(inline_x);
     return ret;
@@ -341,7 +332,7 @@ export class Loc {
     return this.uchr;
   }
   /** @final */
-  forw_ucod(inline_x?: "inline"): uint16 {
+  forw_ucod(inline_x?: "inline"): UInt16 {
     this.forw(inline_x);
     return this.ucod;
   }
@@ -365,7 +356,7 @@ export class Loc {
     return loc.uchr;
   }
   /** @primaryconst */
-  peek_ucod(n_x: int, inline_x?: "inline"): uint16 {
+  peek_ucod(n_x: int, inline_x?: "inline"): UInt16 {
     using loc = this.usingDup();
     if (n_x >= 0) loc.forwn(n_x, inline_x);
     else loc.backn(-n_x, inline_x);

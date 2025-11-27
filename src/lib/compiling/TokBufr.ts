@@ -3,7 +3,8 @@
  * @license MIT
  ******************************************************************************/
 
-import type { BufrDir, lnum_t } from "../alias.ts";
+import type { lnum_t } from "../alias_v.ts";
+import type { BufrDir } from "../alias.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import { Bufr } from "./Bufr.ts";
 import type { Ranval } from "./Ranval.ts";

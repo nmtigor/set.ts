@@ -6,7 +6,8 @@
  ******************************************************************************/
 
 import { _TRACE, INOUT } from "../../preNs.ts";
-import type { id_t, ldt_t, loff_t } from "../alias.ts";
+import type { Id_t, ldt_t } from "../alias_v.ts";
+import type { loff_t } from "../alias.ts";
 import { assert, out } from "../util.ts";
 import { trace, traceOut } from "../util/trace.ts";
 import { Bufr } from "./Bufr.ts";
@@ -17,9 +18,9 @@ import { TSeg, TSegFac } from "./TSeg.ts";
 
 //kkkk lazy to optimize loading speed
 export abstract class Tfmr {
-  static #ID = 0 as id_t;
+  static #ID = 0 as Id_t;
   /** @final */
-  readonly id = ++Tfmr.#ID as id_t;
+  readonly id = ++Tfmr.#ID as Id_t;
   /** @final */
   get _type_id_() {
     return `${this.constructor.name}_${this.id}`;

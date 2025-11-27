@@ -39,17 +39,17 @@ export const vColrStepRaw = v.object({
 //   | ["t-", Ratio]
 //   | ["a", alpha_t];
 // const zColrStep_old = z.union([
-//   z.tuple([z.literal("r"), vRed]),
-//   z.tuple([z.literal("g"), vRed]),
-//   z.tuple([z.literal("b"), vRed]),
-//   z.tuple([z.literal("h"), vHue]),
-//   z.tuple([z.literal("c"), vChroma]),
+//   z.tuple([z.literal("r"), vred_t]),
+//   z.tuple([z.literal("g"), vred_t]),
+//   z.tuple([z.literal("b"), vred_t]),
+//   z.tuple([z.literal("h"), vhue_t]),
+//   z.tuple([z.literal("c"), vchroma_t]),
 //   z.tuple([z.literal("c+"), vRatio]),
 //   z.tuple([z.literal("c-"), vRatio]),
-//   z.tuple([z.literal("t"), vTone]),
+//   z.tuple([z.literal("t"), vtone_t]),
 //   z.tuple([z.literal("t+"), vRatio]),
 //   z.tuple([z.literal("t-"), vRatio]),
-//   z.tuple([z.literal("a"), vAlpha]),
+//   z.tuple([z.literal("a"), valpha_t]),
 // ]);
 /*64----------------------------------------------------------*/
 

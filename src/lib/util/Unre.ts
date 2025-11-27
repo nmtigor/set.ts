@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
-import type { id_t, uint } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
+import type { uint } from "../alias.ts";
 import { assert } from "../util.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -14,8 +15,8 @@ export const enum LastUR {
 }
 
 export class Unre<T extends {} | null> {
-  static #ID = 0 as id_t;
-  readonly id = ++Unre.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Unre.#ID as Id_t;
   /** @final */
   get _type_id_() {
     return `${this.constructor.name}_${this.id}`;

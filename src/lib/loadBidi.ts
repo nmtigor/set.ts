@@ -4,7 +4,8 @@
  ******************************************************************************/
 
 import { _TRACE } from "../preNs.ts";
-import type { Chr, ChrTypName, UChr, uint } from "./alias.ts";
+import type { Chr } from "./alias_v.ts";
+import type { ChrTypName, UChr, uint } from "./alias.ts";
 import { ChrTyp } from "./alias.ts";
 import { trace } from "./util/trace.ts";
 /*80--------------------------------------------------------------------------*/

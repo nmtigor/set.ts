@@ -3,7 +3,8 @@
  * @license MIT
  ******************************************************************************/
 
-import type { id_t, lnum_t, loff_t } from "../alias.ts";
+import type { Id_t, lnum_t } from "../alias_v.ts";
+import type { loff_t } from "../alias.ts";
 import { SortedIdo } from "../util/SortedArray.ts";
 import type { Locval } from "./alias.ts";
 import type { Line } from "./Line.ts";
@@ -35,8 +36,8 @@ export class SortedSnt_id<T extends Snt = Snt> extends SortedIdo<T> {
 /*64----------------------------------------------------------*/
 
 export abstract class Snt {
-  static #ID = 0 as id_t;
-  readonly id = ++Snt.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++Snt.#ID as Id_t;
   /** @final */
   get _type_id_() {
     return `${this.constructor.name}_${this.id}`;

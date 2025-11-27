@@ -3,7 +3,8 @@
  * @license MIT
  ******************************************************************************/
 
-import type { Chr, Dulstr, lnum_t, loff_t, uint32 } from "../alias.ts";
+import type { Chr, lnum_t } from "../alias_v.ts";
+import type { Dulstr, loff_t, uint32 } from "../alias.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import type { JSLangTok } from "./jslang/JSLangTok.ts";
 import type { MdextTok } from "./mdext/MdextTok.ts";

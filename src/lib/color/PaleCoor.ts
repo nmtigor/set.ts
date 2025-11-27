@@ -6,7 +6,8 @@
 import * as v from "@valibot/valibot";
 import { INOUT } from "../../preNs.ts";
 import { Boor, Runr } from "../Moo.ts";
-import type { id_t, uint } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
+import type { uint } from "../alias.ts";
 import { assert, warn } from "../util.ts";
 import { type Less, SortedArray } from "../util/SortedArray.ts";
 import * as Is from "../util/is.ts";
@@ -53,8 +54,8 @@ type QM_ = [ColranQ | undefined, Cssc | ColrFn];
  * @final
  */
 export class PaleCoor extends Runr<unknown, PaleCoor> {
-  static #ID = 0 as id_t;
-  readonly id = ++PaleCoor.#ID as id_t;
+  static #ID = 0 as Id_t;
+  readonly id = ++PaleCoor.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   #_palename_: PaleName;

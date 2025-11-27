@@ -3,7 +3,8 @@
  * @license MIT
  ******************************************************************************/
 
-import type { TypedArray, uint16 } from "../alias.ts";
+import type { uint16 } from "../alias.ts";
+import type { TypedArray } from "../alias.ts";
 import { validateBinaryLike } from "./general_cf.ts";
 import { MurmurHash3_64 } from "./murmurhash3.ts";
 import * as Is from "./is.ts";
@@ -159,6 +160,7 @@ export const b64urlFrom = (
 };
 /*64----------------------------------------------------------*/
 
+//jjjj Remove this once `Uint8Array.fromBase64()` is generally available.
 /**
  * Ref. https://github.com/denoland/std/blob/e02e89fef3cd7f625e487f76e9d56b8b60137102/encoding/base64.ts#L168
  * @const @param b64_x
@@ -200,6 +202,7 @@ export const b64FromB64url = (b64url_x: string): string => {
   return ret;
 };
 
+//jjjj Remove this once `Uint8Array.fromBase64()` is generally available.
 /**
  * Ref. https://github.com/denoland/std/blob/e02e89fef3cd7f625e487f76e9d56b8b60137102/encoding/base64url.ts#L88
  * @param b64url_x

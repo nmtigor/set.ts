@@ -3,7 +3,6 @@
  * @license MIT
  ******************************************************************************/
 
-import { global } from "../../global.ts";
 import type { ts_t } from "../alias.ts";
 import { space } from "../util.ts";
 /*80--------------------------------------------------------------------------*/
@@ -111,10 +110,10 @@ export const reportError = <E extends Error>(err_x: E) => {
 
   const err_j = err_x?.toJ(); //! `err_x` seems still  could be `null` at runtime
   // console.log(err_j);
-  global.mw?.showReportedError?.({
-    err_j,
-    ts: Date.now() as ts_t,
-  });
+  // global.mw?.showReportedError?.({
+  //   err_j,
+  //   ts: Date.now() as ts_t,
+  // });
 
   reporting_ = undefined;
 

@@ -1,4 +1,4 @@
-This implements a format for searching texts with the following grammar:
+This program implements a format for searching texts with the following grammar:
 
 ```
 Quotkey:
@@ -34,14 +34,14 @@ can be
 video > contain > ? ∩ (typescript ∪ javascript) \ deno
 ```
 
-This uses a compiling mechanism, i.e., compile while editing. It finds the
+This program uses a compiling mechanism, i.e., compile while editing. It finds the
 smallest dirty node, and recompiles that node only, reusing unrelated nodes
 within the dirty node. So it is very efficient for editing.
 
-### Unittest
+## Unittest
 
 ```bash
 cd /path_to/set.ts
-# deno 2.4.3
+# deno 2.5.6
 deno test -RN # 2 passed (15 steps)
 ```
