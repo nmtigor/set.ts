@@ -4,8 +4,8 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
-import type { Id_t } from "../alias_v.ts";
 import type { Ratio, uint32, uint8 } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
 import "../jslang.ts";
 import type { MooHandler } from "../Moo.ts";
 import { Moo } from "../Moo.ts";
@@ -14,6 +14,7 @@ import type {
   alpha_t,
   chroma_t,
   Cssc,
+  CsscHex,
   CsscHexNorm,
   CsscName,
   CsscRGB,
@@ -34,12 +35,7 @@ import { Hct } from "./hct.ts";
 import { HctSolver } from "./hct_solver.ts";
 /*80--------------------------------------------------------------------------*/
 
-/** "#123" */
-type RGB_ = string;
-/** "#1234" */
-type RGBA_ = string;
-type CsscHex_ = RGB_ | RGBA_ | CsscHexNorm;
-function normalizeCsscHex_(csschex: CsscHex_): CsscHexNorm {
+function normalizeCsscHex_(csschex: CsscHex): CsscHexNorm {
   let ret: CsscHexNorm = "";
   csschex = csschex.toLowerCase();
   switch (csschex.length) {
@@ -68,15 +64,10 @@ function normalizeCsscHex_(csschex: CsscHex_): CsscHexNorm {
       } else ret = csschex;
       break;
     default:
-      fail();
+      fail("Should not run here!");
   }
   return ret;
 }
-
-// /** "hsl(120,60%,80%)" */
-// type CsscHSL = string;
-// /** "hsl(120,60%,80%,.7)" */
-// type CsscHSLA = string;
 
 export type ColranTyp =
   | "rgb"
@@ -131,7 +122,7 @@ export class Colr {
   constructor(
     typ_x?: ColrTyp_,
     ...dat_x:
-      | [CsscHex_]
+      | [CsscHex]
       | rgba_t
       | [hue_t, chroma_t, tone_t, alpha_t?]
       | [CsscName]
@@ -148,7 +139,7 @@ export class Colr {
            *   "123456" or "#123456" or
            *   "12345678" or "#12345678" or
            */
-          const s = dat_x[0] as CsscHex_;
+          const s = dat_x[0] as CsscHex;
           this.#hex = normalizeCsscHex_(s.startsWith("#") ? s : `#${s}`);
         },
         ["rgb"]: () => {
@@ -194,7 +185,7 @@ export class Colr {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
-   * Assign `#red`, `#green`, `#blue`, `#alpha`\
+   * Set `#red`, `#green`, `#blue`, `#alpha`\
    * `in( this.#hex !== undefined)`
    */
   #byHex(): void {
@@ -213,12 +204,12 @@ export class Colr {
         this.#alpha = (i_ & 0xFF) / 0xFF;
         break;
       default:
-        fail();
+        fail("Should not run here!");
     }
   }
 
   /**
-   * Assign `#red`, `#green`, `#blue`\
+   * Set `#red`, `#green`, `#blue`\
    * `in( this.#hct?.valid)`
    */
   #byHCT() {
@@ -231,16 +222,16 @@ export class Colr {
   }
 
   /**
-   * Assign `#red`, `#green`, `#blue`, `#alpha`
+   * Set `#red`, `#green`, `#blue`, `#alpha`
    * @const @param h_x From CSS "hsl(...)"
    * @const @param s_x ditto
    * @const @param l_x ditto
    * @const @param a_x ditto
    */
   #byHSL(h_x: number, s_x: number, l_x: number, a_x?: number): void {
-    let h_ = h_x / 360;
-    let s_ = s_x / 100;
-    let l_ = l_x / 100;
+    const h_ = h_x / 360;
+    const s_ = s_x / 100;
+    const l_ = l_x / 100;
 
     if (s_ === 0) {
       this.#red = this.#green = this.#blue = Math.round(l_ * 255);
@@ -252,9 +243,9 @@ export class Colr {
         t2 = l_ + s_ - l_ * s_;
       }
 
-      let t1 = 2 * l_ - t2;
+      const t1 = 2 * l_ - t2;
 
-      let rgb = [0, 0, 0];
+      const rgb = [0, 0, 0];
       for (let i = 0; i < 3; i++) {
         let t3 = h_ + 1 / 3 * -(i - 1);
         if (t3 < 0) t3++;
@@ -279,7 +270,6 @@ export class Colr {
   /**
    * `in( isValidCssc(cssc_x))`
    * @const @param cssc_x
-   *    Notice, e.g. "rgb(25,55,55,.3)" rather than "rgb(25 55 55 /.3)"
    */
   setByCssc(cssc_x: Cssc): this {
     if (cssc_x.startsWith("#")) {
@@ -295,19 +285,28 @@ export class Colr {
       this.#red = this.#green = this.#blue = undefined;
       this.#alpha = undefined;
     } else {
-      const compo_a = cssc_x
-        .replace(/[^\.\d,]/g, "")
-        .split(",")
-        .map((s) => parseFloat(s)) as [number, number, number, number?];
+      let tmp_a = cssc_x.replace(/[^\.\d,]/g, "").split(",");
+      let compo_a: [number, number, number, number?];
+      if (tmp_a.length >= 3) {
+        compo_a = tmp_a.map((s) => parseFloat(s)) as any;
+      } else {
+        tmp_a = cssc_x.replace(/[^\.\d /]/g, "").split(/ +/);
+        compo_a = [
+          parseFloat(tmp_a[0]),
+          parseFloat(tmp_a[1]),
+          parseFloat(tmp_a[2]),
+        ];
+        if (tmp_a.length > 3) {
+          compo_a.push(parseFloat(tmp_a.at(-1)!));
+        }
+      }
       if (cssc_x.startsWith("rgb")) {
         this.#red = compo_a[0];
         this.#green = compo_a[1];
         this.#blue = compo_a[2];
         this.#alpha = compo_a[3];
-      } else if (cssc_x.startsWith("hsl")) {
-        this.#byHSL(...compo_a);
       } else {
-        assert(0);
+        this.#byHSL(...compo_a);
       }
       this.#hex = undefined;
       this.#name = undefined;
@@ -390,7 +389,7 @@ export class Colr {
       this.#getHex(valve_x);
       this.#byHex();
     } else {
-      assert(0);
+      fail("Should not run here!");
     }
     return this.#red!;
   }
@@ -434,7 +433,7 @@ export class Colr {
       this.#getHex(valve_x);
       this.#byHex();
     } else {
-      assert(0);
+      fail("Should not run here!");
     }
     let ret = argbFromRgb(this.#red!, this.#green!, this.#blue!);
     if (this.#alpha !== undefined) {
@@ -539,9 +538,7 @@ export class Colr {
     }
     return this.#name = csscNameMap.getN(this.#getHex(valve_x));
   }
-  /**
-   * ! Alpha channel is ignored
-   */
+  /**! Alpha channel is ignored */
   get name(): CsscName | undefined {
     return this.#getName();
   }
@@ -738,7 +735,7 @@ export class Colr {
   }
 
   /**
-   * ! Set hue or chroma or tone alone could change the other two.
+   **! Set hue or chroma or tone alone could change the other two.
    * @const @param h_x
    * @const @param c_x
    * @const @param t_x
@@ -806,7 +803,7 @@ export class Colr {
 
   /**
    * "a.5"\
-   * ! `#name` is not affected\
+   **! `#name` is not affected\
    * `in( zAlpha.parse(val_x))`
    * @const @param val_x
    */
@@ -911,7 +908,7 @@ export class Colr {
     } else if (this.#red !== undefined) {
       this.#getAlpha();
       this.#cssc =
-        `rgb(${this.#red},${this.#green},${this.#blue},${this.#alpha})`;
+        `rgb(${this.#red} ${this.#green} ${this.#blue}/${this.#alpha})`;
     } else if (this.#hct?.valid) {
       this.#getHex();
       this.#cssc = this.#hex!;
@@ -924,32 +921,27 @@ export class Colr {
 
   /** @const @param typ_x */
   repr(typ_x: "hex" | "rgb" | "hct"): string {
-    let ret: string;
-    // Alpha channel of `#hex` and `#alpha` could be inconsistent
+    /* Alpha channel of `#hex` and `#alpha` may be inconsistent. */
     this.#getAlpha();
-    /* final switch */ ({
+    const ret = /* final switch */ ({
       ["hex"]: () => {
-        ret = this.hex;
+        return this.hex;
       },
       ["rgb"]: () => {
-        if (Number.apxE(this.#alpha!, 1)) {
-          ret = `rgb(${this.red} ${this.green} ${this.blue})`;
-        } else {
-          ret = `rgb(${this.red} ${this.green} ${this.blue} /${
-            this.#alpha!.reprRatio()
-          })`;
-        }
+        return `rgb(${this.red} ${this.green} ${this.blue}${
+          Number.apxE(this.#alpha!, 1) ? "" : `/${this.#alpha!.reprRatio()}`
+        })`;
       },
       ["hct"]: () => {
-        if (Number.apxE(this.#alpha!, 1)) {
-          ret = `hct(${this.hue.fixTo(1)} ${this.chroma.fixTo(1)} ${
-            this.tone.fixTo(1)
-          })`;
-        } else {
-          ret = `hct(${this.hue.fixTo(1)} ${this.chroma.fixTo(1)} ${
-            this.tone.fixTo(1)
-          } /${this.#alpha!.reprRatio()})`;
-        }
+        return `hct(${
+          [
+            this.hue.fixTo(1),
+            this.chroma.fixTo(1),
+            this.tone.fixTo(1),
+          ].join(" ")
+        }${
+          Number.apxE(this.#alpha!, 1) ? "" : `/${this.#alpha!.reprRatio()}`
+        })`;
       },
     }[typ_x])();
     return ret!;
@@ -991,7 +983,7 @@ export class Colr {
 //   return (ligt1 + .05) / (ligt2 + .05);
 // }
 
-export function hexcolr(hexstr_x: CsscHex_) {
+export function hexcolr(hexstr_x: CsscHex) {
   return new Colr("hex", hexstr_x);
 }
 export function rgb(r_x: red_t, g_x: red_t, b_x: red_t) {
@@ -1022,10 +1014,10 @@ export function randomRed() {
 }
 export function randomCsscRRR(): CsscRGB {
   const r_ = randomRed();
-  return `rgb(${r_}, ${r_}, ${r_})`;
+  return `rgb(${r_} ${r_} ${r_})`;
 }
 export function randomCsscRGB(): CsscRGB {
-  return `rgb(${randomRed()}, ${randomRed()}, ${randomRed()})`;
+  return `rgb(${randomRed()} ${randomRed()} ${randomRed()})`;
 }
 export function randomRRGGBB(): RRGGBB {
   const xr = randomRed().toString(16).padStart(2, "0");
@@ -1065,7 +1057,7 @@ export const csscNameMap = new class {
     return this.#map.get(key)!;
   }
 
-  getN(key: CsscHex_): CsscName | undefined {
+  getN(key: CsscHex): CsscName | undefined {
     return this.#revmap.get(normalizeCsscHex_(key).slice(0, 7));
   }
 }();
@@ -1115,7 +1107,7 @@ export function csscLess(a_x: Cssc, b_x: Cssc) {
 //   case 1: r = 0;         g = 0;         b = hexstr[0]; break;
 //   case 2: r = 0;         g = hexstr[0]; b = hexstr[1]; break;
 //   case 3: r = hexstr[0]; g = hexstr[1]; b = hexstr[2]; break;
-//   default: assert(0);
+//   default: fail("Should not run here!");
 //   }
 //   return `#${r}${r}${g}${g}${b}${b}`;
 // }

@@ -59,12 +59,12 @@ declare global {
 export abstract class Vuu<C extends Coo = Coo, E extends Element = Element> {
   static #ID = 0 as Id_t;
   readonly id = ++Vuu.#ID as Id_t;
-  get _type_() {
+  get class() {
     return this.constructor.name;
   }
   /** @final */
-  get _type_id_() {
-    return `${this._type_}_${this.id}`;
+  get _class_id_() {
+    return `${this.class}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -79,9 +79,7 @@ export abstract class Vuu<C extends Coo = Coo, E extends Element = Element> {
     return this.el$;
   }
 
-  /**
-   * ! If any, not call in the `constructor()`
-   */
+  /**! If any, not call in the `constructor()` */
   observeTheme?(): void;
   unobserveTheme?(): void;
 

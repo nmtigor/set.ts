@@ -4,10 +4,18 @@
  ******************************************************************************/
 
 import { INOUT, PRF } from "../../preNs.ts";
-import type { Id_t, lnum_t, UInt16 } from "../alias_v.ts";
-import type { BufrDir, int, lcol_t, loff_t, UChr, uint } from "../alias.ts";
+import type {
+  BufrDir,
+  int,
+  lcol_t,
+  lnum_t,
+  loff_t,
+  UChr,
+  uint,
+} from "../alias.ts";
 import { Endpt } from "../alias.ts";
-import type { Bidir } from "../Bidi.ts";
+import type { Id_t, UInt16 } from "../alias_v.ts";
+import type { Bidi, Bidir } from "../Bidi.ts";
 import { assert } from "../util.ts";
 import { Factory } from "../util/Factory.ts";
 import { g_count } from "../util/performance.ts";
@@ -37,12 +45,16 @@ export const enum LocCompared {
   // no = no_sameline | no_othrline | no_othrBufr,
 }
 
-type BidirMap_ = Map<Line, Bidir>;
-export type _BidirMap = BidirMap_;
+//jjjj TOCLEANUP
+// type BidirMap_ = Map<Line, Bidir>;
+// type BidirMap_ = Map<lnum_t, Bidir>;
+// export type _BidirMap_ = BidirMap_;
+type BidiO_ = {
+  bidi(_: lnum_t): Bidi;
+};
+export type _BidiO_ = BidiO_;
 
-/**
- * primaryconst: const exclude `#info`
- */
+/** primaryconst: const exclude `#info` */
 export class Loc {
   static #ID = 0 as Id_t;
   readonly id = ++Loc.#ID as Id_t;
@@ -68,6 +80,7 @@ export class Loc {
       this.#part = false;
     }
   }
+  //jjjj can rename to `lidx`
   /** @primaryconst */
   get lidx_1() {
     return this.line_$.lidx_1;
@@ -85,7 +98,7 @@ export class Loc {
   // }
 
   /**
-   * ! Any change of `line_$` or `loff_$` should invalidate `#lcol` to -1.
+   **! Any change of `line_$` or `loff_$` should invalidate `#lcol` to -1.
    */
   #lcol: lcol_t | -1 = -1;
 
@@ -133,7 +146,7 @@ export class Loc {
   }
 
   /**
-   * out( this.line_$ )
+   * `out( this.line_$)`
    * @final
    * @headconst @param line_x
    * @const @param loff_x
@@ -251,7 +264,7 @@ export class Loc {
       : this.line_$.codpAt(this.loff_$);
   }
   /**
-   * `in( this.loff_$ >= 0 )`
+   * `in( this.loff_$ >= 0)`
    * @primaryconst
    * @return newly assigned `#info`
    */
@@ -366,6 +379,7 @@ export class Loc {
   /* comparison */
 
   /**
+   * `in( !this.removed && !line_x.removed)`
    * @primaryconst
    * @primaryconst @param line_x
    * @const @param loff_x
@@ -430,6 +444,7 @@ export class Loc {
         this.lidx_1 > line_x.lidx_1);
   }
   /**
+   * `in( !this.removed && !line_x.removed)`
    * @const
    * @const @param line_x
    * @const @param loff_x
@@ -502,9 +517,9 @@ export class Loc {
 
   /**
    * Calc line column by `hintLoff_x` and `hintLcol_x`\
-   * Assign `#lcol` if `#lcol < 0` or `recalc_x`\
+   * Set `#lcol` if `#lcol < 0` or `recalc_x`\
    *
-   * ! `this` can be `#part` if `this.#lcol >= 0 && !recalc_x`
+   **! `this` can be `#part` if `this.#lcol >= 0 && !recalc_x`
    *
    * @const @param recalc_x
    */
@@ -536,9 +551,9 @@ export class Loc {
   }
   /**
    * Calc line column by `loc_x.loff_$` and `loc_x.lcol_1()`\
-   * Assign `#lcol` if `#lcol < 0` or `recalc_x`\
+   * Set `#lcol` if `#lcol < 0` or `recalc_x`\
    *
-   * `in( this.bufr === loc_x.bufr )`
+   * `in( this.bufr === loc_x.bufr)`
    *
    * @const @param loc_x
    */
@@ -554,7 +569,7 @@ export class Loc {
   }
 
   /**
-   * Assign `loff_$`, `#lcol, `#part`
+   * Set `loff_$`, `#lcol, `#part`
    * @const @param n_x
    */
   forwnCol(n_x: lcol_t): void {
@@ -600,12 +615,12 @@ export class Loc {
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
-   * `in( bidirMap_x.has(this.line_$) )`
-   * @headconst @param bidirMap_x
+   * @headconst @param bidiO_x
+   * @const @param row_x
    * @return effective or not
    */
-  visulFarleftenIn(bidirMap_x: BidirMap_, row_x?: "row"): boolean {
-    const bidi = bidirMap_x.get(this.line_$)!.bidi;
+  visulFarleftenIn(bidiO_x: BidiO_, row_x?: "row"): boolean {
+    const bidi = bidiO_x.bidi(this.lidx_1);
     const oldLoff = this.loff_$;
     this.loff_$ = bidi.visulFarleften(
       row_x ? bidi.rowOf(this.loff_$) : undefined,
@@ -613,8 +628,8 @@ export class Loc {
     return oldLoff !== this.loff_$;
   }
   /** @see {@linkcode visulFarleftenIn()} */
-  visulFarrigtenIn(bidirMap_x: BidirMap_, row_x?: "row"): boolean {
-    const bidi = bidirMap_x.get(this.line_$)!.bidi;
+  visulFarrigtenIn(bidiO_x: BidiO_, row_x?: "row"): boolean {
+    const bidi = bidiO_x.bidi(this.lidx_1);
     const oldLoff = this.loff_$;
     this.loff_$ = bidi.visulFarrigten(
       row_x ? bidi.rowOf(this.loff_$) : undefined,
@@ -622,58 +637,61 @@ export class Loc {
     return oldLoff !== this.loff_$;
   }
 
-  /** @see {@linkcode visulFarleftenIn()} */
-  visulLeftenIn(bidirMap_x: BidirMap_): boolean {
-    const DIR = this.dir;
-    let ln_1: Line | undefined;
+  /**
+   * @headconst @param bidiO_x
+   * @return effective or not
+   */
+  visulLeftenIn(bidiO_x: BidiO_): boolean {
+    const Dir_ = this.dir;
     //jjjj TOCLEANUP
+    // let ln_1: Line | undefined;
     // /* The case `atEol` does not go through Bidi, because it's not in `[0,$)`. */
-    // if (this.atEol && DIR === BufrDir.rtl) {
+    // if (this.atEol && Dir_ === BufrDir.rtl) {
     //   ln_1 = this.line.nextLine;
     //   if (!ln_1) return false;
 
     //   this.line_$ = ln_1;
-    //   this.visulFarrigtenIn(bidirMap_x);
+    //   this.visulFarrigtenIn(bidiO_x);
     //   return true;
     // }
 
-    const bidi = bidirMap_x.get(this.line_$)!.bidi;
+    const bidi = bidiO_x.bidi(this.lidx_1);
     const ret = bidi.visulLeften(this.loff_$);
     this.loff_$ = bidi.lastLogal;
     if (ret) return true;
 
-    ln_1 = DIR === "ltr" ? this.line.prevLine : this.line.nextLine;
+    const ln_1 = Dir_ === "ltr" ? this.line.prevLine : this.line.nextLine;
     if (!ln_1) return false;
 
     this.line_$ = ln_1;
-    this.visulFarrigtenIn(bidirMap_x);
+    this.visulFarrigtenIn(bidiO_x);
     return true;
   }
-  /** @see {@linkcode visulFarleftenIn()} */
-  visulRigtenIn(bidirMap_x: BidirMap_): boolean {
-    const DIR = this.dir;
-    let ln_1: Line | undefined;
+  /** @see {@linkcode visulLeftenIn()} */
+  visulRigtenIn(bidiO_x: BidiO_): boolean {
+    const Dir_ = this.dir;
     //jjjj TOCLEANUP
+    // let ln_1: Line | undefined;
     // /* The case `atEol` does not go through Bidi, because it's not in `[0,$)`. */
-    // if (this.atEol && DIR === BufrDir.ltr) {
+    // if (this.atEol && Dir_ === BufrDir.ltr) {
     //   ln_1 = this.line.nextLine;
     //   if (!ln_1) return false;
 
     //   this.line_$ = ln_1;
-    //   this.visulFarleftenIn(bidirMap_x);
+    //   this.visulFarleftenIn(bidiO_x);
     //   return true;
     // }
 
-    const bidi = bidirMap_x.get(this.line_$)!.bidi;
+    const bidi = bidiO_x.bidi(this.lidx_1);
     const ret = bidi.visulRigten(this.loff_$);
     this.loff_$ = bidi.lastLogal;
     if (ret) return true;
 
-    ln_1 = DIR === "ltr" ? this.line.nextLine : this.line.prevLine;
+    const ln_1 = Dir_ === "ltr" ? this.line.nextLine : this.line.prevLine;
     if (!ln_1) return false;
 
     this.line_$ = ln_1;
-    this.visulFarleftenIn(bidirMap_x);
+    this.visulFarleftenIn(bidiO_x);
     return true;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/

@@ -3,11 +3,10 @@
  * @license MIT
  ******************************************************************************/
 
-import type { uint16 } from "../alias.ts";
-import type { TypedArray } from "../alias.ts";
+import type { TypedArray, uint16 } from "../alias.ts";
 import { validateBinaryLike } from "./general_cf.ts";
-import { MurmurHash3_64 } from "./murmurhash3.ts";
 import * as Is from "./is.ts";
+import { MurmurHash3_64 } from "./murmurhash3.ts";
 /*80--------------------------------------------------------------------------*/
 
 /* Not sure if js impls use regexp interning like string. So. */
@@ -97,44 +96,48 @@ const B64_ = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 /**
  * Ref. https://github.com/denoland/std/blob/e02e89fef3cd7f625e487f76e9d56b8b60137102/encoding/base64.ts#L112
- * @const @param data_x
+ * @const @param u8ary_x
  */
-export const b64From = (
-  data_x: ArrayBuffer | Uint8Array | string,
-): string => {
-  const uint8 = validateBinaryLike(data_x);
+export const b64FromU8ary = (u8ary_x: Uint8Array): string => {
   let b64 = "";
   let i_;
-  const LEN = uint8.length;
+  const LEN = u8ary_x.length;
   for (i_ = 2; i_ < LEN; i_ += 3) {
-    b64 += B64_[(uint8[i_ - 2]!) >> 2];
+    b64 += B64_[(u8ary_x[i_ - 2]!) >> 2];
     b64 += B64_[
-      (((uint8[i_ - 2]!) & 0x03) << 4) |
-      ((uint8[i_ - 1]!) >> 4)
+      (((u8ary_x[i_ - 2]!) & 0x03) << 4) |
+      ((u8ary_x[i_ - 1]!) >> 4)
     ];
     b64 += B64_[
-      (((uint8[i_ - 1]!) & 0x0f) << 2) |
-      ((uint8[i_]!) >> 6)
+      (((u8ary_x[i_ - 1]!) & 0x0f) << 2) |
+      ((u8ary_x[i_]!) >> 6)
     ];
-    b64 += B64_[(uint8[i_]!) & 0x3f];
+    b64 += B64_[(u8ary_x[i_]!) & 0x3f];
   }
   if (i_ === LEN + 1) {
     /* 1 octet yet to write */
-    b64 += B64_[(uint8[i_ - 2]!) >> 2];
-    b64 += B64_[((uint8[i_ - 2]!) & 0x03) << 4];
+    b64 += B64_[(u8ary_x[i_ - 2]!) >> 2];
+    b64 += B64_[((u8ary_x[i_ - 2]!) & 0x03) << 4];
     b64 += "==";
   }
   if (i_ === LEN) {
     /* 2 octets yet to write */
-    b64 += B64_[(uint8[i_ - 2]!) >> 2];
+    b64 += B64_[(u8ary_x[i_ - 2]!) >> 2];
     b64 += B64_[
-      (((uint8[i_ - 2]!) & 0x03) << 4) |
-      ((uint8[i_ - 1]!) >> 4)
+      (((u8ary_x[i_ - 2]!) & 0x03) << 4) |
+      ((u8ary_x[i_ - 1]!) >> 4)
     ];
-    b64 += B64_[((uint8[i_ - 1]!) & 0x0f) << 2];
+    b64 += B64_[((u8ary_x[i_ - 1]!) & 0x0f) << 2];
     b64 += "=";
   }
   return b64;
+};
+
+/** @const @param data_x */
+export const b64From = (
+  data_x: ArrayBuffer | Uint8Array | string,
+): string => {
+  return validateBinaryLike(data_x).toBase64();
 };
 
 /**
@@ -149,41 +152,40 @@ export const b64urlFromB64 = (b64_x: string): string => {
     : b64_x.replace(/\+/g, "-").replace(/\//g, "_");
 };
 
-/**
- * Ref. https://github.com/denoland/std/blob/e02e89fef3cd7f625e487f76e9d56b8b60137102/encoding/base64url.ts#L63
- * @const @param data_x
- */
+/** @const @param data_x */
 export const b64urlFrom = (
   data_x: ArrayBuffer | Uint8Array | string,
 ): string => {
-  return b64urlFromB64(b64From(data_x));
+  return validateBinaryLike(data_x).toBase64({
+    alphabet: "base64url",
+    omitPadding: true,
+  });
 };
 /*64----------------------------------------------------------*/
 
-//jjjj Remove this once `Uint8Array.fromBase64()` is generally available.
 /**
  * Ref. https://github.com/denoland/std/blob/e02e89fef3cd7f625e487f76e9d56b8b60137102/encoding/base64.ts#L168
  * @const @param b64_x
  */
-export const uint8FromB64 = (b64_x: string): Uint8Array => {
+export const u8aryFromB64 = (b64_x: string): Uint8Array<ArrayBuffer> => {
   const binString = atob(b64_x);
   const size = binString.length;
-  const uint8 = new Uint8Array(size);
+  const u8ary = new Uint8Array(size);
   for (let i = 0; i < size; i++) {
-    uint8[i] = binString.charCodeAt(i);
+    u8ary[i] = binString.charCodeAt(i);
   }
-  return uint8;
+  return u8ary;
 };
 
 /** @const @param b64_x */
 export const decodeB64 = (b64_x: string): string => {
-  return decodeABV(uint8FromB64(b64_x));
+  return decodeABV(Uint8Array.fromBase64(b64_x));
 };
 
 /**
  * Ref. https://github.com/denoland/std/blob/e02e89fef3cd7f625e487f76e9d56b8b60137102/encoding/base64url.ts#L31
- * @param b64url_x
- * @throw `TypeError`
+ * @const @param b64url_x
+ * @throw {@linkcode TypeError}
  */
 export const b64FromB64url = (b64url_x: string): string => {
   if (!/^[-_A-Z0-9]*?={0,2}$/i.test(b64url_x)) {
@@ -202,22 +204,12 @@ export const b64FromB64url = (b64url_x: string): string => {
   return ret;
 };
 
-//jjjj Remove this once `Uint8Array.fromBase64()` is generally available.
-/**
- * Ref. https://github.com/denoland/std/blob/e02e89fef3cd7f625e487f76e9d56b8b60137102/encoding/base64url.ts#L88
- * @param b64url_x
- * @throw `TypeError`
- */
-export const uint8FromB64url = (b64url_x: string): Uint8Array => {
-  return uint8FromB64(b64FromB64url(b64url_x));
-};
-
 /**
  * @const @param b64url_x
- * @throw `TypeError`
+ * @throw {@linkcode TypeError}
  */
 export const decodeB64url = (b64url_x: string): string => {
-  return decodeABV(uint8FromB64url(b64url_x));
+  return decodeABV(Uint8Array.fromBase64(b64url_x, { alphabet: "base64url" }));
 };
 /*80--------------------------------------------------------------------------*/
 

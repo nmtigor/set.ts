@@ -7,6 +7,7 @@ import { INOUT } from "../../preNs.ts";
 import type { Id_t } from "../alias_v.ts";
 import type { uint } from "../alias.ts";
 import { assert } from "../util.ts";
+import "../jslang.ts";
 /*80--------------------------------------------------------------------------*/
 
 export const enum LastUR {
@@ -18,7 +19,7 @@ export class Unre<T extends {} | null> {
   static #ID = 0 as Id_t;
   readonly id = ++Unre.#ID as Id_t;
   /** @final */
-  get _type_id_() {
+  get _class_id_() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -51,7 +52,7 @@ export class Unre<T extends {} | null> {
       assert(2 <= len_x); // to prevent `i_0$` === `i_1$`
     }
     this.#Len = len_x; // to prevent `i_0$` === `i_1$`
-    this.ary$ = new Array<T>(this.#Len);
+    this.ary$ = Array.sparse<T>(this.#Len);
   }
 
   reset_Unre() {

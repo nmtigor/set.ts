@@ -15,15 +15,17 @@
     "noImplicitReturns": true,
     "noImplicitOverride": true
   },
-  "lint": {
+  "lint"           : {
     "rules": {
       "exclude": [
         "adjacent-overload-signatures",
+        "no-extra-non-null-assertion",
+        "no-this-alias",
         "valid-typeof"
       ]
     }
   },
-  "imports": {
+  "imports"        : {
     "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@^0.1.48",
     "@fe-3rd/": "./src/3rd/",
     "@fe-cpl/": "./src/lib/compiling/",
@@ -46,9 +48,9 @@
     "@std/log": "jsr:@std/log@^0.224.9",
     "@std/path": "jsr:@std/path@^1.1.1",
     "@std/testing": "jsr:@std/testing@^1.0.15",
-    "@valibot/valibot": "jsr:@valibot/valibot@^1.1.0",
+    "@valibot/valibot": "jsr:@valibot/valibot@^1.2.0",
     "@wretch": "npm:wretch@^2.11.0",
     "@xstate": "npm:xstate@^5.19.1",
     "@yaml": "npm:yaml@^2.8.0"
-  },
+  }
 }

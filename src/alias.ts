@@ -3,7 +3,7 @@
  * @license MIT
  ******************************************************************************/
 
-import type { UChr } from "./lib/alias.ts";
+import type { UChr } from "@fe-lib/alias.ts";
 /*80--------------------------------------------------------------------------*/
 
 export const D_db = "root_1";
@@ -97,10 +97,14 @@ export const fontFamilyMono = [
 /* Fallback system font:
 https://bitsofco.de/the-new-system-font-stack/
 */
+
+export const Rem = 16;
+export const PopitemHigt = 32;
 /*64----------------------------------------------------------*/
 /* zIndex */
 
 /* Stacking context: Windl */
+export const KeyinsVu_z = 10;
 export const NotPF_z = 9;
 export const ToolbarResizer_z = 8;
 export const SwipteNailLifting_z = 6;
@@ -110,69 +114,15 @@ export const PopfoldInact_z = 3;
 export const Pocusd_z = 2;
 /*80--------------------------------------------------------------------------*/
 
-export const ClickExtent = 2;
-/**
- * @const @param x
- * @const @param y
- * @const @param x_0
- * @const @param y_0
- * @const @param extent_x
- */
-export function isClick(
-  x: number,
-  y: number,
-  x_0: number,
-  y_0: number,
-  extent_x = ClickExtent,
-): boolean {
-  // console.log({ x, y, x_0, y_0 });
-  return Math.abs(x_0 - x) <= extent_x &&
-    Math.abs(y_0 - y) <= extent_x;
-}
-/*64----------------------------------------------------------*/
-
-/** in milliseconds */
-export const HoldDuration = 1_000;
-/*64----------------------------------------------------------*/
-
-/** In milliseconds */
-export const SpeedGran = 200;
-
-export const SwipeValve = .08;
-export type SwipeData = {
-  ts_1: number;
-  val_1: number;
-  ts_2: number;
-  val_2: number;
-};
-export const enum Swipe {
-  dn = 1,
-  up = -1,
-  no = 0,
-}
-export function isSwipe(_x: SwipeData): Swipe {
-  const speed = _x.ts_2 <= _x.ts_1
-    ? 0
-    : (_x.val_2 - _x.val_1) / (_x.ts_2 - _x.ts_1);
-  return Math.abs(speed) <= SwipeValve
-    ? Swipe.no
-    : speed > 0
-    ? Swipe.dn
-    : Swipe.up;
-}
-/*80--------------------------------------------------------------------------*/
-
-// deno-fmt-ignore
-/**
- * Ref. https://w3c.github.io/uievents-key/
- */
-export const enum Key {
+/* deno-fmt-ignore */
+/** Ref. https://w3c.github.io/uievents-key/ */
+export enum Key {
   /* 3.2. Modifier Keys */
   Alt, Control, Shift, Meta,
   /* 3.3. Whitespace Keys */
   Enter, Tab,
   /* 3.4. Navigation Keys */
-  ArrowDown, ArrowLeft, ArrowRight, ArrowUp,
+  ArrowDown, ArrowLeft, ArrowRight, ArrowUp, 
   End, Home,
   PageDown, PageUp,
   /* 3.5. Editing Keys */
@@ -182,6 +132,9 @@ export const enum Key {
   /* 3.9. General-Purpose Function Keys */
   F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
 }
+/* alias_v */
+// export const vKey = v.enum(Key);
+/* ~ */
 
 export type Keybinding =
   | `${Key | UChr}`

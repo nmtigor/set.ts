@@ -3,25 +3,33 @@
  * @license MIT
  ******************************************************************************/
 
-import { $loff } from "../symbols.ts";
-import type { Id_t } from "../alias_v.ts";
+import { INOUT } from "../../preNs.ts";
 import type { loff_t, uint } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
+import { $facil_node, $loff_0, $ovlap } from "../symbols.ts";
+import { assert } from "../util.ts";
+import type { Pos } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
 
-/** @final */
+/**
+ * Wrapper of one `Range`: `#endpt`
+ *
+ * @final
+ */
 export class ELoc {
   static #ID = 0 as Id_t;
   readonly id = ++ELoc.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   ctnr_$: Node;
-  /**
-   * ! in logical ordering rather than visual ordering
-   */
+  /** offset in `ctnr_$` (in logical ordering rather than visual ordering) */
   offs_$: uint;
+  /** offset in `TokLine` */
   get loff(): loff_t {
-    return ((this.ctnr_$ as Text)[$loff] ?? 0) + this.offs_$;
+    return ((this.ctnr_$ as Text)[$loff_0] ?? 0) + this.offs_$;
   }
+
+  readonly #endpt = new Range();
 
   /**
    * @borrow @const @param ctnr_x
@@ -32,7 +40,7 @@ export class ELoc {
     this.offs_$ = offs_x;
   }
 
-  dupELoc() {
+  dup_ELoc() {
     return new ELoc(this.ctnr_$, this.offs_$);
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -44,5 +52,45 @@ export class ELoc {
   /** @const */
   posE(rhs: ELoc): boolean {
     return this === rhs || this.posE_O(rhs.ctnr_$, rhs.offs_$);
+  }
+
+  /**
+   * Assign `#endpt`, and return its synchronized `DOMRect`.
+   * @const @param relPos_x
+   */
+  getBcr_$(relPos_x?: Pos): DOMRect {
+    let retRec;
+
+    if (this.ctnr_$.isText) {
+      this.#endpt.setEnd(this.ctnr_$, this.offs_$);
+      this.#endpt.collapse();
+      retRec = this.#endpt.getBoundingClientRect();
+    } else {
+      //jjjj TOCHECK
+      let subNd: Node | undefined;
+      let i = 0, j = 0;
+      const iI = this.ctnr_$.childNodes.length;
+      for (; i < iI; ++i) {
+        if (!this.ctnr_$.childNodes[i][$facil_node]) {
+          subNd = this.ctnr_$.childNodes[i];
+          if (j++ === this.offs_$) break;
+        }
+      }
+      /*#static*/ if (INOUT) {
+        assert(subNd);
+      }
+      this.#endpt.selectNode(subNd!);
+      retRec = this.#endpt.getBoundingClientRect();
+      if (i === iI) retRec.x = retRec.right; //!
+      retRec.width = 0;
+    }
+    retRec[$ovlap] = this.ctnr_$[$ovlap]; //!
+
+    if (relPos_x) {
+      retRec.x -= relPos_x.left;
+      retRec.y -= relPos_x.top;
+    }
+    // console.log( retRec );
+    return retRec;
   }
 }

@@ -20,7 +20,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   static #ID = 0 as Id_t;
   readonly id = ++Pazr.#ID as Id_t;
   /** @final */
-  get _type_id_() {
+  get _class_id_() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -134,7 +134,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
-   * Assign `strtPazTk$`, `stopPazTk$`
+   * Set `strtPazTk$`, `stopPazTk$`
    * @final
    */
   protected setPazRegion$(ret_x?: Stnode<T>): Stnode<T> | undefined {
@@ -206,12 +206,12 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     this.invalidateBdries$();
   }
 
-  protected sufpazmrk$() {}
+  protected sufPazmrk$() {}
 
   /**
    * Mark paz region
    *
-   * Assign `drtSn_$`, `strtPazTk$`, `stopPazTk$`\
+   * Set `drtSn_$`, `strtPazTk$`, `stopPazTk$`\
    * Reset `errSn_sa$`
    */
   @out((self: Pazr<T>) => {
@@ -300,7 +300,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     this.errSn_sa$.reset_SortedArray();
 
     this.#enlargeBdries(this.headBdryClrTk_$, this.tailBdryClrTk_$);
-    this.sufpazmrk$();
+    this.sufPazmrk$();
     return this;
   }
 

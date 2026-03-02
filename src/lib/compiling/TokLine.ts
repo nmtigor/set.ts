@@ -14,31 +14,29 @@ import type { SetTok } from "./set/SetTok.ts";
 
 /** @final */
 export class TokLine<T extends Tok = BaseTok> extends Line {
-  override get bufr() {
-    return this.bufr$ as TokBufr<T> | undefined;
-  }
+  declare readonly bufr: TokBufr<T>;
 
   override get prevLine() {
-    return this.prevLine$ as TokLine<T> | undefined;
+    return super.prevLine as TokLine<T> | undefined;
   }
   override get nextLine() {
-    return this.nextLine$ as TokLine<T> | undefined;
+    return super.nextLine as TokLine<T> | undefined;
   }
 
   // override linkPrev_$( ret_x:TokLine<T> ):TokLine<T> { return <TokLine<T>>super.linkPrev_$(ret_x); }
   // override linkNext_$( ret_x:TokLine<T> ):TokLine<T> { return <TokLine<T>>super.linkNext_$(ret_x); }
 
+  /** @const @param bufr_x */
   protected constructor(bufr_x: TokBufr<T>) {
     super(bufr_x);
   }
-  /**
-   * @package
-   * @headconst @param bufr_x
-   * @const @param text_x
-   */
-  static override create<T extends Tok>(bufr_x: TokBufr<T>, text_x?: string) {
-    return new TokLine(bufr_x).resetText_$(text_x);
-  }
+  // /**
+  //  * @headconst @param bufr_x
+  //  * @const @param text_x
+  //  */
+  // static override create_$<T extends Tok>(bufr_x: TokBufr<T>, text_x?: string) {
+  //   return new TokLine(bufr_x).resetText_$(text_x);
+  // }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   // /**

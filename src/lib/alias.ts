@@ -194,16 +194,14 @@ export type loff_t = uint32;
 /* alias_v */
 // export type ldt_t = Brand_Int32<"ldt_t">;
 /* ~ */
-export const loff_UNDEFINED: loff_t = -1_000_000_001;
-export const loff_MAX: loff_t = 1_000_000_000;
+export const LoffUNDEFINED: loff_t = -1_000_000_001;
+export const LoffMAX: loff_t = 1_000_000_000;
 /** Count one "\t" as e.g. 2, 4, 8 */
 export type lcol_t = loff_t;
 
-/* alias_v */
-// export type lnum_t = Brand<uint32, "lnum_t">;
-// // export const lnum_UNDEFINED:lnum_t = -256n;
-// export const lnum_MAX = 1_000_000 as lnum_t;
-/* ~ */
+export type lnum_t = uint32;
+// export const lnum_UNDEFINED:lnum_t = -256n;
+export const LnumMAX = 4_000_000;
 
 /** Type of unix timestamp */
 export type ts_t = int64;
@@ -220,6 +218,7 @@ export type Ratio = number;
 // export const vRatio = v.pipe(v.number(), v.finite());
 /* ~ */
 /*64----------------------------------------------------------*/
+/* string */
 
 // export type DecDigitChar = "0"
 //   | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
@@ -252,15 +251,16 @@ export enum ChrTyp {
   L = 1, R = 2, AL = 4,
   /* Weak */
   EN = 8, ES = 0x10, ET = 0x20, AN = 0x40, CS = 0x80,
-  NSM = 0x0_100, BN = 0x0_200,
+  NSM = 0x100, BN = 0x200,
   /* Neutral */
-  B = 0x0_400, S = 0x0_800, WS = 0x1_000, ON = 0x2_000,
+  B = 0x400, S = 0x800, WS = 0x1000, ON = 0x2000,
   /* Explicit Formatting */
-  LRE = 0x4_000, LRO = 0x8_000, RLE = 0x10_000, RLO = 0x20_000, PDF = 0x40_000,
-  LRI = 0x80_000, RLI = 0x100_000, FSI = 0x200_000, PDI = 0x400_000,
+  LRE = 0x4000, LRO = 0x8000, RLE = 0x1_0000, RLO = 0x2_0000, PDF = 0x4_0000,
+  LRI = 0x8_0000, RLI = 0x10_0000, FSI = 0x20_0000, PDI = 0x40_0000,
 }
 export type ChrTypName = keyof typeof ChrTyp;
 /*64----------------------------------------------------------*/
+/* number array */
 
 export type dot2d_t = [x: number, y: number];
 export type dim2d_t = [widt: number, high: number];
@@ -315,6 +315,11 @@ export const enum MouseButton {
 }
 /*64----------------------------------------------------------*/
 
+export const enum ScrollInit {
+  bgn = 1,
+  end,
+}
+
 export const scrollO: ScrollToOptions = {
   left: 0,
   top: 0,
@@ -340,6 +345,7 @@ export type OC2D = OffscreenCanvasRenderingContext2D;
 export const OC2D = globalThis.OffscreenCanvasRenderingContext2D;
 /*80--------------------------------------------------------------------------*/
 /* fe */
+/* Bufr */
 
 //jjjj TOCLEANUP
 // export enum BufrDir {
@@ -350,6 +356,13 @@ export type BufrDir = "ltr" | "rtl";
 /* alias_v */
 // export const vBufrDir = v.picklist(["ltr", "rtl"]);
 /* ~ */
+
+export enum Endpt {
+  focus = 1,
+  anchr,
+}
+/*64----------------------------------------------------------*/
+/* Scronr */
 
 export enum WritingMode {
   htb = 0b0_0001,
@@ -372,6 +385,7 @@ export type SetLayoutP = {
   writingMode?: WritingMode;
 };
 /*64----------------------------------------------------------*/
+/* Toolbar, Toolbtn */
 
 export enum ToolbarSide {
   top_left = 0b0_0000_0001,
@@ -400,6 +414,14 @@ export const enum ToolbarInfo {
   frst = ToolbarSide.top_left | ToolbarSide.top_rigt | ToolbarSide.left_top,
   last = ToolbarSide.bot_left | ToolbarSide.bot_rigt | ToolbarSide.rigt_top,
 }
+
+export type ToolbtnLayout = {
+  ofs_0?: unum;
+  type: string;
+  ofs_1?: unum;
+};
+
+export const ToolbtnOfsMAX = 100;
 /*64----------------------------------------------------------*/
 /* zIndex */
 
@@ -407,6 +429,7 @@ export const enum ToolbarInfo {
 export const Scrod_z = 10;
 export const Scrobar_z = 10;
 /*64----------------------------------------------------------*/
+/* misc */
 
 export type Runr = {
   run(): void | Promise<void>;
@@ -414,11 +437,11 @@ export type Runr = {
 // export class DumRunr implements Runr {
 //   run() {}
 // }
-/*64----------------------------------------------------------*/
 
-export const enum Endpt {
-  focus = 1,
-  anchr,
+export const enum PlaceUm {
+  visible = 1,
+  visibleX,
+  visibleY,
 }
 
 export const enum Sortart {
@@ -428,14 +451,12 @@ export const enum Sortart {
 /*80--------------------------------------------------------------------------*/
 
 export const LOG_cssc = {
-  selectionchange: "#cb9b8b",
-  selectionchange_1: "#ff8257",
-
   xstate_transition: "#2196f3",
   xstate_entry: "#1ba39a",
   xstate_exit: "#506e6c",
   resiz: "#fdf717",
   intrs: "#adfd17",
+  cvasc: "#5dfd17",
 
   performance: "#00ff00",
 

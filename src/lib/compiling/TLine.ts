@@ -4,24 +4,24 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
-import type { Chr } from "../alias_v.ts";
 import type { Dulstr, loff_t } from "../alias.ts";
+import type { Chr } from "../alias_v.ts";
+import "../jslang.ts";
 import { assert } from "../util.ts";
 import { Line } from "./Line.ts";
 import type { TBufr } from "./TBufr.ts";
+import type { LineData } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
 export class TLine extends Line {
-  override get bufr() {
-    return this.bufr$ as TBufr | undefined;
-  }
+  declare readonly bufr: TBufr;
 
   override get prevLine() {
-    return this.prevLine$ as TLine | undefined;
+    return super.prevLine as TLine | undefined;
   }
   override get nextLine() {
-    return this.nextLine$ as TLine | undefined;
+    return super.nextLine as TLine | undefined;
   }
 
   #base_a: Chr[] = [];
@@ -35,12 +35,22 @@ export class TLine extends Line {
     return this.#text;
   }
 
-  /**
-   * @package
-   * @headconst @param bufr_x
-   */
-  constructor(bufr_x: TBufr) {
+  /** @const @param bufr_x */
+  protected constructor(bufr_x: TBufr) {
     super(bufr_x);
+  }
+  /**
+   * @headconst @param bufr_x
+   * @const @param text_x
+   */
+  static override create_$(
+    bufr_x: TBufr,
+    text_x?: string,
+  ): { line: TLine; data: LineData } {
+    return {
+      line: new TLine(bufr_x).resetText_$(text_x),
+      data: Array.sparse(6) as LineData,
+    };
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -55,7 +65,7 @@ export class TLine extends Line {
     // /*#static*/ if (_TRACE) {
     //   console.log([
     //     trace.indent,
-    //     `>>>>>>> ${this._type_id_}.splice_$( ${strt_x}, ${stop_x}, `,
+    //     `>>>>>>> ${this._class_id_}.splice_$( ${strt_x}, ${stop_x}, `,
     //     newt_x === undefined ? "" : `"${newt_x}"`,
     //     " ) >>>>>>>",
     //   ].join(""));
@@ -102,12 +112,12 @@ export class TLine extends Line {
   private _splice_impl(strt_x: loff_t, stop_x: loff_t, chr_a_x: Chr[]): void {
     // /*#static*/ if (_TRACE) {
     //   console.log(
-    //     `${trace.indent}>>>>>>> ${this._type_id_}._splice_impl(${strt_x}, ${stop_x}, [${chr_a_x}]) >>>>>>>`,
+    //     `${trace.indent}>>>>>>> ${this._class_id_}._splice_impl(${strt_x}, ${stop_x}, [${chr_a_x}]) >>>>>>>`,
     //   );
     // }
     this.#base_a.splice(strt_x, stop_x - strt_x, ...chr_a_x);
     this.text_a_$.splice(strt_x, stop_x - strt_x, ...chr_a_x);
-    const tlayr = this.bufr!.tlvert;
+    const tlayr = this.bufr.tlvert;
     for (let i = strt_x, LEN = strt_x + chr_a_x.length; i < LEN; ++i) {
       const chr = this.#base_a[i];
       if (tlayr.treat(chr)) {

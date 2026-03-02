@@ -20,7 +20,7 @@ export class SetLexr extends Lexr<SetTok> {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** Adjust `strtLexTk$`, `stopLexTk$`, and assign `curLoc$` */
-  protected override prelex$(): void {
+  protected override preLex$(): void {
     if (this.strtLexTk$.value === SetTok.subtract) {
       this.drtenTk_$(this.strtLexTk$);
       this.strtLexTk$ = this.strtLexTk$.prevToken_$!;
@@ -32,7 +32,7 @@ export class SetLexr extends Lexr<SetTok> {
       this.drtenTk_$(this.stopLexTk$);
       this.stopLexTk$ = this.stopLexTk$.nextToken_$!;
     }
-    super.prelex$();
+    super.preLex$();
   }
 
   @out((self: SetLexr) => {

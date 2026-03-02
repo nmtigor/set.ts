@@ -6,9 +6,10 @@
  ******************************************************************************/
 
 import type { HTMLVCo } from "@fe-lib/cv.ts";
-import { Hover, Pointer } from "./lib/alias.ts";
-import { assert, out } from "./lib/util.ts";
-import { trace } from "./lib/util/trace.ts";
+import type { uint } from "@fe-lib/alias.ts";
+import { Hover, Pointer } from "@fe-lib/alias.ts";
+import { assert, out } from "@fe-lib/util.ts";
+import { trace } from "@fe-lib/util/trace.ts";
 import { _TRACE, AUTOTEST, CYPRESS, RESIZ } from "./preNs.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -21,6 +22,7 @@ export const global = new class {
   readonly LASTUPDATE_DEV = "2021-05-22 05:04:21 +0200";
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
+  _i_: uint | -1 = -1;
   serveStatic = false;
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -28,7 +30,7 @@ export const global = new class {
   // vco?: MainWindlBase;
   // // holdindicatr?: [HoldIndicatr, HoldIndicatr, HoldIndicatr];
 
-  mwCap = Promise.withResolvers<HTMLVCo>();
+  mw_pr = Promise.withResolvers<HTMLVCo>();
   /**
    * This is actually of type `MainWindlBase | undefined`. Using `HTMLVCo` here
    * is to prevent from importing `MainWindlBase`, which will further  import
@@ -125,7 +127,7 @@ export const global = new class {
   }
 }();
 
-global.mwCap.promise.then((mw) => global.mw = mw);
+global.mw_pr.promise.then((mw) => global.mw = mw);
 /*80--------------------------------------------------------------------------*/
 
 //jjjj TOCLEANUP
@@ -148,15 +150,19 @@ export const g_onresize = () => {
 };
 
 export const g_onerror = (evt_x: ErrorEvent) => {
+  console.error(evt_x);
+
   const mw_ = global.mw;
   if (mw_) mw_.el.style.backgroundColor = "#61bed4";
 
   /*#static*/ if (!AUTOTEST) {
-    mw_?.ci.reportError?.(evt_x.error);
+    mw_?.ci.reportError?.(evt_x.message);
   }
 };
 
 export const g_onunhandledrejection = (evt_x: PromiseRejectionEvent) => {
+  console.error(evt_x);
+
   const mw_ = global.mw;
   if (mw_) mw_.el.style.backgroundColor = "#b6d361";
 

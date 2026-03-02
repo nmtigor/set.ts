@@ -1,5 +1,5 @@
 /** 80**************************************************************************
- * @module lib/compiling/RanFac_
+ * @module lib/compiling/RanFac
  * @license MIT
  ******************************************************************************/
 
@@ -39,12 +39,11 @@ class RanFac_ extends Factory<Ran> {
   }
 
   /**
-   * `in( line_x.bufr)`
    * @borrow @cosnt @param line_x
    * @cosnt @param loff_x
    */
-  byTok<T extends Tok>(line_x: TokLine<T>, loff_x?: loff_t): TokRan<T> {
-    const ret = this.setBufr(line_x.bufr!)
+  byLoff<T extends Tok>(line_x: TokLine<T>, loff_x?: loff_t): TokRan<T> {
+    const ret = this.setBufr(line_x.bufr)
       .oneMore() as TokRan<T>;
     ret.stopLoc.set_Loc(line_x, loff_x);
     return ret.collapse();

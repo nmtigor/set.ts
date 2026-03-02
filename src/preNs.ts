@@ -11,16 +11,20 @@ export {};
 // deno-fmt-ignore
 /* preprocessor names */
 export const 
-  /** Release Candidate */RC = true // rc.premsys.org
+  /** Release Candidate */
+  RC = true // premsys.org/rc
+, STAGING = true
+, /** `true` means the app is loaded from localhost in production. */ 
+  LOCAL = false
 
-, LOCAL = false
-  , STAGE = false
+/* runtime */
 , CF = false // cloudflare
-
 , DENO = true
 , MOZCENTRAL = false
+/* ~ */
 
 , INOUT = true // contracts
+  , TREE = true
 , DEBUG = true // debug build
   , COLR = true
   , INFO = true
@@ -31,7 +35,7 @@ export const
   , INTRS = true // `IntersectionObserver`
 
   , THEMESETTING = false
-  , EDITOR = true
+  , EDTR = true
     , /** @deprecated */EDITOR_v = true // verbose
   , PDFTS = true
     , PDFTS_v = true // verbose
@@ -39,10 +43,13 @@ export const
 , /** @deprecated */APP = false // release build 
 , /** PeRFormance */PRF = true
 
+/* testing */
 , AUTOTEST = true
 , CYPRESS = false 
 , WDIO = false 
+/* ~ */
 
+, _TREE = INOUT && TREE
 , _COLR = DEBUG && COLR
 , _INFO = DEBUG && INFO
 , _STEP = DEBUG && STEP && !AUTOTEST

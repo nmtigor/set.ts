@@ -4,7 +4,6 @@
  ******************************************************************************/
 
 import { INOUT } from "../preNs.ts";
-import type { ts_t } from "./alias.ts";
 import type {
   AbstractConstructor,
   Constructor,
@@ -12,12 +11,19 @@ import type {
   Func,
   int,
   IntegerArray,
+  ts_t,
   uint,
   uint32,
   uint8,
 } from "./alias.ts";
 import { assert } from "./util.ts";
 import * as Is from "./util/is.ts";
+import {
+  b64FromB64url,
+  b64FromU8ary,
+  b64urlFromB64,
+  u8aryFromB64,
+} from "./util/string.ts";
 /*80--------------------------------------------------------------------------*/
 /* Object */
 
@@ -337,12 +343,12 @@ declare global {
   }
 }
 
-const Tolerance_ = 2 ** -30; // ~= 0.000_000_001
-Number.apxE = (f0, f1) => Math.abs(f0 - f1) <= Tolerance_;
-Number.apxS = (f0, f1) => f0 < f1 - Tolerance_;
-Number.apxSE = (f0, f1) => f0 <= f1 + Tolerance_;
-Number.apxG = (f0, f1) => f0 > f1 + Tolerance_;
-Number.apxGE = (f0, f1) => f0 >= f1 - Tolerance_;
+export const Tolerance = 2 ** -30; // ~= 0.000_000_001
+Number.apxE = (f0, f1) => Math.abs(f0 - f1) <= Tolerance;
+Number.apxS = (f0, f1) => f0 < f1 - Tolerance;
+Number.apxSE = (f0, f1) => f0 <= f1 + Tolerance;
+Number.apxG = (f0, f1) => f0 > f1 + Tolerance;
+Number.apxGE = (f0, f1) => f0 >= f1 - Tolerance;
 Number.getRandom = (max, min = 0, fixto = 0) =>
   min + (Math.random() * (max - min)).fixTo(fixto);
 // Number.normalize = (in_x, to_x) => {
@@ -414,10 +420,47 @@ declare global {
     /** @const @param rhs_x */
     eql(rhs_x: unknown): boolean;
   }
+
   interface Uint8Array {
+    //jjjj remove this when "mytsc" is upgraded to the native-supported version
+    /**
+     * Converts this `Uint8Array` object to a base64 string.
+     *
+     * [MDN](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/toBase64)
+     */
+    toBase64(options?: {
+      alphabet?: "base64" | "base64url";
+      omitPadding?: boolean;
+    }): string;
+
     /** @const @param rhs_x */
     eql(rhs_x: unknown): boolean;
   }
+  interface Uint8ArrayConstructor {
+    //jjjj remove this when "mytsc" is upgraded to the native-supported version
+    /**
+     * Creates a new `Uint8Array` object from a base64 string.
+     *
+     * [MDN](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromBase64)
+     */
+    fromBase64(string: string, options?: {
+      alphabet?: "base64" | "base64url";
+      lastChunkHandling?: "loose" | "strict" | "stop-before-partial";
+    }): Uint8Array<ArrayBuffer>;
+
+    /** @const @param _x */
+    fromArys(_x: (uint8[] | Uint8Array)[]): Uint8Array;
+
+    // /**
+    //  * @headconst @param rs_x
+    //  * @const @param len_x
+    //  */
+    // fromRsU8(rs_x: ReadableStream<uint8>, len_x?: uint): Promise<Uint8Array>;
+
+    /** @headconst @param rs_x */
+    fromRsU8ary(rs_x: ReadableStream<Uint8Array>): Promise<Uint8Array>;
+  }
+
   interface Uint8ClampedArray {
     /** @const @param rhs_x */
     eql(rhs_x: unknown): boolean;
@@ -446,20 +489,6 @@ declare global {
     /** @const @param rhs_x */
     eql(rhs_x: unknown): boolean;
   }
-
-  interface Uint8ArrayConstructor {
-    /** @const @param _x */
-    fromArys(_x: (uint8[] | Uint8Array)[]): Uint8Array;
-
-    // /**
-    //  * @headconst @param rs_x
-    //  * @const @param len_x
-    //  */
-    // fromRsU8(rs_x: ReadableStream<uint8>, len_x?: uint): Promise<Uint8Array>;
-
-    /** @headconst @param rs_x */
-    fromRsU8ary(rs_x: ReadableStream<Uint8Array>): Promise<Uint8Array>;
-  }
 }
 
 Reflect.defineProperty(Int8Array.prototype, "eql", {
@@ -469,6 +498,18 @@ Reflect.defineProperty(Int8Array.prototype, "eql", {
     return iaEql_impl_(this, rhs_x);
   },
 });
+
+if (!Object.hasOwn(Uint8Array.prototype, "toBase64")) {
+  Reflect.defineProperty(Uint8Array.prototype, "toBase64", {
+    value(this: Uint8Array, options?: { alphabet?: "base64" | "base64url" }) {
+      let ret = b64FromU8ary(this);
+      if (options?.alphabet === "base64url") {
+        ret = b64urlFromB64(ret);
+      }
+      return ret;
+    },
+  });
+}
 Reflect.defineProperty(Uint8Array.prototype, "eql", {
   value(this: Uint8Array, rhs_x: unknown) {
     if (!(rhs_x instanceof Uint8Array)) return false;
@@ -476,6 +517,54 @@ Reflect.defineProperty(Uint8Array.prototype, "eql", {
     return iaEql_impl_(this, rhs_x);
   },
 });
+if (!Object.hasOwn(Uint8Array, "fromBase64")) {
+  Uint8Array.fromBase64 = (
+    string: string,
+    options?: { alphabet?: "base64" | "base64url" },
+  ): Uint8Array<ArrayBuffer> => {
+    if (options?.alphabet === "base64url") {
+      string = b64FromB64url(string);
+    }
+    return u8aryFromB64(string);
+  };
+}
+Uint8Array.fromArys = (_x) => {
+  let totalLen = 0;
+  for (const a_ of _x) totalLen += a_.length;
+
+  const ret = new Uint8Array(totalLen);
+  let ofs = 0;
+  for (const a_ of _x) {
+    ret.set(a_, ofs);
+    ofs += a_.length;
+  }
+  return ret;
+};
+// Uint8Array.fromRsU8 = async (rs_x, len_x = 0) => {
+//   if (len_x > 0) {
+//     const ret = new Uint8Array(len_x);
+//     let l_ = 0;
+//     for await (const chunk of rs_x) ret[l_++] = chunk;
+//     return ret;
+//   } else {
+//     //jjjj TOCLEANUP
+//     // const buf = Array.sparse<uint8>(data_x.length);
+//     // let l_ = 0;
+//     // for await (const chunk of les.readable) buf[l_++] = chunk;
+//     // buf.length = l_;
+//     // return new Uint8Array(buf);
+
+//     const buf: uint8[] = [];
+//     for await (const chunk of rs_x) buf.push(chunk);
+//     return new Uint8Array(buf);
+//   }
+// };
+Uint8Array.fromRsU8ary = async (rs_x) => {
+  const aa_: Uint8Array[] = [];
+  for await (const chunk of rs_x) aa_.push(chunk);
+  return Uint8Array.fromArys(aa_);
+};
+
 Reflect.defineProperty(Uint8ClampedArray.prototype, "eql", {
   value(this: Uint8ClampedArray, rhs_x: unknown) {
     if (!(rhs_x instanceof Uint8ClampedArray)) return false;
@@ -525,43 +614,6 @@ Reflect.defineProperty(Float64Array.prototype, "eql", {
     return faEql_impl_(this, rhs_x);
   },
 });
-
-Uint8Array.fromArys = (_x) => {
-  let totalLen = 0;
-  for (const a_ of _x) totalLen += a_.length;
-
-  const ret = new Uint8Array(totalLen);
-  let ofs = 0;
-  for (const a_ of _x) {
-    ret.set(a_, ofs);
-    ofs += a_.length;
-  }
-  return ret;
-};
-// Uint8Array.fromRsU8 = async (rs_x, len_x = 0) => {
-//   if (len_x > 0) {
-//     const ret = new Uint8Array(len_x);
-//     let l_ = 0;
-//     for await (const chunk of rs_x) ret[l_++] = chunk;
-//     return ret;
-//   } else {
-//     //jjjj TOCLEANUP
-//     // const buf = Array.sparse<uint8>(data_x.length);
-//     // let l_ = 0;
-//     // for await (const chunk of les.readable) buf[l_++] = chunk;
-//     // buf.length = l_;
-//     // return new Uint8Array(buf);
-
-//     const buf: uint8[] = [];
-//     for await (const chunk of rs_x) buf.push(chunk);
-//     return new Uint8Array(buf);
-//   }
-// };
-Uint8Array.fromRsU8ary = async (rs_x) => {
-  const aa_: Uint8Array[] = [];
-  for await (const chunk of rs_x) aa_.push(chunk);
-  return Uint8Array.fromArys(aa_);
-};
 /*80--------------------------------------------------------------------------*/
 /* JSON */
 
@@ -825,7 +877,7 @@ ReadableStreamDefaultReader.prototype[Symbol.dispose] = function (this) {
 ReadableStream.prototype[Symbol.asyncIterator] ??= async function* (this) {
   using reader = this.getReader();
   while (true) {
-    const { done, value } = await reader.read();
+    const { value, done } = await reader.read();
     if (done) return;
     yield value;
   }

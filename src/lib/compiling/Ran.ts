@@ -4,9 +4,9 @@
  ******************************************************************************/
 
 import { INOUT, PRF } from "../../preNs.ts";
-import type { Id_t, lnum_t } from "../alias_v.ts";
-import type { loff_t } from "../alias.ts";
-import { Endpt } from "../alias.ts";
+import type { lnum_t, loff_t } from "../alias.ts";
+import { Endpt, LnumMAX } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
 import { assert, out, space } from "../util.ts";
 import { g_count } from "../util/performance.ts";
 import type { Bufr } from "./Bufr.ts";
@@ -51,17 +51,15 @@ export class Ran {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /* #ranval */
-  #ranval = new Ranval(0 as lnum_t, 0);
+  #ranval = new Ranval(0, 0);
   get ranval() {
     return this.#ranval;
   }
   syncRanvalAnchr_$(): void {
-    this.#ranval.anchrLidx = this.frstLine.lidx_1;
-    this.#ranval.anchrLoff = this.strtLoff;
+    this.#ranval.setAnchr(this.frstLine.lidx_1, this.strtLoff);
   }
   syncRanvalFocus_$(): void {
-    this.#ranval.focusLidx = this.lastLine.lidx_1;
-    this.#ranval.focusLoff = this.stopLoff;
+    this.#ranval.setFocus(this.lastLine.lidx_1, this.stopLoff);
   }
   syncRanval_$(): void {
     this.syncRanvalAnchr_$();
@@ -166,7 +164,7 @@ export class Ran {
         Loc.create(bufr_x, rv_x.focusLidx, rv_x.focusLoff),
       );
     } else {
-      using rv_u = g_ranval_fac.oneMore().setRanval(0 as lnum_t, 0);
+      using rv_u = g_ranval_fac.oneMore().set_Ranval(0, 0);
       return new Ran(
         Loc.create(bufr_x, rv_u.anchrLidx, rv_u.anchrLoff),
         Loc.create(bufr_x, rv_u.focusLidx, rv_u.focusLoff),
@@ -288,7 +286,7 @@ export class Ran {
   }
 
   get lineN_1(): lnum_t {
-    return (this.lastLine.lidx_1 - this.frstLine.lidx_1 + 1) as lnum_t;
+    return this.lastLine.lidx_1 - this.frstLine.lidx_1 + 1;
   }
 
   /**
@@ -346,7 +344,7 @@ export class Ran {
     } else {
       ret.push(tabtail + ln_.text.slice(loff_0));
       ln_ = ln_.nextLine;
-      const VALVE = 1_000;
+      const VALVE = LnumMAX;
       let valve = VALVE;
       while (ln_ && ln_ !== ln_1 && --valve) {
         ret.push(ln_.text);

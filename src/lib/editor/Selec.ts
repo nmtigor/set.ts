@@ -30,12 +30,12 @@ class Selec extends HTMLVuu<EdtrBase, HTMLSpanElement> {
   #passiveBgSelec_p = Pale.get("lib.editor.Selec.passiveBgSelec");
   #passiveBgOvlap_p = Pale.get("lib.editor.Selec.passiveBgOvlap");
   #onProactiveBgCssc = (_x: Cssc) => {
-    if (this.proactive_$) {
+    if (this.isMain_$) {
       this.el$.style.backgroundColor = _x;
     }
   };
   #onPassiveBgCssc = (_x: Cssc) => {
-    if (!this.proactive_$) {
+    if (!this.isMain_$) {
       this.el$.style.backgroundColor = _x;
     }
   };
@@ -54,23 +54,23 @@ class Selec extends HTMLVuu<EdtrBase, HTMLSpanElement> {
   /* ~ */
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  /* proactive_$ */
-  proactive_$ = false;
+  /* isMain_$ */
+  isMain_$ = false;
   get #bgSelecCssc() {
-    return this.proactive_$
+    return this.isMain_$
       ? this.#proactiveBgSelec_p.cssc
       : this.#passiveBgSelec_p.cssc;
   }
   get #bgOvlapCssc() {
-    return this.proactive_$
+    return this.isMain_$
       ? this.#proactiveBgOvlap_p.cssc
       : this.#passiveBgOvlap_p.cssc;
   }
-  get #zSelecCssc() {
-    return this.proactive_$ ? Selec_proactive_z : Selec_passive_z;
+  get #selecZidx() {
+    return this.isMain_$ ? Selec_proactive_z : Selec_passive_z;
   }
-  get #zOvlapCssc() {
-    return this.proactive_$ ? Ovlap_proactive_z : Ovlap_passive_z;
+  get #ovlapZidx() {
+    return this.isMain_$ ? Ovlap_proactive_z : Ovlap_passive_z;
   }
   /* ~ */
 
@@ -94,12 +94,12 @@ class Selec extends HTMLVuu<EdtrBase, HTMLSpanElement> {
     return new Selec(coo_x).reuse_Selec();
   }
 
-  reuse_Selec(): this {
-    this.observeTheme();
-    return this;
-  }
   reset_Selec(): this {
     this.unobserveTheme();
+    return this;
+  }
+  reuse_Selec(): this {
+    this.observeTheme();
     return this;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -108,7 +108,7 @@ class Selec extends HTMLVuu<EdtrBase, HTMLSpanElement> {
   // #onPointerDown(_evt_x: PointerEvent) {
   //   /*#static*/ if (_TRACE) {
   //     console.log(
-  //       `${trace.indent}>>>>>>> ${this._type_id_}.#onPointerDown() >>>>>>>`,
+  //       `${trace.indent}>>>>>>> ${this._class_id_}.#onPointerDown() >>>>>>>`,
   //     );
   //   }
   // }
@@ -130,7 +130,7 @@ class Selec extends HTMLVuu<EdtrBase, HTMLSpanElement> {
     this.assignStylo({
       top: `${y_x}px`,
       left: `${x_x}px`,
-      zIndex: ovlap_x ? this.#zOvlapCssc : this.#zSelecCssc,
+      zIndex: ovlap_x ? this.#ovlapZidx : this.#selecZidx,
 
       width: `${w_x}px`,
       height: `${h_x}px`,
@@ -149,14 +149,14 @@ class Selec extends HTMLVuu<EdtrBase, HTMLSpanElement> {
 export class SelecFac extends Factory<Selec> {
   readonly #edtr: EdtrBase;
 
-  #proactive = false;
-  set proactive_$(_x: boolean) {
-    if (_x === this.#proactive) return;
+  #isMain = false;
+  set isMain_$(_x: boolean) {
+    if (_x === this.#isMain) return;
 
     for (const selec of this) {
-      selec.proactive_$ = _x;
+      selec.isMain_$ = _x;
     }
-    this.#proactive = _x;
+    this.#isMain = _x;
   }
 
   /** @headconst @param edtr_x */
@@ -181,7 +181,7 @@ export class SelecFac extends Factory<Selec> {
   protected createVal$() {
     const ret = Selec.create(this.#edtr);
     this.#edtr.ci.scrolr.el.append(ret.el);
-    ret.proactive_$ = this.#proactive;
+    ret.isMain_$ = this.#isMain;
     return ret;
   }
 
@@ -190,14 +190,15 @@ export class SelecFac extends Factory<Selec> {
   }
   protected override reuseVal$(i_x: uint) {
     const ret = this.get(i_x).reuse_Selec();
-    ret.proactive_$ = this.#proactive;
+    ret.isMain_$ = this.#isMain;
     return ret;
   }
 
-  showAll() {
-    for (const selec of this) {
-      selec.el.style.display = "unset";
-    }
-  }
+  //jjjj TOCLEANUP
+  // showAll_$() {
+  //   for (const selec of this) {
+  //     selec.el.style.display = "revert";
+  //   }
+  // }
 }
 /*80--------------------------------------------------------------------------*/

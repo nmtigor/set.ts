@@ -3,9 +3,9 @@
  * @license MIT
  ******************************************************************************/
 
-import { Moo, type MooEq } from "../Moo.ts";
-import type { lnum_t } from "../alias_v.ts";
-import type { loff_t } from "../alias.ts";
+import type { MooEq } from "../Moo.ts";
+import { Moo } from "../Moo.ts";
+import type { lnum_t, loff_t } from "../alias.ts";
 import { Factory } from "../util/Factory.ts";
 import type { Bufr } from "./Bufr.ts";
 import type { Loc } from "./Loc.ts";
@@ -22,8 +22,8 @@ export class Ranval extends Array<lnum_t | loff_t> {
 
   // override readonly length = 4; // TypeError: Cannot redefine property: length
 
-  get focusLidx() {
-    return this[0] as lnum_t;
+  get focusLidx(): lnum_t {
+    return this[0];
   }
   set focusLidx(_x: lnum_t) {
     this[0] = _x;
@@ -34,8 +34,14 @@ export class Ranval extends Array<lnum_t | loff_t> {
   set focusLoff(_x: loff_t) {
     this[1] = _x;
   }
-  get anchrLidx() {
-    return this[2] as lnum_t;
+  setFocus(lidx_x: lnum_t, loff_x: loff_t): this {
+    this[0] = lidx_x;
+    this[1] = loff_x;
+    return this;
+  }
+
+  get anchrLidx(): lnum_t {
+    return this[2];
   }
   set anchrLidx(_x: lnum_t) {
     this[2] = _x;
@@ -46,14 +52,19 @@ export class Ranval extends Array<lnum_t | loff_t> {
   set anchrLoff(_x: loff_t) {
     this[3] = _x;
   }
+  setAnchr(lidx_x: lnum_t, loff_x: loff_t): this {
+    this[2] = lidx_x;
+    this[3] = loff_x;
+    return this;
+  }
 
   constructor(_2: lnum_t, _3: loff_t, _0?: lnum_t, _1?: loff_t) {
     super(4);
 
-    this.setRanval(_2, _3, _0, _1);
+    this.set_Ranval(_2, _3, _0, _1);
   }
 
-  setRanval(_2: lnum_t, _3: loff_t, _0?: lnum_t, _1?: loff_t): this {
+  set_Ranval(_2: lnum_t, _3: loff_t, _0?: lnum_t, _1?: loff_t): this {
     this[2] = _2;
     this[3] = _3;
     this[0] = _0 === undefined ? _2 : _0;
@@ -62,7 +73,7 @@ export class Ranval extends Array<lnum_t | loff_t> {
   }
   /** @primaryconst @param ran_x */
   setByRan(ran_x: Ran): this {
-    return this.setRanval(
+    return this.set_Ranval(
       ran_x.frstLine.lidx_1,
       ran_x.strtLoff,
       ran_x.lastLine.lidx_1,
@@ -70,14 +81,14 @@ export class Ranval extends Array<lnum_t | loff_t> {
     );
   }
   /** @primaryconst @param loc_x */
-  setFocus(loc_x: Loc, collapse_x?: "collapse"): this {
+  focusLoc(loc_x: Loc, collapse_x?: "collapse"): this {
     this[0] = loc_x.line_$.lidx_1;
     this[1] = loc_x.loff_$;
     if (collapse_x) this.collapseToFocus();
     return this;
   }
   /** @primaryconst @param loc_x */
-  setAnchr(loc_x: Loc, collapse_x?: "collapse"): this {
+  anchrLoc(loc_x: Loc, collapse_x?: "collapse"): this {
     this[2] = loc_x.line_$.lidx_1;
     this[3] = loc_x.loff_$;
     if (collapse_x) this.collapseToAnchr();
@@ -86,7 +97,7 @@ export class Ranval extends Array<lnum_t | loff_t> {
 
   /** @const */
   dup_Ranval() {
-    return new Ranval(this[2] as lnum_t, this[3], this[0] as lnum_t, this[1]);
+    return new Ranval(this[2], this[3], this[0], this[1]);
   }
 
   [Symbol.dispose]() {
@@ -150,6 +161,10 @@ export class Ranval extends Array<lnum_t | loff_t> {
   ) {
     return lidx_0_x < lidx_1_x || lidx_0_x === lidx_1_x && loff_0_x <= loff_1_x;
   }
+  /**
+   * @const
+   * @const @param rv_x
+   */
   contain(rv_x: Ranval): boolean {
     const o_ = this.order;
     const o_1 = rv_x.order;
@@ -194,7 +209,11 @@ const ranvalEq_: MooEq<Ranval> = (a, b) =>
 
 export class RanvalMo extends Moo<Ranval> {
   constructor(ranval_x?: Ranval) {
-    super({ val: ranval_x ?? new Ranval(0 as lnum_t, 0), eq_: ranvalEq_ });
+    super({
+      val: ranval_x ?? new Ranval(0, 0),
+      eq_: ranvalEq_,
+      active: true,
+    });
   }
 }
 /*64----------------------------------------------------------*/
@@ -222,7 +241,7 @@ class RanvalFac_ extends Factory<Ranval> {
     //     `color:${LOG_cssc.performance}`,
     //   );
     // }
-    return new Ranval(0 as lnum_t, 0);
+    return new Ranval(0, 0);
   }
 }
 export const g_ranval_fac = new RanvalFac_();

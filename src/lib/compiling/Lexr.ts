@@ -4,9 +4,9 @@
  ******************************************************************************/
 
 import { _TRACE, INOUT } from "../../preNs.ts";
-import type { Id_t, ldt_t, UInt16 } from "../alias_v.ts";
 import type { loff_t, uint } from "../alias.ts";
-import { lnum_MAX } from "../alias_v.ts";
+import { LnumMAX } from "../alias.ts";
+import type { Id_t, ldt_t, UInt16 } from "../alias_v.ts";
 import "../jslang.ts";
 import { assert, out } from "../util.ts";
 import { SortedIdo } from "../util/SortedArray.ts";
@@ -31,7 +31,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   static #ID = 0 as Id_t;
   readonly id = ++Lexr.#ID as Id_t;
   /** @final */
-  get _type_id_() {
+  get _class_id_() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -166,13 +166,13 @@ export abstract class Lexr<T extends Tok = BaseTok> {
 
   #destroyed = false;
   /** `in( this.bufr$)` */
-  destructor() {
+  destructor(): void {
     if (this.#destroyed) return;
 
     this.batchForw_$((tk) => tk.destructor(), this.frstLexTk);
 
     let ln_: TokLine<T> | undefined = this.bufr$.frstLine;
-    const VALVE = lnum_MAX;
+    const VALVE = LnumMAX;
     let valve = VALVE;
     while (ln_ && --valve) {
       ln_.delFrstTokenBy_$(this);
@@ -227,12 +227,12 @@ export abstract class Lexr<T extends Tok = BaseTok> {
 
     this.strtLexTk$ = new Token(
       this,
-      g_ran_fac.byTok(bufr_x.frstLine, strtLoff_x),
+      g_ran_fac.byLoff(bufr_x.frstLine, strtLoff_x),
       BaseTok.strtBdry as T,
     );
     this.stopLexTk$ = new Token(
       this,
-      g_ran_fac.byTok(bufr_x.lastLine, stopLoff_x),
+      g_ran_fac.byLoff(bufr_x.lastLine, stopLoff_x),
       BaseTok.stopBdry as T,
     );
     this.strtLexTk$.linkNext(this.stopLexTk$);
@@ -407,7 +407,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     if (!strtTk_x) return;
 
     let tk_: Token<T> | undefined = strtTk_x;
-    const VALVE = lnum_MAX;
+    const VALVE = LnumMAX;
     let valve = VALVE;
     while (tk_ && tk_ !== stopTk_x && --valve) {
       fn_x(tk_);
@@ -445,7 +445,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    * `in( _oldRan_a_x.length )`
    * @headconst @param _oldRan_a_x
    */
-  protected suflexmrk$(_oldRan_a_x?: TokRan<T>[]) {}
+  protected sufLexmrk$(_oldRan_a_x?: TokRan<T>[]) {}
 
   /**
    * Mark lex region
@@ -466,7 +466,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   lexmrk_$(oldRan_a_x: TokRan<T>[]): this {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._type_id_}.lexmrk_$(${oldRan_a_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._class_id_}.lexmrk_$(${oldRan_a_x}) >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -536,14 +536,14 @@ export abstract class Lexr<T extends Tok = BaseTok> {
         assert(this.strtLexTk$.value === BaseTok.strtBdry);
       }
       this.strtLexTk$.clrErr();
-      this.#errTk_sa.delete(this.strtLexTk$);
+      this.#errTk_sa.rmv(this.strtLexTk$);
     }
     if (this.stopLexTk$.isErr) {
       /*#static*/ if (INOUT) {
         assert(this.stopLexTk$.value === BaseTok.stopBdry);
       }
       this.stopLexTk$.clrErr();
-      this.#errTk_sa.delete(this.stopLexTk$);
+      this.#errTk_sa.rmv(this.stopLexTk$);
     }
 
     this.batchForw_$(
@@ -553,7 +553,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       this.strtLexTk$.nextToken_$,
       this.stopLexTk$,
     );
-    this.suflexmrk$(oldRan_a_x);
+    this.sufLexmrk$(oldRan_a_x);
     return this;
   }
 
@@ -588,7 +588,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   lexadj_$(newRan_a_x: TokRan<T>[]): this {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._type_id_}.lexadj_$(${newRan_a_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._class_id_}.lexadj_$(${newRan_a_x}) >>>>>>>`,
       );
     }
     const LEN = newRan_a_x.length;
@@ -691,11 +691,11 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   // get stoplocNew$_() { return this.stoplocNew_; }
 
   /** Assign `curLoc$` */
-  protected prelex$(): void {
+  protected preLex$(): void {
     this.curLoc$.become_Loc(this.strtLexTk$.sntStopLoc);
   }
 
-  protected suflex$(_valve_x: uint): void {}
+  protected sufLex$(_valve_x: uint): void {}
 
   /**
    * Lex [ strtLexTk$.stopLoc, stopLexTk$.strtLoc )
@@ -705,7 +705,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   lex(valve_x = 10): void {
     assert(valve_x--, "Cycle call!");
     /*#static*/ if (_TRACE) {
-      console.log(`${trace.indent}>>>>>>> ${this._type_id_}.lex() >>>>>>>`);
+      console.log(`${trace.indent}>>>>>>> ${this._class_id_}.lex() >>>>>>>`);
     }
     if (this.strtLexTk$ === this.stopLexTk$) { //llll review (one Bufr with different Lexr? etc)
       /* This is the case of one `Bufr` with two or more `EdtrScrolr`. */
@@ -717,7 +717,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       assert(!this.hasErr);
       assert(this.strtLexTk$.posS(this.stopLexTk$));
     }
-    this.prelex$();
+    this.preLex$();
 
     this.strtLexTk_0$ = this.strtLexTk$;
     // this.#valve = Lexr.#VALVE;
@@ -727,10 +727,10 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     // console.log(this.bufr$.frstLine.frstTokenBy(this));
     // console.log(this.bufr$.lastLine.lastTokenBy(this));
 
-    this.suflex$(valve_x);
+    this.sufLex$(valve_x);
 
     if (this.drtTk_sa$.length) {
-      this.drtTk_sa$.delete_O(this.#scandTk_a);
+      this.drtTk_sa$.rmv_O(this.#scandTk_a);
       for (const tk of this.drtTk_sa$) tk.destructor();
       this.drtTk_sa$.reset_SortedArray();
     }
@@ -758,7 +758,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       this.#scandTk_a.length = 0;
     }
     this.lsTk$ = this.strtLexTk$;
-    const VALVE = 10_000;
+    const VALVE = LnumMAX;
     let valve = VALVE;
     do {
       const tk_ = this._scan();
@@ -1051,7 +1051,7 @@ export abstract class LexdInfo {
   readonly id = ++LexdInfo.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  destructor() {}
+  destructor(): void {}
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   //jjjj TOCLEANUP

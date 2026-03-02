@@ -5,16 +5,16 @@
 
 import type { Line } from "@fe-cpl/Line.ts";
 import { CYPRESS, INOUT } from "../../preNs.ts";
-import type { Id_t, ldt_t } from "../alias_v.ts";
 import type { loff_t, uint } from "../alias.ts";
-import type { BaseTok } from "../compiling/BaseTok.ts";
-import type { Stnode } from "../compiling/Stnode.ts";
-import type { Token } from "../compiling/Token.ts";
-import type { Tok } from "../compiling/alias.ts";
+import type { Id_t, ldt_t } from "../alias_v.ts";
+import type { BaseTok } from "@fe-cpl/BaseTok.ts";
+import type { Stnode } from "@fe-cpl/Stnode.ts";
+import type { Token } from "@fe-cpl/Token.ts";
+import type { Tok } from "@fe-cpl/alias.ts";
 import { HTMLVuu } from "../cv.ts";
-import { $loff, $vuu } from "../symbols.ts";
-import * as Is from "../util/is.ts";
+import { $loff_0 } from "../symbols.ts";
 import { assert } from "../util.ts";
+import * as Is from "../util/is.ts";
 import { CtorRest, type ReplRest } from "./CtorRest.ts";
 import type { ELineBase } from "./ELineBase.ts";
 import type { EdtrBase, EdtrBaseCI } from "./EdtrBase.ts";
@@ -56,7 +56,7 @@ export abstract class StnodeV<
     this.stopLoff$ += ldt_x;
     for (const subNd of this.el$.childNodes) {
       if (subNd.isText) {
-        (subNd as Text)[$loff] += ldt_x;
+        (subNd as Text)[$loff_0] += ldt_x;
       } else {
         (subNd.vuu as StnodeV | undefined)?.translate_$(ldt_x);
       }
@@ -145,7 +145,7 @@ export abstract class StnodeV<
     let loff = 0, loff_1 = 0;
     for (const subNd of this.el$.childNodes) {
       if (subNd.isText) {
-        loff = (subNd as Text)[$loff] ?? 0;
+        loff = (subNd as Text)[$loff_0] ?? 0;
         loff_1 = loff + (subNd as Text).length;
         if (loff <= loff_x && loff_x < loff_1) {
           ret = subNd as Text;
@@ -210,7 +210,7 @@ export abstract class StnodeV<
           this.replRest$.unshift(nd_j);
         }
         if (nd_j.isText) {
-          (nd_j as Text)[$loff] += ldt_x; //!
+          (nd_j as Text)[$loff_0] += ldt_x; //!
         } else {
           (nd_j.vuu as StnodeV | undefined)?.translate_$(ldt_x);
         }

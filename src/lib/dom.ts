@@ -4,9 +4,10 @@
  ******************************************************************************/
 
 import { DENO } from "../preNs.ts";
-import type { CSSStyle, loff_t, uint } from "./alias.ts";
+import type { CSSStyle, loff_t, uint, unum } from "./alias.ts";
 import type { Vuu } from "./cv.ts";
-import { $cssstylesheet, $loff, $ovlap, $tail_ignored } from "./symbols.ts";
+import type { Pos } from "@fe-edt/alias.ts";
+import { $cssstylesheet, $loff_0, $ovlap, $tail_ignored } from "./symbols.ts";
 import * as Is from "./util/is.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -23,7 +24,9 @@ declare global {
     OfflineAudioContextEventMap,
     ServiceWorkerEventMap,
     WindowEventMap,
-    WorkerEventMap {}
+    WorkerEventMap {
+    "contentvisibilityautostatechange": ContentVisibilityAutoStateChangeEvent;
+  }
   type EventName = keyof EventMap;
   type EventHandler<E extends EventName> = (ev: EventMap[E]) => any;
 
@@ -48,7 +51,7 @@ declare global {
      *
      * Do not `stopPropagation()` in advance because in general, "pointerup" by
      * `MouseButton.Main` requires to bubble up to the top to `off()` some
-     * global event listeners. (see uses of `g_vco.off()`)
+     * global event listeners. (see uses of `global.mw?.off()`)
      */
     keepPop?: boolean;
   }
@@ -135,17 +138,12 @@ declare global {
   interface Node {
     readonly isText: boolean;
     readonly secondChild: Node | null;
-    removeAllChild: () => this;
     /** @deprecated */
     assert_eq: (rhs: object) => void | never;
 
-    /**
-     * To record, how many times this `Node` is used.
-     */
+    /** To record, how many times this `Node` is used. */
     "cy.use": uint;
-    /**
-     * In Cypress, it seems to be able to access data only through DOM.
-     */
+    /** In Cypress, it seems to be able to access data only through DOM. */
     "cy.any": any;
   }
 }
@@ -162,11 +160,6 @@ if (globalThis.Node) {
       return this.firstChild ? this.firstChild.nextSibling : null;
     },
   });
-
-  Node.prototype.removeAllChild = function (this) {
-    while (this.firstChild) this.removeChild(this.lastChild!);
-    return this;
-  };
 
   /**
    * Only test properties in `rhs`
@@ -240,6 +233,8 @@ declare global {
     readonly scrollBottom: number;
 
     hint: string;
+
+    removeAllChild: () => this;
   }
 }
 
@@ -270,6 +265,11 @@ if (globalThis.Element) {
       this.setAttribute("hint", name_x);
     },
   });
+
+  Element.prototype.removeAllChild = function (this) {
+    this.replaceChildren();
+    return this;
+  };
 }
 /*64----------------------------------------------------------*/
 
@@ -416,8 +416,18 @@ export type HSElement = HTMLElement | SVGElement;
 
 declare global {
   interface DOMRect {
-    apxEq(_x: DOMRect): boolean;
-    contain(x_x: number, y_x: number): boolean;
+    /** @const @param _x  */
+    apxEq(_x: DOMRectReadOnly): boolean;
+    /**
+     * @const @param x_x
+     * @const @param y_x
+     */
+    containDot(x_x: number, y_x: number): boolean;
+    /**
+     * @const @param rec_x
+     * @const @param margin_x
+     */
+    containRec(rec_x: DOMRectReadOnly, margin_x?: unum): boolean;
     toString(): string;
 
     [$ovlap]: boolean;
@@ -427,8 +437,9 @@ declare global {
     /**
      * @out @param out_a_x
      * @const @param ovlap_x
+     * @const @param relPos_x
      */
-    getSticka(out_a_x: DOMRect[], ovlap_x?: boolean): void;
+    getStickA(out_a_x: DOMRect[], ovlap_x: boolean, relPos_x?: Pos): void;
 
     reset(): void;
   }
@@ -443,9 +454,15 @@ if (globalThis.DOMRect) {
         Number.apxE(this.width, _x.width);
   };
 
-  DOMRect.prototype.contain = function (this, x_x, y_x) {
+  DOMRect.prototype.containDot = function (this, x_x, y_x) {
     return this.left <= x_x && x_x < this.right &&
       this.top <= y_x && y_x < this.bottom;
+  };
+  DOMRect.prototype.containRec = function (this, rec_x, margin_x = 0) {
+    return this.left <= rec_x.left - margin_x &&
+      rec_x.right + margin_x <= this.right &&
+      this.top <= rec_x.top - margin_x &&
+      rec_x.bottom + margin_x <= this.bottom;
   };
 
   DOMRect.prototype.toString = function (this) {
@@ -459,18 +476,27 @@ if (globalThis.DOMRect) {
 }
 
 if (globalThis.Range) {
-  Range.prototype.getSticka = function (this, out_a_x, ovlap_x = false) {
+  Range.prototype.getStickA = function (this, out_a_x, ovlap_x, relPos_x) {
     const recs = this.getClientRects();
     if (recs.length) {
       for (const rec of recs) {
-        if (rec.width === 0) rec.width = rec.height * .1;
+        //jjjj TOCLEANUP
+        // if (rec.width === 0) rec.width = rec.height * .1;
         rec[$ovlap] = ovlap_x;
+        if (relPos_x) {
+          rec.x -= relPos_x.left;
+          rec.y -= relPos_x.top;
+        }
         out_a_x.push(rec);
       }
     } else {
       const rec = this.getBoundingClientRect();
       rec.width = rec.height * .1;
       rec[$ovlap] = ovlap_x;
+      if (relPos_x) {
+        rec.x -= relPos_x.left;
+        rec.y -= relPos_x.top;
+      }
       out_a_x.push(rec);
     }
   };
@@ -484,10 +510,10 @@ if (globalThis.Range) {
 
 declare global {
   interface Text {
-    [$loff]: loff_t;
+    [$loff_0]: loff_t;
     /**
-     * For `TokLine<>` being empty or containing whitespaces only, when it is
-     * appended to a `ELine<>`, an additional "|" will be added. For such
+     * For `TokLine` being empty or containing whitespaces only, when it is
+     * appended to a `ELine`, an additional "|" will be added. For such
      * `Text`, its `[$tail_ignored]` is `true`.
      */
     [$tail_ignored]?: boolean;
@@ -509,14 +535,14 @@ export const textnode = (
   tail_ignored_x?: boolean,
 ) => {
   const ret = document.createTextNode(text_x);
-  ret[$loff] = loff_x;
+  ret[$loff_0] = loff_x;
   if (tail_ignored_x !== undefined) ret[$tail_ignored] = tail_ignored_x;
   return ret;
 };
 
 if (globalThis.Text) {
   Text.prototype.loff = function (this, offs_x) {
-    return this[$loff] + offs_x;
+    return this[$loff_0] + offs_x;
   };
 
   Reflect.defineProperty(Text.prototype, "strtLoff", {
@@ -538,18 +564,18 @@ type HTMLRet_<NN extends string> = NN extends keyof HTMLElementTagNameMap
   : HTMLElement;
 export function html<NN extends string>(
   nodeName_x: NN,
-  innerHTML_x?: string,
+  text_x?: string,
   doc_x = document,
 ) {
   const ret = doc_x.createElement(nodeName_x);
-  if (innerHTML_x) ret.innerHTML = innerHTML_x;
+  if (text_x) ret.textContent = text_x;
   return ret as HTMLRet_<NN>;
 }
-export function div(innerHTML_x?: string, doc_x = document) {
-  return html("div", innerHTML_x, doc_x);
+export function div(text_x?: string, doc_x = document) {
+  return html("div", text_x, doc_x);
 }
-export function span(innerHTML_x?: string, doc_x = document) {
-  return html("span", innerHTML_x, doc_x);
+export function span(text_x?: string, doc_x = document) {
+  return html("span", text_x, doc_x);
 }
 
 type SVGRet_<NN extends string> = NN extends keyof SVGElementTagNameMap

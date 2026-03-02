@@ -3,7 +3,7 @@
  * @license MIT
  ******************************************************************************/
 
-import type { lnum_t } from "../alias_v.ts";
+import type { lnum_t } from "../alias.ts";
 import { assert } from "../util.ts";
 import { Bufr } from "./Bufr.ts";
 import { TLVert } from "./TLayr.ts";
@@ -34,8 +34,10 @@ export class TBufr extends Bufr {
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  override createLine() {
-    return new TLine(this);
+  override createLine(): TLine {
+    const { line, data } = TLine.create_$(this);
+    this.line_m$.set(line.id, data);
+    return line;
   }
 
   override line(lidx_x: lnum_t) {
@@ -90,7 +92,7 @@ export class TBufr extends Bufr {
   //   const VALVE = 1_000;
   //   let valve = VALVE;
   //   while (line && --valve) {
-  //     if (line.frstTSeg_$?.tline === tline) {
+  //     if (line.frstTSegBy_$?.tline === tline) {
   //       return line.tmap_$(strt_x, stop_x);
   //     }
 
@@ -104,7 +106,7 @@ export class TBufr extends Bufr {
   // search(key_x: string): Ranval[] | undefined {
   //   /*#static*/ if (_TRACE) {
   //     console.log(
-  //       `${trace.indent}>>>>>>> ${this._type_id_}.search("${key_x}") >>>>>>>`,
+  //       `${trace.indent}>>>>>>> ${this._class_id_}.search("${key_x}") >>>>>>>`,
   //     );
   //   }
   //   key_x = key_x.split(/\r\n|\r|\n/g)[0]; // Only search first line.

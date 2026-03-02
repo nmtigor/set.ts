@@ -12,7 +12,7 @@ import { assert, warn } from "../util.ts";
 import type { PaleCoorRaw, PaleName } from "./PaleCoor.ts";
 import { createPaleCoorRaw, PaleCoor, vPaleCoorRaw } from "./PaleCoor.ts";
 import { Theme } from "./Theme.ts";
-import type { CsscHexNorm } from "./alias.ts";
+import type { Cssc, CsscHexNorm } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
 
 export type PaleCidx = -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -169,7 +169,7 @@ export class Pale {
     active: true,
     _name_: `Pale_${this.id}.#hex_mo`,
   });
-  get cssc() {
+  get cssc(): Cssc {
     return this.#hex_mo.val;
   }
 
@@ -193,7 +193,7 @@ export class Pale {
 
   /**
    * @const @param raw_x
-   * @const @param name_x For debugging only
+   * @const @param name_x For development only
    */
   private constructor(raw_x: PaleRaw, name_x: PaleName = "") {
     // /*#static*/ if (INOUT) {

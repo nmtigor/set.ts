@@ -5,8 +5,7 @@
 
 import * as v from "@valibot/valibot";
 import { DEBUG, INOUT, PRF } from "../../preNs.ts";
-import type { lnum_t } from "../alias_v.ts";
-import type { loff_t, TupleOf, uint } from "../alias.ts";
+import type { lnum_t, loff_t, TupleOf, uint } from "../alias.ts";
 import { vuint } from "../alias_v.ts";
 import { assert, out } from "../util.ts";
 import { g_count } from "../util/performance.ts";
@@ -45,6 +44,13 @@ type ResetTokenP_<T extends Tok> = {
 export class Token<T extends Tok = BaseTok> extends Snt {
   readonly lexr_$: Lexr<T>;
 
+  // #isFrstOn(ln_x: TokLine<T>) {
+  //   return !ln_x.removed && ln_x.frstTokenBy(this.lexr_$) === this;
+  // }
+  // #isLastOn(ln_x: TokLine<T>) {
+  //   return !ln_x.removed && ln_x.lastTokenBy(this.lexr_$) === this;
+  // }
+
   /* #oldRanval */
   #oldRanval: Ranval | undefined;
   get oldRanval(): Ranval | undefined {
@@ -60,7 +66,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     //jjjj TOCLEANUP
     // this.syncRanval();
 
-    this.#oldRanval ??= new Ranval(0 as lnum_t, 0);
+    this.#oldRanval ??= new Ranval(0, 0);
     this.#oldRanval.become_Array(this.ran_$.ranval);
   }
   /* ~ */
@@ -312,10 +318,9 @@ export class Token<T extends Tok = BaseTok> extends Snt {
    * `revoke()` of `ran_$` and `lexdInfo`, because `this` could still be used
    * later through e.g. `_oldInfo_`.
    */
-  destructor() {
-    /*#static*/ if (INOUT) {
-      assert(!this.#destroyed);
-    }
+  destructor(): void {
+    if (this.#destroyed) return;
+
     this.ran_$[Symbol.dispose]();
     this.lexdInfo = null;
 
@@ -337,7 +342,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
 
   // /**
   //  * Move fields from `tk_x` EXCEPT `prevToken_$`, `nextToken_$`, `lexr_$`
-  //  * ! MUST NOT keep using `tk_x` after `become()`
+  //  *! MUST NOT keep using `tk_x` after `become()`
   //  */
   // becomeToken(tk_x: Token<T>): this {
   //   /*#static*/ if (INOUT) {
@@ -462,11 +467,11 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   // notAsLinebdry_()
   // {
   //   const strtLine = this.strtLine;
-  //   if( strtLine.isFrstToken_$(this) ) strtLine.delFrstTokenBy_$(this.lexr_$);
-  //   if( strtLine.isLastToken_$(this) ) strtLine.delLastTokenBy_$(this.lexr_$);
+  //   if( this.#isFrstOn(strtLine) ) strtLine.delFrstTokenBy_$(this.lexr_$);
+  //   if( this.#isLastOn(strtLine) ) strtLine.delLastTokenBy_$(this.lexr_$);
   //   const stopLine = this.stopLine;
-  //   if( stopLine.isFrstToken_$(this) ) stopLine.delFrstTokenBy_$(this.lexr_$);
-  //   if( stopLine.isLastToken_$(this) ) stopLine.delLastTokenBy_$(this.lexr_$);
+  //   if( this.#isFrstOn(stopLine) ) stopLine.delFrstTokenBy_$(this.lexr_$);
+  //   if( this.#isLastOn(stopLine) ) stopLine.delLastTokenBy_$(this.lexr_$);
   // }
 
   // correct_line_strt_stop_token_()
@@ -492,7 +497,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //       strtLine.setFrstToken_$( this );
   //       tk00 = this;
   //     }
-  //     else if( strtLine.isFrstToken_$(this) )
+  //     else if( this.#isFrstOn(strtLine) )
   //     {
   //       strtLine.delFrstTokenBy_$( this.lexr_$ );
   //       tk00 = null;
@@ -504,7 +509,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //       stopLine.setLastToken_$( this );
   //       tk11 = this;
   //     }
-  //     else if( stopLine.isLastToken_$(this) )
+  //     else if( this.#isLastOn(stopLine) )
   //     {
   //       stopLine.delLastTokenBy_$( this.lexr_$ );
   //       tk11 = null;
@@ -907,7 +912,7 @@ export type MdextTk = Token<MdextTok>;
 //   }
 
 //   override getTexta() {
-//     return fail("Not implemented");
+//     return fail("jjjj Not implemented");
 //   }
 //   override getText() {
 //     /*#static*/ if (INOUT) {

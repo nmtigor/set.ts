@@ -89,7 +89,7 @@ export class SetPazr extends Pazr<SetTok> {
     assert(this.#valve--, `Loop ${SetPazr.#VALVE} times`);
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._type_id_}.pazSet_$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._class_id_}.pazSet_$() >>>>>>>`,
       );
     }
     (_x as any).oprec ??= Oprec.lowest;
@@ -165,7 +165,7 @@ export class SetPazr extends Pazr<SetTok> {
   pazRelKey_$(): Rel | Key | SetTk {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._type_id_}.pazRelKey_$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._class_id_}.pazRelKey_$() >>>>>>>`,
       );
     }
     let srcSn: Key | SetTk | undefined;
@@ -278,7 +278,7 @@ export class SetPazr extends Pazr<SetTok> {
   pazKey_$(): Key {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._type_id_}.pazKey_$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._class_id_}.pazKey_$() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -290,7 +290,7 @@ export class SetPazr extends Pazr<SetTok> {
     for (const sn of this.unrelSn_sa_$) {
       if (sn instanceof Key && sn.frstToken === this.strtPazTk$) {
         this.strtPazTk$ = sn.lastToken.nextToken_$!;
-        this.unrelSn_sa_$.delete(sn);
+        this.unrelSn_sa_$.rmv(sn);
         this.takldSn_sa_$.add(sn);
         return sn.ensureAllBdry();
       }
@@ -319,7 +319,7 @@ export class SetPazr extends Pazr<SetTok> {
   pazFuzykeySeq_$(): FuzykeySeq {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._type_id_}.pazFuzykeySeq_$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._class_id_}.pazFuzykeySeq_$() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -328,7 +328,7 @@ export class SetPazr extends Pazr<SetTok> {
     for (const sn of this.unrelSn_sa_$) {
       if (sn instanceof FuzykeySeq && sn.frstToken === this.strtPazTk$) {
         this.strtPazTk$ = sn.lastToken.nextToken_$!;
-        this.unrelSn_sa_$.delete(sn);
+        this.unrelSn_sa_$.rmv(sn);
         this.takldSn_sa_$.add(sn);
         return sn.ensureAllBdry();
       }
@@ -352,7 +352,7 @@ export class SetPazr extends Pazr<SetTok> {
   pazQuotkeySeq_$(): QuotkeySeq {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._type_id_}.pazQuotkeySeq_$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._class_id_}.pazQuotkeySeq_$() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -361,7 +361,7 @@ export class SetPazr extends Pazr<SetTok> {
     for (const sn of this.unrelSn_sa_$) {
       if (sn instanceof QuotkeySeq && sn.frstToken === this.strtPazTk$) {
         this.strtPazTk$ = sn.lastToken.nextToken_$!;
-        this.unrelSn_sa_$.delete(sn);
+        this.unrelSn_sa_$.rmv(sn);
         this.takldSn_sa_$.add(sn);
         return sn.ensureAllBdry();
       }
@@ -386,7 +386,7 @@ export class SetPazr extends Pazr<SetTok> {
     for (const sn of this.unrelSn_sa_$) {
       if (sn instanceof Set && sn.frstToken === this.strtPazTk$) {
         this.strtPazTk$ = sn.lastToken.nextToken_$!;
-        this.unrelSn_sa_$.delete(sn);
+        this.unrelSn_sa_$.rmv(sn);
         this.takldSn_sa_$.add(sn);
         _x.lhs = sn.ensureAllBdry();
         return;
@@ -519,7 +519,7 @@ export class SetPazr extends Pazr<SetTok> {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
-   * Assign `newSn_$`
+   * Set `newSn_$`
    * @headconst @param sn_x
    */
   visit(sn_x: SetSN) {
@@ -536,14 +536,14 @@ export class SetPazr extends Pazr<SetTok> {
     } else if (sn_x instanceof Set) {
       this.newSn_$ = this.pazSet_$();
     } else {
-      fail("Not implemented");
+      fail("jjjj Not implemented");
     }
 
     if (this.drtSn_$) {
       /*#static*/ if (INOUT) {
         assert(this.drtSn_$ !== this.newSn_$);
       }
-      this.errSn_sa$.delete(this.drtSn_$);
+      this.errSn_sa$.rmv(this.drtSn_$);
     }
   }
 }

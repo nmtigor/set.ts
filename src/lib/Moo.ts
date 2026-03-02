@@ -158,7 +158,7 @@ class MooHandlerDB<T extends {} | null, D = any, I = any> {
 }
 
 type MooCtorP_<T extends {} | null, I = any> = {
-  val: T;
+  val: T | null; // Initial value always can be `null`.
   eq_?: MooEq<T>;
   info?: I | undefined;
   active?: boolean;
@@ -208,7 +208,7 @@ export class Moo<T extends {} | null, D = any, I = any> {
   readonly _name_: string | undefined;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  readonly #initval: T;
+  readonly #initval: T | null;
   readonly #eq: MooEq<T>;
   readonly #active: boolean;
   readonly #forcing: boolean;
@@ -289,17 +289,18 @@ export class Moo<T extends {} | null, D = any, I = any> {
    * @headconst @param val_x
    */
   set_Moo(val_x: T): this {
-    this.#val = this.#newval = val_x;
+    this.#val = val_x;
     return this;
   }
 
   /** @final */
   reset_Moo(): this {
-    this.set_Moo(this.#initval);
+    this.set_Moo(this.#initval as T);
     if (this.nCb) {
+      //jjjj TOCLEANUP
+      // /*! Do not `#handler_db_.clear()` because `#handler_db_` could be shared. */
+      this.#handler_db_!.clear();
       this.#handler_db_ = undefined;
-      //! Do not `#handler_db_.clear()` because `#handler_db_` could be shared.
-      // this.#handler_db_.clear();
     }
     this.#forcingOnce = this.#forcing;
     return this;
@@ -380,6 +381,7 @@ export class Moo<T extends {} | null, D = any, I = any> {
     if (this.#active) this.#val = n_x;
     const h_a = this.#handler_db.get(n_x, this.#oldval, this.#forcing_);
     h_a.forEach((h_y) => {
+      /*! no `await` here */
       h_y(n_x, this.#oldval, this.#data, this.#info);
       // /*#static*/ if (DEBUG) Moo._count += 1;
     });
@@ -486,6 +488,7 @@ export class Boor<D = any, I = any> {
       ? (n_y: boolean) => _x.val = n_y
       : _x;
     this.#_mo.registHandler(ret);
+    //kkkk what about `#_mo.removeHandler(ret)`?
     return ret;
   }
 
@@ -497,6 +500,9 @@ export class Boor<D = any, I = any> {
   }
   fos() {
     this.#_mo.val = false;
+  }
+  tgl() {
+    this.#_mo.val = !this.#_mo.val;
   }
 
   refresh_Moor() {

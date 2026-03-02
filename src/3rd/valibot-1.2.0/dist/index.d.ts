@@ -1,3 +1,4 @@
+//#region src/methods/assert/assert.d.ts
 /**
  * Checks if the input matches the schema. As this is an assertion function, it
  * can be used as a type guard.
@@ -8,7 +9,8 @@
 declare function assert<
   const TSchema extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
 >(schema: TSchema, input: unknown): asserts input is InferInput<TSchema>;
-
+//#endregion
+//#region src/methods/config/config.d.ts
 /**
  * Changes the local configuration of a schema.
  *
@@ -22,7 +24,8 @@ declare function config<
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 >(schema: TSchema, config: Config<InferIssue<TSchema>>): TSchema;
-
+//#endregion
+//#region src/methods/fallback/fallback.d.ts
 /**
  * Fallback type.
  */
@@ -39,12 +42,12 @@ type Fallback<
  */
 type SchemaWithFallback<
   TSchema extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  TFallback extends Fallback<TSchema>,
+  TFallback$1 extends Fallback<TSchema>,
 > = TSchema & {
   /**
    * The fallback value.
    */
-  readonly fallback: TFallback;
+  readonly fallback: TFallback$1;
 };
 /**
  * Returns a fallback value as output if the input does not match the schema.
@@ -56,9 +59,13 @@ type SchemaWithFallback<
  */
 declare function fallback<
   const TSchema extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  const TFallback extends Fallback<TSchema>,
->(schema: TSchema, fallback: TFallback): SchemaWithFallback<TSchema, TFallback>;
-
+  const TFallback$1 extends Fallback<TSchema>,
+>(
+  schema: TSchema,
+  fallback: TFallback$1,
+): SchemaWithFallback<TSchema, TFallback$1>;
+//#endregion
+//#region src/methods/fallback/fallbackAsync.d.ts
 /**
  * Fallback async type.
  */
@@ -79,12 +86,12 @@ type SchemaWithFallbackAsync<
   TSchema extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TFallback extends FallbackAsync<TSchema>,
+  TFallback$1 extends FallbackAsync<TSchema>,
 > = Omit<TSchema, "async" | "~standard" | "~run"> & {
   /**
    * The fallback value.
    */
-  readonly fallback: TFallback;
+  readonly fallback: TFallback$1;
   /**
    * Whether it's async.
    */
@@ -125,12 +132,13 @@ declare function fallbackAsync<
   const TSchema extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  const TFallback extends FallbackAsync<TSchema>,
+  const TFallback$1 extends FallbackAsync<TSchema>,
 >(
   schema: TSchema,
-  fallback: TFallback,
-): SchemaWithFallbackAsync<TSchema, TFallback>;
-
+  fallback: TFallback$1,
+): SchemaWithFallbackAsync<TSchema, TFallback$1>;
+//#endregion
+//#region src/methods/flatten/flatten.d.ts
 /**
  * Flat errors type.
  */
@@ -163,10 +171,7 @@ type FlatErrors<
             | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>
             ? IssueDotPath<TSchema>
             : string,
-          [
-            string,
-            ...string[],
-          ]
+          [string, ...string[]]
         >
       >
     >
@@ -202,18 +207,21 @@ declare function flatten<
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 >(issues: [InferIssue<TSchema>, ...InferIssue<TSchema>[]]): FlatErrors<TSchema>;
-
+//#endregion
+//#region src/methods/forward/types.d.ts
 /**
  * Extracts the exact keys of a tuple, array or object.
  */
-type KeyOf$1<TValue> = IsAny<TValue> extends true ? never
-  : TValue extends readonly unknown[]
-    ? number extends TValue["length"] ? number : {
-      [TKey in keyof TValue]: TKey extends `${infer TIndex extends number}`
+type KeyOf$1<TValue$1> = IsAny<TValue$1> extends true ? never
+  : TValue$1 extends readonly unknown[]
+    ? number extends TValue$1["length"] ? number
+    : {
+      [TKey in keyof TValue$1]: TKey extends `${infer TIndex extends number}`
         ? TIndex
         : never;
     }[number]
-  : TValue extends Record<string, unknown> ? keyof TValue & (string | number)
+  : TValue$1 extends Record<string, unknown>
+    ? keyof TValue$1 & (string | number)
   : never;
 /**
  * Path type.
@@ -224,33 +232,35 @@ type Path$1 = readonly (string | number)[];
  */
 type RequiredPath$1 = readonly [string | number, ...Path$1];
 /**
- * Lazily evaluate only the last valid path segment based on the given value.
+ * Lazily evaluate only the first valid path segment based on the given value.
  */
 type LazyPath$1<
-  TValue,
+  TValue$1,
   TPathToCheck extends Path$1,
   TValidPath extends Path$1 = readonly [],
 > = TPathToCheck extends readonly [] ? TValidPath
   : TPathToCheck extends readonly [
-    infer TFirstKey extends KeyOf$1<TValue> & keyof TValue,
+    infer TFirstKey extends KeyOf$1<TValue$1> & keyof TValue$1,
     ...infer TPathRest extends Path$1,
   ] ? LazyPath$1<
-      TValue[TFirstKey],
+      TValue$1[TFirstKey],
       TPathRest,
       readonly [...TValidPath, TFirstKey]
     >
-  : IsNever<KeyOf$1<TValue>> extends false
-    ? readonly [...TValidPath, KeyOf$1<TValue>]
+  : IsNever<KeyOf$1<TValue$1>> extends false
+    ? readonly [...TValidPath, KeyOf$1<TValue$1>]
   : TValidPath;
 /**
- * Returns the path if valid, otherwise the last possible valid path based on
+ * Returns the path if valid, otherwise the first possible valid path based on
  * the given value.
  */
 type ValidPath$1<
-  TValue extends Record<string, unknown> | ArrayLike<unknown>,
+  TValue$1 extends Record<string, unknown> | ArrayLike<unknown>,
   TPath extends RequiredPath$1,
-> = TPath extends LazyPath$1<TValue, TPath> ? TPath : LazyPath$1<TValue, TPath>;
-
+> = TPath extends LazyPath$1<TValue$1, TPath> ? TPath
+  : LazyPath$1<TValue$1, TPath>;
+//#endregion
+//#region src/methods/forward/forward.d.ts
 /**
  * Forwards the issues of the passed validation action.
  *
@@ -260,14 +270,15 @@ type ValidPath$1<
  * @returns The modified action.
  */
 declare function forward<
-  TInput extends Record<string, unknown> | ArrayLike<unknown>,
+  TInput$1 extends Record<string, unknown> | ArrayLike<unknown>,
   TIssue extends BaseIssue<unknown>,
   const TPath extends RequiredPath$1,
 >(
-  action: BaseValidation<TInput, TInput, TIssue>,
-  path: ValidPath$1<TInput, TPath>,
-): BaseValidation<TInput, TInput, TIssue>;
-
+  action: BaseValidation<TInput$1, TInput$1, TIssue>,
+  path: ValidPath$1<TInput$1, TPath>,
+): BaseValidation<TInput$1, TInput$1, TIssue>;
+//#endregion
+//#region src/methods/forward/forwardAsync.d.ts
 /**
  * Forwards the issues of the passed validation action.
  *
@@ -277,16 +288,17 @@ declare function forward<
  * @returns The modified action.
  */
 declare function forwardAsync<
-  TInput extends Record<string, unknown> | ArrayLike<unknown>,
+  TInput$1 extends Record<string, unknown> | ArrayLike<unknown>,
   TIssue extends BaseIssue<unknown>,
   const TPath extends RequiredPath$1,
 >(
   action:
-    | BaseValidation<TInput, TInput, TIssue>
-    | BaseValidationAsync<TInput, TInput, TIssue>,
-  path: ValidPath$1<TInput, TPath>,
-): BaseValidationAsync<TInput, TInput, TIssue>;
-
+    | BaseValidation<TInput$1, TInput$1, TIssue>
+    | BaseValidationAsync<TInput$1, TInput$1, TIssue>,
+  path: ValidPath$1<TInput$1, TPath>,
+): BaseValidationAsync<TInput$1, TInput$1, TIssue>;
+//#endregion
+//#region src/methods/getDefault/getDefault.d.ts
 /**
  * Schema with default type.
  */
@@ -341,7 +353,7 @@ type InferDefault<
     | SchemaWithDefault
     | SchemaWithDefaultAsync,
 > = TSchema extends SchemaWithDefault | SchemaWithDefaultAsync
-  ? TSchema["default"] extends (...args: any) => any
+  ? TSchema["default"] extends ((...args: any) => any)
     ? ReturnType<TSchema["default"]>
   : TSchema["default"]
   : undefined;
@@ -363,7 +375,8 @@ declare function getDefault<
   dataset?: UnknownDataset,
   config?: Config<InferIssue<TSchema>>,
 ): InferDefault<TSchema>;
-
+//#endregion
+//#region src/methods/getDefaults/types.d.ts
 /**
  * Infer defaults type.
  */
@@ -385,9 +398,7 @@ type InferDefaults<
   | StrictObjectSchema<
     infer TEntries,
     ErrorMessage<StrictObjectIssue> | undefined
-  > ? {
-    -readonly [TKey in keyof TEntries]: InferDefaults<TEntries[TKey]>;
-  }
+  > ? { -readonly [TKey in keyof TEntries]: InferDefaults<TEntries[TKey]> }
   : TSchema extends
     | LooseObjectSchemaAsync<
       infer TEntries,
@@ -402,9 +413,7 @@ type InferDefaults<
     | StrictObjectSchemaAsync<
       infer TEntries,
       ErrorMessage<StrictObjectIssue> | undefined
-    > ? {
-      -readonly [TKey in keyof TEntries]: InferDefaults<TEntries[TKey]>;
-    }
+    > ? { -readonly [TKey in keyof TEntries]: InferDefaults<TEntries[TKey]> }
   : TSchema extends
     | LooseTupleSchema<infer TItems, ErrorMessage<LooseTupleIssue> | undefined>
     | StrictTupleSchema<
@@ -416,9 +425,7 @@ type InferDefaults<
       infer TItems,
       BaseSchema<unknown, unknown, BaseIssue<unknown>>,
       ErrorMessage<TupleWithRestIssue> | undefined
-    > ? {
-      -readonly [TKey in keyof TItems]: InferDefaults<TItems[TKey]>;
-    }
+    > ? { -readonly [TKey in keyof TItems]: InferDefaults<TItems[TKey]> }
   : TSchema extends
     | LooseTupleSchemaAsync<
       infer TItems,
@@ -433,11 +440,10 @@ type InferDefaults<
       infer TItems,
       BaseSchema<unknown, unknown, BaseIssue<unknown>>,
       ErrorMessage<TupleWithRestIssue> | undefined
-    > ? {
-      -readonly [TKey in keyof TItems]: InferDefaults<TItems[TKey]>;
-    }
+    > ? { -readonly [TKey in keyof TItems]: InferDefaults<TItems[TKey]> }
   : Awaited<InferDefault<TSchema>>;
-
+//#endregion
+//#region src/methods/getDefaults/getDefaults.d.ts
 /**
  * Returns the default values of the schema.
  *
@@ -475,7 +481,8 @@ declare function getDefaults<
       ErrorMessage<TupleWithRestIssue> | undefined
     >,
 >(schema: TSchema): InferDefaults<TSchema>;
-
+//#endregion
+//#region src/methods/getDefaults/getDefaultsAsync.d.ts
 /**
  * Returns the default values of the schema.
  *
@@ -547,11 +554,12 @@ declare function getDefaultsAsync<
       ErrorMessage<TupleWithRestIssue> | undefined
     >,
 >(schema: TSchema): Promise<InferDefaults<TSchema>>;
-
+//#endregion
+//#region src/methods/getDescription/getDescription.d.ts
 /**
  * Schema type.
  */
-type Schema$d =
+type Schema$14 =
   | BaseSchema<unknown, unknown, BaseIssue<unknown>>
   | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>
   | SchemaWithPipe<
@@ -588,8 +596,87 @@ type Schema$d =
  *
  * @beta
  */
-declare function getDescription(schema: Schema$d): string | undefined;
-
+declare function getDescription(schema: Schema$14): string | undefined;
+//#endregion
+//#region src/methods/getExamples/getExamples.d.ts
+/**
+ * Schema type.
+ */
+type Schema$13 =
+  | BaseSchema<unknown, unknown, BaseIssue<unknown>>
+  | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>
+  | SchemaWithPipe<
+    readonly [
+      BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+      ...(
+        | PipeItem<any, unknown, BaseIssue<unknown>>
+        | ExamplesAction<unknown, readonly unknown[]>
+      )[],
+    ]
+  >
+  | SchemaWithPipeAsync<
+    readonly [
+      (
+        | BaseSchema<unknown, unknown, BaseIssue<unknown>>
+        | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>
+      ),
+      ...(
+        | PipeItem<any, unknown, BaseIssue<unknown>>
+        | PipeItemAsync<any, unknown, BaseIssue<unknown>>
+        | ExamplesAction<unknown, readonly unknown[]>
+      )[],
+    ]
+  >;
+/**
+ * Recursively concat type.
+ */
+type RecursiveConcat<
+  TRootPipe extends readonly (
+    | PipeItem<any, unknown, BaseIssue<unknown>>
+    | PipeItemAsync<any, unknown, BaseIssue<unknown>>
+  )[],
+  TCollectedExamples extends unknown[] = [],
+> = TRootPipe extends readonly [
+  infer TFirstItem,
+  ...infer TPipeRest extends readonly (
+    | PipeItem<any, unknown, BaseIssue<unknown>>
+    | PipeItemAsync<any, unknown, BaseIssue<unknown>>
+  )[],
+]
+  ? TFirstItem extends
+    SchemaWithPipe<infer TNestedPipe> | SchemaWithPipeAsync<infer TNestedPipe>
+    ? RecursiveConcat<
+      TPipeRest,
+      RecursiveConcat<TNestedPipe, TCollectedExamples>
+    >
+  : TFirstItem extends ExamplesAction<unknown, infer TCurrentExamples>
+    ? RecursiveConcat<TPipeRest, [...TCollectedExamples, ...TCurrentExamples]>
+  : RecursiveConcat<TPipeRest, TCollectedExamples>
+  : TCollectedExamples;
+/**
+ * Infer examples type.
+ */
+type InferExamples<TSchema extends Schema$13> = TSchema extends
+  SchemaWithPipe<infer TPipe> | SchemaWithPipeAsync<infer TPipe>
+  ? Readonly<RecursiveConcat<TPipe>>
+  : [];
+/**
+ * Returns the examples of a schema.
+ *
+ * If multiple examples are defined, it concatenates them using depth-first
+ * search. If no examples are defined, an empty array is returned.
+ *
+ * @param schema The schema to get the examples from.
+ *
+ * @returns The examples, if any.
+ *
+ * @beta
+ */
+declare function getExamples<const TSchema extends Schema$13>(
+  schema: TSchema,
+): InferExamples<TSchema>;
+//#endregion
+//#region src/methods/getFallback/getFallback.d.ts
 /**
  * Infer fallback type.
  */
@@ -607,7 +694,7 @@ type InferFallback<
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
     infer TFallback
   > ? TFallback extends InferOutput<TSchema> ? TFallback
-  : TFallback extends () => MaybePromise<InferOutput<TSchema>>
+  : TFallback extends (() => MaybePromise<InferOutput<TSchema>>)
     ? ReturnType<TFallback>
   : never
   : undefined;
@@ -629,7 +716,8 @@ declare function getFallback<
   dataset?: OutputDataset<InferOutput<TSchema>, InferIssue<TSchema>>,
   config?: Config<InferIssue<TSchema>>,
 ): InferFallback<TSchema>;
-
+//#endregion
+//#region src/methods/getFallbacks/types.d.ts
 /**
  * Infer fallbacks type.
  */
@@ -651,9 +739,7 @@ type InferFallbacks<
   | StrictObjectSchema<
     infer TEntries,
     ErrorMessage<StrictObjectIssue> | undefined
-  > ? {
-    -readonly [TKey in keyof TEntries]: InferFallbacks<TEntries[TKey]>;
-  }
+  > ? { -readonly [TKey in keyof TEntries]: InferFallbacks<TEntries[TKey]> }
   : TSchema extends
     | LooseObjectSchemaAsync<
       infer TEntries,
@@ -668,9 +754,7 @@ type InferFallbacks<
     | StrictObjectSchemaAsync<
       infer TEntries,
       ErrorMessage<StrictObjectIssue> | undefined
-    > ? {
-      -readonly [TKey in keyof TEntries]: InferFallbacks<TEntries[TKey]>;
-    }
+    > ? { -readonly [TKey in keyof TEntries]: InferFallbacks<TEntries[TKey]> }
   : TSchema extends
     | LooseTupleSchema<infer TItems, ErrorMessage<LooseTupleIssue> | undefined>
     | StrictTupleSchema<
@@ -682,9 +766,7 @@ type InferFallbacks<
       infer TItems,
       BaseSchema<unknown, unknown, BaseIssue<unknown>>,
       ErrorMessage<TupleWithRestIssue> | undefined
-    > ? {
-      -readonly [TKey in keyof TItems]: InferFallbacks<TItems[TKey]>;
-    }
+    > ? { -readonly [TKey in keyof TItems]: InferFallbacks<TItems[TKey]> }
   : TSchema extends
     | LooseTupleSchemaAsync<
       infer TItems,
@@ -699,11 +781,10 @@ type InferFallbacks<
       infer TItems,
       BaseSchema<unknown, unknown, BaseIssue<unknown>>,
       ErrorMessage<TupleWithRestIssue> | undefined
-    > ? {
-      -readonly [TKey in keyof TItems]: InferFallbacks<TItems[TKey]>;
-    }
+    > ? { -readonly [TKey in keyof TItems]: InferFallbacks<TItems[TKey]> }
   : Awaited<InferFallback<TSchema>>;
-
+//#endregion
+//#region src/methods/getFallbacks/getFallbacks.d.ts
 /**
  * Returns the fallback values of the schema.
  *
@@ -741,7 +822,8 @@ declare function getFallbacks<
       ErrorMessage<TupleWithRestIssue> | undefined
     >,
 >(schema: TSchema): InferFallbacks<TSchema>;
-
+//#endregion
+//#region src/methods/getFallbacks/getFallbacksAsync.d.ts
 /**
  * Returns the fallback values of the schema.
  *
@@ -813,28 +895,29 @@ declare function getFallbacksAsync<
       ErrorMessage<TupleWithRestIssue> | undefined
     >,
 >(schema: TSchema): Promise<InferFallbacks<TSchema>>;
-
+//#endregion
+//#region src/methods/pipe/pipe.d.ts
 /**
  * Schema with pipe type.
  */
 type SchemaWithPipe<
-  TPipe extends readonly [
+  TPipe$1 extends readonly [
     BaseSchema<unknown, unknown, BaseIssue<unknown>>,
     ...PipeItem<any, unknown, BaseIssue<unknown>>[],
   ],
-> = Omit<FirstTupleItem<TPipe>, "pipe" | "~standard" | "~run" | "~types"> & {
+> = Omit<FirstTupleItem<TPipe$1>, "pipe" | "~standard" | "~run" | "~types"> & {
   /**
    * The pipe items.
    */
-  readonly pipe: TPipe;
+  readonly pipe: TPipe$1;
   /**
    * The Standard Schema properties.
    *
    * @internal
    */
   readonly "~standard": StandardProps<
-    InferInput<FirstTupleItem<TPipe>>,
-    InferOutput<LastTupleItem<TPipe>>
+    InferInput<FirstTupleItem<TPipe$1>>,
+    InferOutput<LastTupleItem<TPipe$1>>
   >;
   /**
    * Parses unknown input values.
@@ -850,8 +933,8 @@ type SchemaWithPipe<
     dataset: UnknownDataset,
     config: Config<BaseIssue<unknown>>,
   ) => OutputDataset<
-    InferOutput<LastTupleItem<TPipe>>,
-    InferIssue<TPipe[number]>
+    InferOutput<LastTupleItem<TPipe$1>>,
+    InferIssue<TPipe$1[number]>
   >;
   /**
    * The input, output and issue type.
@@ -859,9 +942,9 @@ type SchemaWithPipe<
    * @internal
    */
   readonly "~types"?: {
-    readonly input: InferInput<FirstTupleItem<TPipe>>;
-    readonly output: InferOutput<LastTupleItem<TPipe>>;
-    readonly issue: InferIssue<TPipe[number]>;
+    readonly input: InferInput<FirstTupleItem<TPipe$1>>;
+    readonly output: InferOutput<LastTupleItem<TPipe$1>>;
+    readonly issue: InferIssue<TPipe$1[number]>;
   } | undefined;
 };
 /**
@@ -3450,21 +3533,22 @@ declare function pipe<
  */
 declare function pipe<
   const TSchema extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  const TItems extends readonly PipeItem<
+  const TItems$1 extends readonly PipeItem<
     InferOutput<TSchema>,
     InferOutput<TSchema>,
     BaseIssue<unknown>
   >[],
 >(
   schema: TSchema,
-  ...items: TItems
-): SchemaWithPipe<readonly [TSchema, ...TItems]>;
-
+  ...items: TItems$1
+): SchemaWithPipe<readonly [TSchema, ...TItems$1]>;
+//#endregion
+//#region src/methods/pipe/pipeAsync.d.ts
 /**
  * Schema with pipe async type.
  */
 type SchemaWithPipeAsync<
-  TPipe extends readonly [
+  TPipe$1 extends readonly [
     (
       | BaseSchema<unknown, unknown, BaseIssue<unknown>>
       | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>
@@ -3476,14 +3560,14 @@ type SchemaWithPipeAsync<
   ],
 > =
   & Omit<
-    FirstTupleItem<TPipe>,
+    FirstTupleItem<TPipe$1>,
     "async" | "pipe" | "~standard" | "~run" | "~types"
   >
   & {
     /**
      * The pipe items.
      */
-    readonly pipe: TPipe;
+    readonly pipe: TPipe$1;
     /**
      * Whether it's async.
      */
@@ -3494,8 +3578,8 @@ type SchemaWithPipeAsync<
      * @internal
      */
     readonly "~standard": StandardProps<
-      InferInput<FirstTupleItem<TPipe>>,
-      InferOutput<LastTupleItem<TPipe>>
+      InferInput<FirstTupleItem<TPipe$1>>,
+      InferOutput<LastTupleItem<TPipe$1>>
     >;
     /**
      * Parses unknown input values.
@@ -3512,8 +3596,8 @@ type SchemaWithPipeAsync<
       config: Config<BaseIssue<unknown>>,
     ) => Promise<
       OutputDataset<
-        InferOutput<LastTupleItem<TPipe>>,
-        InferIssue<TPipe[number]>
+        InferOutput<LastTupleItem<TPipe$1>>,
+        InferIssue<TPipe$1[number]>
       >
     >;
     /**
@@ -3522,9 +3606,9 @@ type SchemaWithPipeAsync<
      * @internal
      */
     readonly "~types"?: {
-      readonly input: InferInput<FirstTupleItem<TPipe>>;
-      readonly output: InferOutput<LastTupleItem<TPipe>>;
-      readonly issue: InferIssue<TPipe[number]>;
+      readonly input: InferInput<FirstTupleItem<TPipe$1>>;
+      readonly output: InferOutput<LastTupleItem<TPipe$1>>;
+      readonly issue: InferIssue<TPipe$1[number]>;
     } | undefined;
   };
 /**
@@ -6481,7 +6565,7 @@ declare function pipeAsync<
   const TSchema extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  const TItems extends readonly (
+  const TItems$1 extends readonly (
     | PipeItem<InferOutput<TSchema>, InferOutput<TSchema>, BaseIssue<unknown>>
     | PipeItemAsync<
       InferOutput<TSchema>,
@@ -6491,13 +6575,14 @@ declare function pipeAsync<
   )[],
 >(
   schema: TSchema,
-  ...items: TItems
-): SchemaWithPipeAsync<readonly [TSchema, ...TItems]>;
-
+  ...items: TItems$1
+): SchemaWithPipeAsync<readonly [TSchema, ...TItems$1]>;
+//#endregion
+//#region src/methods/getMetadata/getMetadata.d.ts
 /**
  * Schema type.
  */
-type Schema$c =
+type Schema$12 =
   | BaseSchema<unknown, unknown, BaseIssue<unknown>>
   | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>
   | SchemaWithPipe<
@@ -6505,7 +6590,7 @@ type Schema$c =
       BaseSchema<unknown, unknown, BaseIssue<unknown>>,
       ...(
         | PipeItem<any, unknown, BaseIssue<unknown>>
-        | MetadataAction$1<unknown, Record<string, unknown>>
+        | MetadataAction<unknown, Record<string, unknown>>
       )[],
     ]
   >
@@ -6518,7 +6603,7 @@ type Schema$c =
       ...(
         | PipeItem<any, unknown, BaseIssue<unknown>>
         | PipeItemAsync<any, unknown, BaseIssue<unknown>>
-        | MetadataAction$1<unknown, Record<string, unknown>>
+        | MetadataAction<unknown, Record<string, unknown>>
       )[],
     ]
   >;
@@ -6528,7 +6613,7 @@ type Schema$c =
 type BasicPipeItem =
   | PipeItem<any, unknown, BaseIssue<unknown>>
   | PipeItemAsync<any, unknown, BaseIssue<unknown>>
-  | MetadataAction$1<unknown, Record<string, unknown>>;
+  | MetadataAction<unknown, Record<string, unknown>>;
 /**
  * Recursive merge type.
  */
@@ -6545,7 +6630,7 @@ type RecursiveMerge$1<
       TPipeRest,
       RecursiveMerge$1<TNestedPipe, TCollectedMetadata>
     >
-  : TFirstItem extends MetadataAction$1<unknown, infer TCurrentMetadata>
+  : TFirstItem extends MetadataAction<unknown, infer TCurrentMetadata>
     ? RecursiveMerge$1<TPipeRest, Merge<TCollectedMetadata, TCurrentMetadata>>
   : RecursiveMerge$1<TPipeRest, TCollectedMetadata>
   : TCollectedMetadata;
@@ -6554,13 +6639,13 @@ type RecursiveMerge$1<
  *
  * @beta
  */
-type InferMetadata<TSchema extends Schema$c> = BaseSchema<any, any, any> extends
-  TSchema ? Record<string, unknown>
-  : BaseSchemaAsync<any, any, any> extends TSchema ? Record<string, unknown>
-  : TSchema extends
-    SchemaWithPipe<infer TPipe> | SchemaWithPipeAsync<infer TPipe>
-    ? Prettify<RecursiveMerge$1<TPipe>>
-  : {};
+type InferMetadata<TSchema extends Schema$12> =
+  BaseSchema<any, any, any> extends TSchema ? Record<string, unknown>
+    : BaseSchemaAsync<any, any, any> extends TSchema ? Record<string, unknown>
+    : TSchema extends
+      SchemaWithPipe<infer TPipe> | SchemaWithPipeAsync<infer TPipe>
+      ? Prettify<RecursiveMerge$1<TPipe>>
+    : {};
 /**
  * Returns the metadata of a schema.
  *
@@ -6573,15 +6658,16 @@ type InferMetadata<TSchema extends Schema$c> = BaseSchema<any, any, any> extends
  *
  * @beta
  */
-declare function getMetadata<const TSchema extends Schema$c>(
+declare function getMetadata<const TSchema extends Schema$12>(
   schema: TSchema,
 ): InferMetadata<TSchema>;
-
+//#endregion
+//#region src/actions/title/title.d.ts
 /**
  * Title action interface.
  */
-interface TitleAction<TInput, TTitle extends string>
-  extends BaseMetadata<TInput> {
+interface TitleAction<TInput$1, TTitle extends string>
+  extends BaseMetadata<TInput$1> {
   /**
    * The action type.
    */
@@ -6602,14 +6688,15 @@ interface TitleAction<TInput, TTitle extends string>
  *
  * @returns A title action.
  */
-declare function title<TInput, TTitle extends string>(
+declare function title<TInput$1, TTitle extends string>(
   title_: TTitle,
-): TitleAction<TInput, TTitle>;
-
+): TitleAction<TInput$1, TTitle>;
+//#endregion
+//#region src/methods/getTitle/getTitle.d.ts
 /**
  * Schema type.
  */
-type Schema$b =
+type Schema$11 =
   | BaseSchema<unknown, unknown, BaseIssue<unknown>>
   | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>
   | SchemaWithPipe<
@@ -6646,8 +6733,9 @@ type Schema$b =
  *
  * @beta
  */
-declare function getTitle(schema: Schema$b): string | undefined;
-
+declare function getTitle(schema: Schema$11): string | undefined;
+//#endregion
+//#region src/methods/is/is.d.ts
 /**
  * Checks if the input matches the schema. By using a type predicate, this
  * function can be used as a type guard.
@@ -6660,11 +6748,12 @@ declare function getTitle(schema: Schema$b): string | undefined;
 declare function is<
   const TSchema extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
 >(schema: TSchema, input: unknown): input is InferInput<TSchema>;
-
+//#endregion
+//#region src/methods/keyof/keyof.d.ts
 /**
  * Schema type.
  */
-type Schema$a =
+type Schema$10 =
   | LooseObjectSchema<ObjectEntries, ErrorMessage<LooseObjectIssue> | undefined>
   | LooseObjectSchemaAsync<
     ObjectEntriesAsync,
@@ -6697,7 +6786,7 @@ type ForceTuple<T> = T extends [string, ...string[]] ? T : [];
 /**
  * Object keys type.
  */
-type ObjectKeys$1<TSchema extends Schema$a> = ForceTuple<
+type ObjectKeys$1<TSchema extends Schema$10> = ForceTuple<
   UnionToTuple<keyof TSchema["entries"]>
 >;
 /**
@@ -6707,7 +6796,7 @@ type ObjectKeys$1<TSchema extends Schema$a> = ForceTuple<
  *
  * @returns A picklist schema.
  */
-declare function keyof<const TSchema extends Schema$a>(
+declare function keyof<const TSchema extends Schema$10>(
   schema: TSchema,
 ): PicklistSchema<ObjectKeys$1<TSchema>, undefined>;
 /**
@@ -6719,13 +6808,14 @@ declare function keyof<const TSchema extends Schema$a>(
  * @returns A picklist schema.
  */
 declare function keyof<
-  const TSchema extends Schema$a,
+  const TSchema extends Schema$10,
   const TMessage extends ErrorMessage<PicklistIssue> | undefined,
 >(
   schema: TSchema,
   message: TMessage,
 ): PicklistSchema<ObjectKeys$1<TSchema>, TMessage>;
-
+//#endregion
+//#region src/methods/message/message.d.ts
 /**
  * Changes the local message configuration of a schema.
  *
@@ -6739,7 +6829,8 @@ declare function message<
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 >(schema: TSchema, message_: ErrorMessage<InferIssue<TSchema>>): TSchema;
-
+//#endregion
+//#region src/methods/omit/omit.d.ts
 /**
  * Schema type.
  */
@@ -7155,7 +7246,8 @@ declare function omit<
   const TSchema extends Schema$9,
   const TKeys extends ObjectKeys<TSchema>,
 >(schema: TSchema, keys: TKeys): SchemaWithOmit<TSchema, TKeys>;
-
+//#endregion
+//#region src/methods/parse/parse.d.ts
 /**
  * Parses an unknown input based on a schema.
  *
@@ -7172,7 +7264,8 @@ declare function parse<
   input: unknown,
   config?: Config<InferIssue<TSchema>>,
 ): InferOutput<TSchema>;
-
+//#endregion
+//#region src/methods/parse/parseAsync.d.ts
 /**
  * Parses an unknown input based on a schema.
  *
@@ -7191,7 +7284,8 @@ declare function parseAsync<
   input: unknown,
   config?: Config<InferIssue<TSchema>>,
 ): Promise<InferOutput<TSchema>>;
-
+//#endregion
+//#region src/methods/parser/parser.d.ts
 /**
  * The parser interface.
  */
@@ -7234,7 +7328,8 @@ declare function parser<
   const TSchema extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   const TConfig extends Config<InferIssue<TSchema>> | undefined,
 >(schema: TSchema, config: TConfig): Parser<TSchema, TConfig>;
-
+//#endregion
+//#region src/methods/parser/parserAsync.d.ts
 /**
  * The parser async interface.
  */
@@ -7283,7 +7378,8 @@ declare function parserAsync<
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   const TConfig extends Config<InferIssue<TSchema>> | undefined,
 >(schema: TSchema, config: TConfig): ParserAsync<TSchema, TConfig>;
-
+//#endregion
+//#region src/methods/partial/partial.d.ts
 /**
  * Schema type.
  */
@@ -7304,13 +7400,13 @@ type Schema$8 = SchemaWithoutPipe<
  * Partial entries type.
  */
 type PartialEntries$1<
-  TEntries extends ObjectEntries,
-  TKeys extends readonly (keyof TEntries)[] | undefined,
+  TEntries$1 extends ObjectEntries,
+  TKeys extends readonly (keyof TEntries$1)[] | undefined,
 > = {
-  [TKey in keyof TEntries]: TKeys extends readonly (keyof TEntries)[]
-    ? TKey extends TKeys[number] ? OptionalSchema<TEntries[TKey], undefined>
-    : TEntries[TKey]
-    : OptionalSchema<TEntries[TKey], undefined>;
+  [TKey in keyof TEntries$1]: TKeys extends readonly (keyof TEntries$1)[]
+    ? TKey extends TKeys[number] ? OptionalSchema<TEntries$1[TKey], undefined>
+    : TEntries$1[TKey]
+    : OptionalSchema<TEntries$1[TKey], undefined>;
 };
 /**
  * Schema with partial type.
@@ -7504,7 +7600,8 @@ declare function partial<
   const TSchema extends Schema$8,
   const TKeys extends ObjectKeys<TSchema>,
 >(schema: TSchema, keys: TKeys): SchemaWithPartial<TSchema, TKeys>;
-
+//#endregion
+//#region src/methods/partial/partialAsync.d.ts
 /**
  * Schema type.
  */
@@ -7529,14 +7626,14 @@ type Schema$7 = SchemaWithoutPipe<
  * Partial entries type.
  */
 type PartialEntries<
-  TEntries extends ObjectEntriesAsync,
-  TKeys extends readonly (keyof TEntries)[] | undefined,
+  TEntries$1 extends ObjectEntriesAsync,
+  TKeys extends readonly (keyof TEntries$1)[] | undefined,
 > = {
-  [TKey in keyof TEntries]: TKeys extends readonly (keyof TEntries)[]
+  [TKey in keyof TEntries$1]: TKeys extends readonly (keyof TEntries$1)[]
     ? TKey extends TKeys[number]
-      ? OptionalSchemaAsync<TEntries[TKey], undefined>
-    : TEntries[TKey]
-    : OptionalSchemaAsync<TEntries[TKey], undefined>;
+      ? OptionalSchemaAsync<TEntries$1[TKey], undefined>
+    : TEntries$1[TKey]
+    : OptionalSchemaAsync<TEntries$1[TKey], undefined>;
 };
 /**
  * Schema with partial type.
@@ -7732,7 +7829,8 @@ declare function partialAsync<
   const TSchema extends Schema$7,
   const TKeys extends ObjectKeys<TSchema>,
 >(schema: TSchema, keys: TKeys): SchemaWithPartialAsync<TSchema, TKeys>;
-
+//#endregion
+//#region src/methods/pick/pick.d.ts
 /**
  * The schema type.
  */
@@ -8148,7 +8246,8 @@ declare function pick<
   const TSchema extends Schema$6,
   const TKeys extends ObjectKeys<TSchema>,
 >(schema: TSchema, keys: TKeys): SchemaWithPick<TSchema, TKeys>;
-
+//#endregion
+//#region src/methods/required/required.d.ts
 /**
  * Schema type.
  */
@@ -8169,14 +8268,14 @@ type Schema$5 = SchemaWithoutPipe<
  * Required entries type.
  */
 type RequiredEntries$1<
-  TEntries extends ObjectEntries,
-  TKeys extends readonly (keyof TEntries)[] | undefined,
+  TEntries$1 extends ObjectEntries,
+  TKeys extends readonly (keyof TEntries$1)[] | undefined,
   TMessage extends ErrorMessage<NonOptionalIssue> | undefined,
 > = {
-  [TKey in keyof TEntries]: TKeys extends readonly (keyof TEntries)[]
-    ? TKey extends TKeys[number] ? NonOptionalSchema<TEntries[TKey], TMessage>
-    : TEntries[TKey]
-    : NonOptionalSchema<TEntries[TKey], TMessage>;
+  [TKey in keyof TEntries$1]: TKeys extends readonly (keyof TEntries$1)[]
+    ? TKey extends TKeys[number] ? NonOptionalSchema<TEntries$1[TKey], TMessage>
+    : TEntries$1[TKey]
+    : NonOptionalSchema<TEntries$1[TKey], TMessage>;
 };
 /**
  * Schema with required type.
@@ -8413,7 +8512,8 @@ declare function required<
   keys: TKeys,
   message: TMessage,
 ): SchemaWithRequired<TSchema, TKeys, TMessage>;
-
+//#endregion
+//#region src/methods/required/requiredAsync.d.ts
 /**
  * Schema type.
  */
@@ -8438,15 +8538,15 @@ type Schema$4 = SchemaWithoutPipe<
  * Required entries type.
  */
 type RequiredEntries<
-  TEntries extends ObjectEntriesAsync,
-  TKeys extends readonly (keyof TEntries)[] | undefined,
+  TEntries$1 extends ObjectEntriesAsync,
+  TKeys extends readonly (keyof TEntries$1)[] | undefined,
   TMessage extends ErrorMessage<NonOptionalIssue> | undefined,
 > = {
-  [TKey in keyof TEntries]: TKeys extends readonly (keyof TEntries)[]
+  [TKey in keyof TEntries$1]: TKeys extends readonly (keyof TEntries$1)[]
     ? TKey extends TKeys[number]
-      ? NonOptionalSchemaAsync<TEntries[TKey], TMessage>
-    : TEntries[TKey]
-    : NonOptionalSchemaAsync<TEntries[TKey], TMessage>;
+      ? NonOptionalSchemaAsync<TEntries$1[TKey], TMessage>
+    : TEntries$1[TKey]
+    : NonOptionalSchemaAsync<TEntries$1[TKey], TMessage>;
 };
 /**
  * Schema with required type.
@@ -8692,7 +8792,8 @@ declare function requiredAsync<
   keys: TKeys,
   message: TMessage,
 ): SchemaWithRequiredAsync<TSchema, TKeys, TMessage>;
-
+//#endregion
+//#region src/methods/safeParse/types.d.ts
 /**
  * Safe parse result type.
  */
@@ -8728,7 +8829,8 @@ type SafeParseResult<
   readonly output: unknown;
   readonly issues: [InferIssue<TSchema>, ...InferIssue<TSchema>[]];
 };
-
+//#endregion
+//#region src/methods/safeParse/safeParse.d.ts
 /**
  * Parses an unknown input based on a schema.
  *
@@ -8745,7 +8847,8 @@ declare function safeParse<
   input: unknown,
   config?: Config<InferIssue<TSchema>>,
 ): SafeParseResult<TSchema>;
-
+//#endregion
+//#region src/methods/safeParse/safeParseAsync.d.ts
 /**
  * Parses an unknown input based on a schema.
  *
@@ -8764,7 +8867,8 @@ declare function safeParseAsync<
   input: unknown,
   config?: Config<InferIssue<TSchema>>,
 ): Promise<SafeParseResult<TSchema>>;
-
+//#endregion
+//#region src/methods/safeParser/safeParser.d.ts
 /**
  * The safe parser interface.
  */
@@ -8807,7 +8911,8 @@ declare function safeParser<
   const TSchema extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   const TConfig extends Config<InferIssue<TSchema>> | undefined,
 >(schema: TSchema, config: TConfig): SafeParser<TSchema, TConfig>;
-
+//#endregion
+//#region src/methods/safeParser/safeParserAsync.d.ts
 /**
  * The safe parser async interface.
  */
@@ -8856,7 +8961,8 @@ declare function safeParserAsync<
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   const TConfig extends Config<InferIssue<TSchema>> | undefined,
 >(schema: TSchema, config: TConfig): SafeParserAsync<TSchema, TConfig>;
-
+//#endregion
+//#region src/methods/summarize/summarize.d.ts
 /**
  * Summarize the error messages of issues in a pretty-printable multi-line string.
  *
@@ -8869,7 +8975,8 @@ declare function safeParserAsync<
 declare function summarize(
   issues: [BaseIssue<unknown>, ...BaseIssue<unknown>[]],
 ): string;
-
+//#endregion
+//#region src/methods/unwrap/unwrap.d.ts
 /**
  * Unwraps the wrapped schema.
  *
@@ -8943,11 +9050,12 @@ declare function unwrap<
       unknown
     >,
 >(schema: TSchema): TSchema["wrapped"];
-
+//#endregion
+//#region src/types/metadata.d.ts
 /**
  * Base metadata interface.
  */
-interface BaseMetadata<TInput> {
+interface BaseMetadata<TInput$1> {
   /**
    * The object kind.
    */
@@ -8966,16 +9074,17 @@ interface BaseMetadata<TInput> {
    * @internal
    */
   readonly "~types"?: {
-    readonly input: TInput;
-    readonly output: TInput;
+    readonly input: TInput$1;
+    readonly output: TInput$1;
     readonly issue: never;
   } | undefined;
 }
 /**
  * Generic metadata type.
  */
-type GenericMetadata<TInput = any> = BaseMetadata<TInput>;
-
+type GenericMetadata<TInput$1 = any> = BaseMetadata<TInput$1>;
+//#endregion
+//#region src/types/dataset.d.ts
 /**
  * Unknown dataset interface.
  */
@@ -8996,7 +9105,7 @@ interface UnknownDataset {
 /**
  * Success dataset interface.
  */
-interface SuccessDataset<TValue> {
+interface SuccessDataset<TValue$1> {
   /**
    * Whether is's typed.
    */
@@ -9004,7 +9113,7 @@ interface SuccessDataset<TValue> {
   /**
    * The dataset value.
    */
-  value: TValue;
+  value: TValue$1;
   /**
    * The dataset issues.
    */
@@ -9013,7 +9122,7 @@ interface SuccessDataset<TValue> {
 /**
  * Partial dataset interface.
  */
-interface PartialDataset<TValue, TIssue extends BaseIssue<unknown>> {
+interface PartialDataset<TValue$1, TIssue extends BaseIssue<unknown>> {
   /**
    * Whether is's typed.
    */
@@ -9021,7 +9130,7 @@ interface PartialDataset<TValue, TIssue extends BaseIssue<unknown>> {
   /**
    * The dataset value.
    */
-  value: TValue;
+  value: TValue$1;
   /**
    * The dataset issues.
    */
@@ -9047,15 +9156,16 @@ interface FailureDataset<TIssue extends BaseIssue<unknown>> {
 /**
  * Output dataset type.
  */
-type OutputDataset<TValue, TIssue extends BaseIssue<unknown>> =
-  | SuccessDataset<TValue>
-  | PartialDataset<TValue, TIssue>
+type OutputDataset<TValue$1, TIssue extends BaseIssue<unknown>> =
+  | SuccessDataset<TValue$1>
+  | PartialDataset<TValue$1, TIssue>
   | FailureDataset<TIssue>;
-
+//#endregion
+//#region src/types/standard.d.ts
 /**
  * The Standard Schema properties interface.
  */
-interface StandardProps<TInput, TOutput> {
+interface StandardProps<TInput$1, TOutput$1> {
   /**
    * The version number of the standard.
    */
@@ -9069,26 +9179,26 @@ interface StandardProps<TInput, TOutput> {
    */
   readonly validate: (
     value: unknown,
-  ) => StandardResult<TOutput> | Promise<StandardResult<TOutput>>;
+  ) => StandardResult<TOutput$1> | Promise<StandardResult<TOutput$1>>;
   /**
    * Inferred types associated with the schema.
    */
-  readonly types?: StandardTypes<TInput, TOutput> | undefined;
+  readonly types?: StandardTypes<TInput$1, TOutput$1> | undefined;
 }
 /**
  * The result interface of the validate function.
  */
-type StandardResult<TOutput> =
-  | StandardSuccessResult<TOutput>
+type StandardResult<TOutput$1> =
+  | StandardSuccessResult<TOutput$1>
   | StandardFailureResult;
 /**
  * The result interface if validation succeeds.
  */
-interface StandardSuccessResult<TOutput> {
+interface StandardSuccessResult<TOutput$1> {
   /**
    * The typed output value.
    */
-  readonly value: TOutput;
+  readonly value: TOutput$1;
   /**
    * The non-existent issues.
    */
@@ -9128,21 +9238,22 @@ interface StandardPathItem {
 /**
  * The Standard Schema types interface.
  */
-interface StandardTypes<TInput, TOutput> {
+interface StandardTypes<TInput$1, TOutput$1> {
   /**
    * The input type of the schema.
    */
-  readonly input: TInput;
+  readonly input: TInput$1;
   /**
    * The output type of the schema.
    */
-  readonly output: TOutput;
+  readonly output: TOutput$1;
 }
-
+//#endregion
+//#region src/types/schema.d.ts
 /**
  * Base schema interface.
  */
-interface BaseSchema<TInput, TOutput, TIssue extends BaseIssue<unknown>> {
+interface BaseSchema<TInput$1, TOutput$1, TIssue extends BaseIssue<unknown>> {
   /**
    * The object kind.
    */
@@ -9170,7 +9281,7 @@ interface BaseSchema<TInput, TOutput, TIssue extends BaseIssue<unknown>> {
    *
    * @internal
    */
-  readonly "~standard": StandardProps<TInput, TOutput>;
+  readonly "~standard": StandardProps<TInput$1, TOutput$1>;
   /**
    * Parses unknown input values.
    *
@@ -9184,24 +9295,30 @@ interface BaseSchema<TInput, TOutput, TIssue extends BaseIssue<unknown>> {
   readonly "~run": (
     dataset: UnknownDataset,
     config: Config<BaseIssue<unknown>>,
-  ) => OutputDataset<TOutput, TIssue>;
+  ) => OutputDataset<TOutput$1, TIssue>;
   /**
    * The input, output and issue type.
    *
    * @internal
    */
   readonly "~types"?: {
-    readonly input: TInput;
-    readonly output: TOutput;
+    readonly input: TInput$1;
+    readonly output: TOutput$1;
     readonly issue: TIssue;
   } | undefined;
 }
 /**
  * Base schema async interface.
  */
-interface BaseSchemaAsync<TInput, TOutput, TIssue extends BaseIssue<unknown>>
-  extends
-    Omit<BaseSchema<TInput, TOutput, TIssue>, "reference" | "async" | "~run"> {
+interface BaseSchemaAsync<
+  TInput$1,
+  TOutput$1,
+  TIssue extends BaseIssue<unknown>,
+> extends
+  Omit<
+    BaseSchema<TInput$1, TOutput$1, TIssue>,
+    "reference" | "async" | "~run"
+  > {
   /**
    * The schema reference.
    */
@@ -9227,31 +9344,32 @@ interface BaseSchemaAsync<TInput, TOutput, TIssue extends BaseIssue<unknown>>
   readonly "~run": (
     dataset: UnknownDataset,
     config: Config<BaseIssue<unknown>>,
-  ) => Promise<OutputDataset<TOutput, TIssue>>;
+  ) => Promise<OutputDataset<TOutput$1, TIssue>>;
 }
 /**
  * Generic schema type.
  */
 type GenericSchema<
-  TInput = unknown,
-  TOutput = TInput,
+  TInput$1 = unknown,
+  TOutput$1 = TInput$1,
   TIssue extends BaseIssue<unknown> = BaseIssue<unknown>,
-> = BaseSchema<TInput, TOutput, TIssue>;
+> = BaseSchema<TInput$1, TOutput$1, TIssue>;
 /**
  * Generic schema async type.
  */
 type GenericSchemaAsync<
-  TInput = unknown,
-  TOutput = TInput,
+  TInput$1 = unknown,
+  TOutput$1 = TInput$1,
   TIssue extends BaseIssue<unknown> = BaseIssue<unknown>,
-> = BaseSchemaAsync<TInput, TOutput, TIssue>;
-
+> = BaseSchemaAsync<TInput$1, TOutput$1, TIssue>;
+//#endregion
+//#region src/types/transformation.d.ts
 /**
  * Base transformation interface.
  */
 interface BaseTransformation<
-  TInput,
-  TOutput,
+  TInput$1,
+  TOutput$1,
   TIssue extends BaseIssue<unknown>,
 > {
   /**
@@ -9283,17 +9401,17 @@ interface BaseTransformation<
    * @internal
    */
   readonly "~run": (
-    dataset: SuccessDataset<TInput>,
+    dataset: SuccessDataset<TInput$1>,
     config: Config<BaseIssue<unknown>>,
-  ) => OutputDataset<TOutput, BaseIssue<unknown> | TIssue>;
+  ) => OutputDataset<TOutput$1, BaseIssue<unknown> | TIssue>;
   /**
    * The input, output and issue type.
    *
    * @internal
    */
   readonly "~types"?: {
-    readonly input: TInput;
-    readonly output: TOutput;
+    readonly input: TInput$1;
+    readonly output: TOutput$1;
     readonly issue: TIssue;
   } | undefined;
 }
@@ -9301,12 +9419,12 @@ interface BaseTransformation<
  * Base transformation async interface.
  */
 interface BaseTransformationAsync<
-  TInput,
-  TOutput,
+  TInput$1,
+  TOutput$1,
   TIssue extends BaseIssue<unknown>,
 > extends
   Omit<
-    BaseTransformation<TInput, TOutput, TIssue>,
+    BaseTransformation<TInput$1, TOutput$1, TIssue>,
     "reference" | "async" | "~run"
   > {
   /**
@@ -9332,31 +9450,36 @@ interface BaseTransformationAsync<
    * @internal
    */
   readonly "~run": (
-    dataset: SuccessDataset<TInput>,
+    dataset: SuccessDataset<TInput$1>,
     config: Config<BaseIssue<unknown>>,
-  ) => Promise<OutputDataset<TOutput, BaseIssue<unknown> | TIssue>>;
+  ) => Promise<OutputDataset<TOutput$1, BaseIssue<unknown> | TIssue>>;
 }
 /**
  * Generic transformation type.
  */
 type GenericTransformation<
-  TInput = any,
-  TOutput = TInput,
+  TInput$1 = any,
+  TOutput$1 = TInput$1,
   TIssue extends BaseIssue<unknown> = BaseIssue<unknown>,
-> = BaseTransformation<TInput, TOutput, TIssue>;
+> = BaseTransformation<TInput$1, TOutput$1, TIssue>;
 /**
  * Generic transformation async type.
  */
 type GenericTransformationAsync<
-  TInput = any,
-  TOutput = TInput,
+  TInput$1 = any,
+  TOutput$1 = TInput$1,
   TIssue extends BaseIssue<unknown> = BaseIssue<unknown>,
-> = BaseTransformationAsync<TInput, TOutput, TIssue>;
-
+> = BaseTransformationAsync<TInput$1, TOutput$1, TIssue>;
+//#endregion
+//#region src/types/validation.d.ts
 /**
  * Base validation interface.
  */
-interface BaseValidation<TInput, TOutput, TIssue extends BaseIssue<unknown>> {
+interface BaseValidation<
+  TInput$1,
+  TOutput$1,
+  TIssue extends BaseIssue<unknown>,
+> {
   /**
    * The object kind.
    */
@@ -9390,17 +9513,17 @@ interface BaseValidation<TInput, TOutput, TIssue extends BaseIssue<unknown>> {
    * @internal
    */
   readonly "~run": (
-    dataset: OutputDataset<TInput, BaseIssue<unknown>>,
+    dataset: OutputDataset<TInput$1, BaseIssue<unknown>>,
     config: Config<BaseIssue<unknown>>,
-  ) => OutputDataset<TOutput, BaseIssue<unknown> | TIssue>;
+  ) => OutputDataset<TOutput$1, BaseIssue<unknown> | TIssue>;
   /**
    * The input, output and issue type.
    *
    * @internal
    */
   readonly "~types"?: {
-    readonly input: TInput;
-    readonly output: TOutput;
+    readonly input: TInput$1;
+    readonly output: TOutput$1;
     readonly issue: TIssue;
   } | undefined;
 }
@@ -9408,12 +9531,12 @@ interface BaseValidation<TInput, TOutput, TIssue extends BaseIssue<unknown>> {
  * Base validation async interface.
  */
 interface BaseValidationAsync<
-  TInput,
-  TOutput,
+  TInput$1,
+  TOutput$1,
   TIssue extends BaseIssue<unknown>,
 > extends
   Omit<
-    BaseValidation<TInput, TOutput, TIssue>,
+    BaseValidation<TInput$1, TOutput$1, TIssue>,
     "reference" | "async" | "~run"
   > {
   /**
@@ -9439,32 +9562,33 @@ interface BaseValidationAsync<
    * @internal
    */
   readonly "~run": (
-    dataset: OutputDataset<TInput, BaseIssue<unknown>>,
+    dataset: OutputDataset<TInput$1, BaseIssue<unknown>>,
     config: Config<BaseIssue<unknown>>,
-  ) => Promise<OutputDataset<TOutput, BaseIssue<unknown> | TIssue>>;
+  ) => Promise<OutputDataset<TOutput$1, BaseIssue<unknown> | TIssue>>;
 }
 /**
  * Generic validation type.
  */
 type GenericValidation<
-  TInput = any,
-  TOutput = TInput,
+  TInput$1 = any,
+  TOutput$1 = TInput$1,
   TIssue extends BaseIssue<unknown> = BaseIssue<unknown>,
-> = BaseValidation<TInput, TOutput, TIssue>;
+> = BaseValidation<TInput$1, TOutput$1, TIssue>;
 /**
  * Generic validation async type.
  */
 type GenericValidationAsync<
-  TInput = any,
-  TOutput = TInput,
+  TInput$1 = any,
+  TOutput$1 = TInput$1,
   TIssue extends BaseIssue<unknown> = BaseIssue<unknown>,
-> = BaseValidationAsync<TInput, TOutput, TIssue>;
-
+> = BaseValidationAsync<TInput$1, TOutput$1, TIssue>;
+//#endregion
+//#region src/types/infer.d.ts
 /**
  * Infer input type.
  */
 type InferInput<
-  TItem extends
+  TItem$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>
     | BaseValidation<any, unknown, BaseIssue<unknown>>
@@ -9472,12 +9596,12 @@ type InferInput<
     | BaseTransformation<any, unknown, BaseIssue<unknown>>
     | BaseTransformationAsync<any, unknown, BaseIssue<unknown>>
     | BaseMetadata<any>,
-> = NonNullable<TItem["~types"]>["input"];
+> = NonNullable<TItem$1["~types"]>["input"];
 /**
  * Infer output type.
  */
 type InferOutput<
-  TItem extends
+  TItem$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>
     | BaseValidation<any, unknown, BaseIssue<unknown>>
@@ -9485,12 +9609,12 @@ type InferOutput<
     | BaseTransformation<any, unknown, BaseIssue<unknown>>
     | BaseTransformationAsync<any, unknown, BaseIssue<unknown>>
     | BaseMetadata<any>,
-> = NonNullable<TItem["~types"]>["output"];
+> = NonNullable<TItem$1["~types"]>["output"];
 /**
  * Infer issue type.
  */
 type InferIssue<
-  TItem extends
+  TItem$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>
     | BaseValidation<any, unknown, BaseIssue<unknown>>
@@ -9498,8 +9622,9 @@ type InferIssue<
     | BaseTransformation<any, unknown, BaseIssue<unknown>>
     | BaseTransformationAsync<any, unknown, BaseIssue<unknown>>
     | BaseMetadata<any>,
-> = NonNullable<TItem["~types"]>["issue"];
-
+> = NonNullable<TItem$1["~types"]>["issue"];
+//#endregion
+//#region src/types/utils.d.ts
 /**
  * Checks if a type is `any`.
  */
@@ -9511,41 +9636,36 @@ type IsNever<Type> = [Type] extends [never] ? true : false;
 /**
  * Extracts `null` from a type.
  */
-type NonNullable$1<TValue> = TValue extends null ? never : TValue;
+type NonNullable$1<TValue$1> = TValue$1 extends null ? never : TValue$1;
 /**
  * Extracts `null` and `undefined` from a type.
  */
-type NonNullish<TValue> = TValue extends null | undefined ? never : TValue;
+type NonNullish<TValue$1> = TValue$1 extends null | undefined ? never
+  : TValue$1;
 /**
  * Extracts `undefined` from a type.
  */
-type NonOptional<TValue> = TValue extends undefined ? never : TValue;
+type NonOptional<TValue$1> = TValue$1 extends undefined ? never : TValue$1;
 /**
  * Constructs a type that is maybe readonly.
  */
-type MaybeReadonly<TValue> = TValue | Readonly<TValue>;
+type MaybeReadonly<TValue$1> = TValue$1 | Readonly<TValue$1>;
 /**
  * Constructs a type that is maybe a promise.
  */
-type MaybePromise<TValue> = TValue | Promise<TValue>;
+type MaybePromise<TValue$1> = TValue$1 | Promise<TValue$1>;
 /**
  * Prettifies a type for better readability.
  *
  * Hint: This type has no effect and is only used so that TypeScript displays
  * the final type in the preview instead of the utility types used.
  */
-type Prettify<TObject> =
-  & {
-    [TKey in keyof TObject]: TObject[TKey];
-  }
-  & {};
+type Prettify<TObject> = { [TKey in keyof TObject]: TObject[TKey] } & {};
 /**
  * Marks specific keys as optional.
  */
 type MarkOptional<TObject, TKeys extends keyof TObject> =
-  & {
-    [TKey in keyof TObject]?: unknown;
-  }
+  & { [TKey in keyof TObject]?: unknown }
   & Omit<TObject, TKeys>
   & Partial<Pick<TObject, TKeys>>;
 /**
@@ -9571,7 +9691,7 @@ type LastTupleItem<TTuple extends readonly [unknown, ...unknown[]]> = TTuple[
  */
 type UnionToIntersect<TUnion> =
   (TUnion extends any ? (arg: TUnion) => void : never) extends
-    (arg: infer Intersect) => void ? Intersect : never;
+    ((arg: infer Intersect) => void) ? Intersect : never;
 /**
  * Converts union to tuple type using an accumulator.
  *
@@ -9579,14 +9699,15 @@ type UnionToIntersect<TUnion> =
  */
 type UnionToTupleHelper<TUnion, TResult extends unknown[]> =
   UnionToIntersect<TUnion extends never ? never : () => TUnion> extends
-    () => infer TLast
+    (() => infer TLast)
     ? UnionToTupleHelper<Exclude<TUnion, TLast>, [TLast, ...TResult]>
     : TResult;
 /**
  * Converts union to tuple type.
  */
 type UnionToTuple<TUnion> = UnionToTupleHelper<TUnion, []>;
-
+//#endregion
+//#region src/types/other.d.ts
 /**
  * Error message type.
  */
@@ -9597,29 +9718,29 @@ type ErrorMessage<TIssue extends BaseIssue<unknown>> =
  * Default type.
  */
 type Default<
-  TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  TInput extends null | undefined,
+  TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TInput$1 extends null | undefined,
 > =
-  | MaybeReadonly<InferInput<TWrapped> | TInput>
+  | MaybeReadonly<InferInput<TWrapped$1> | TInput$1>
   | ((
     dataset?: UnknownDataset,
-    config?: Config<InferIssue<TWrapped>>,
-  ) => MaybeReadonly<InferInput<TWrapped> | TInput>)
+    config?: Config<InferIssue<TWrapped$1>>,
+  ) => MaybeReadonly<InferInput<TWrapped$1> | TInput$1>)
   | undefined;
 /**
  * Default async type.
  */
 type DefaultAsync<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TInput extends null | undefined,
+  TInput$1 extends null | undefined,
 > =
-  | MaybeReadonly<InferInput<TWrapped> | TInput>
+  | MaybeReadonly<InferInput<TWrapped$1> | TInput$1>
   | ((
     dataset?: UnknownDataset,
-    config?: Config<InferIssue<TWrapped>>,
-  ) => MaybePromise<MaybeReadonly<InferInput<TWrapped> | TInput>>)
+    config?: Config<InferIssue<TWrapped$1>>,
+  ) => MaybePromise<MaybeReadonly<InferInput<TWrapped$1> | TInput$1>>)
   | undefined;
 /**
  * Default value type.
@@ -9640,14 +9761,15 @@ type DefaultValue<
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   infer TInput
-> ? TDefault extends (
+> ? TDefault extends ((
     dataset?: UnknownDataset,
     config?: Config<InferIssue<TWrapped>>,
-  ) => MaybePromise<InferInput<TWrapped> | TInput>
+  ) => MaybePromise<InferInput<TWrapped> | TInput>)
     ? Awaited<ReturnType<TDefault>>
   : TDefault
   : never;
-
+//#endregion
+//#region src/types/object.d.ts
 /**
  * Optional entry schema type.
  */
@@ -9749,87 +9871,89 @@ type ObjectKeys<
 /**
  * Infer entries input type.
  */
-type InferEntriesInput<TEntries extends ObjectEntries | ObjectEntriesAsync> = {
-  -readonly [TKey in keyof TEntries]: InferInput<TEntries[TKey]>;
-};
+type InferEntriesInput<TEntries$1 extends ObjectEntries | ObjectEntriesAsync> =
+  { -readonly [TKey in keyof TEntries$1]: InferInput<TEntries$1[TKey]> };
 /**
  * Infer entries output type.
  */
-type InferEntriesOutput<TEntries extends ObjectEntries | ObjectEntriesAsync> = {
-  -readonly [TKey in keyof TEntries]: InferOutput<TEntries[TKey]>;
-};
+type InferEntriesOutput<TEntries$1 extends ObjectEntries | ObjectEntriesAsync> =
+  { -readonly [TKey in keyof TEntries$1]: InferOutput<TEntries$1[TKey]> };
 /**
  * Optional input keys type.
  */
-type OptionalInputKeys<TEntries extends ObjectEntries | ObjectEntriesAsync> = {
-  [TKey in keyof TEntries]: TEntries[TKey] extends
-    OptionalEntrySchema | OptionalEntrySchemaAsync ? TKey : never;
-}[keyof TEntries];
+type OptionalInputKeys<TEntries$1 extends ObjectEntries | ObjectEntriesAsync> =
+  {
+    [TKey in keyof TEntries$1]: TEntries$1[TKey] extends
+      OptionalEntrySchema | OptionalEntrySchemaAsync ? TKey : never;
+  }[keyof TEntries$1];
 /**
  * Optional output keys type.
  */
-type OptionalOutputKeys<TEntries extends ObjectEntries | ObjectEntriesAsync> = {
-  [TKey in keyof TEntries]: TEntries[TKey] extends
-    OptionalEntrySchema | OptionalEntrySchemaAsync
-    ? undefined extends TEntries[TKey]["default"] ? TKey : never
-    : never;
-}[keyof TEntries];
+type OptionalOutputKeys<TEntries$1 extends ObjectEntries | ObjectEntriesAsync> =
+  {
+    [TKey in keyof TEntries$1]: TEntries$1[TKey] extends
+      OptionalEntrySchema | OptionalEntrySchemaAsync
+      ? undefined extends TEntries$1[TKey]["default"] ? TKey : never
+      : never;
+  }[keyof TEntries$1];
 /**
  * Input with question marks type.
  */
 type InputWithQuestionMarks<
-  TEntries extends ObjectEntries | ObjectEntriesAsync,
-  TObject extends InferEntriesInput<TEntries>,
-> = MarkOptional<TObject, OptionalInputKeys<TEntries>>;
+  TEntries$1 extends ObjectEntries | ObjectEntriesAsync,
+  TObject extends InferEntriesInput<TEntries$1>,
+> = MarkOptional<TObject, OptionalInputKeys<TEntries$1>>;
 /**
  * Output with question marks type.
  */
 type OutputWithQuestionMarks<
-  TEntries extends ObjectEntries | ObjectEntriesAsync,
-  TObject extends InferEntriesOutput<TEntries>,
-> = MarkOptional<TObject, OptionalOutputKeys<TEntries>>;
+  TEntries$1 extends ObjectEntries | ObjectEntriesAsync,
+  TObject extends InferEntriesOutput<TEntries$1>,
+> = MarkOptional<TObject, OptionalOutputKeys<TEntries$1>>;
 /**
  * Readonly output keys type.
  */
-type ReadonlyOutputKeys<TEntries extends ObjectEntries | ObjectEntriesAsync> = {
-  [TKey in keyof TEntries]: TEntries[TKey] extends
-    SchemaWithPipe<infer TPipe> | SchemaWithPipeAsync<infer TPipe>
-    ? ReadonlyAction<any> extends TPipe[number] ? TKey : never
-    : never;
-}[keyof TEntries];
+type ReadonlyOutputKeys<TEntries$1 extends ObjectEntries | ObjectEntriesAsync> =
+  {
+    [TKey in keyof TEntries$1]: TEntries$1[TKey] extends
+      SchemaWithPipe<infer TPipe> | SchemaWithPipeAsync<infer TPipe>
+      ? ReadonlyAction<any> extends TPipe[number] ? TKey : never
+      : never;
+  }[keyof TEntries$1];
 /**
  * Output with readonly type.
  */
 type OutputWithReadonly<
-  TEntries extends ObjectEntries | ObjectEntriesAsync,
+  TEntries$1 extends ObjectEntries | ObjectEntriesAsync,
   TObject extends OutputWithQuestionMarks<
-    TEntries,
-    InferEntriesOutput<TEntries>
+    TEntries$1,
+    InferEntriesOutput<TEntries$1>
   >,
 > =
   & Readonly<TObject>
-  & Pick<TObject, Exclude<keyof TObject, ReadonlyOutputKeys<TEntries>>>;
+  & Pick<TObject, Exclude<keyof TObject, ReadonlyOutputKeys<TEntries$1>>>;
 /**
  * Infer object input type.
  */
-type InferObjectInput<TEntries extends ObjectEntries | ObjectEntriesAsync> =
-  Prettify<InputWithQuestionMarks<TEntries, InferEntriesInput<TEntries>>>;
+type InferObjectInput<TEntries$1 extends ObjectEntries | ObjectEntriesAsync> =
+  Prettify<InputWithQuestionMarks<TEntries$1, InferEntriesInput<TEntries$1>>>;
 /**
  * Infer object output type.
  */
-type InferObjectOutput<TEntries extends ObjectEntries | ObjectEntriesAsync> =
+type InferObjectOutput<TEntries$1 extends ObjectEntries | ObjectEntriesAsync> =
   Prettify<
     OutputWithReadonly<
-      TEntries,
-      OutputWithQuestionMarks<TEntries, InferEntriesOutput<TEntries>>
+      TEntries$1,
+      OutputWithQuestionMarks<TEntries$1, InferEntriesOutput<TEntries$1>>
     >
   >;
 /**
  * Infer object issue type.
  */
-type InferObjectIssue<TEntries extends ObjectEntries | ObjectEntriesAsync> =
-  InferIssue<TEntries[keyof TEntries]>;
-
+type InferObjectIssue<TEntries$1 extends ObjectEntries | ObjectEntriesAsync> =
+  InferIssue<TEntries$1[keyof TEntries$1]>;
+//#endregion
+//#region src/types/tuple.d.ts
 /**
  * Tuple items type.
  */
@@ -9848,22 +9972,22 @@ type TupleItemsAsync = MaybeReadonly<
 /**
  * Infer tuple input type.
  */
-type InferTupleInput<TItems extends TupleItems | TupleItemsAsync> = {
-  -readonly [TKey in keyof TItems]: InferInput<TItems[TKey]>;
+type InferTupleInput<TItems$1 extends TupleItems | TupleItemsAsync> = {
+  -readonly [TKey in keyof TItems$1]: InferInput<TItems$1[TKey]>;
 };
 /**
  * Infer tuple output type.
  */
-type InferTupleOutput<TItems extends TupleItems | TupleItemsAsync> = {
-  -readonly [TKey in keyof TItems]: InferOutput<TItems[TKey]>;
+type InferTupleOutput<TItems$1 extends TupleItems | TupleItemsAsync> = {
+  -readonly [TKey in keyof TItems$1]: InferOutput<TItems$1[TKey]>;
 };
 /**
  * Infer tuple issue type.
  */
-type InferTupleIssue<TItems extends TupleItems | TupleItemsAsync> = InferIssue<
-  TItems[number]
->;
-
+type InferTupleIssue<TItems$1 extends TupleItems | TupleItemsAsync> =
+  InferIssue<TItems$1[number]>;
+//#endregion
+//#region src/types/issue.d.ts
 /**
  * Array path item interface.
  */
@@ -10001,7 +10125,7 @@ type IssuePathItem =
 /**
  * Base issue interface.
  */
-interface BaseIssue<TInput> extends Config<BaseIssue<TInput>> {
+interface BaseIssue<TInput$1> extends Config<BaseIssue<TInput$1>> {
   /**
    * The issue kind.
    */
@@ -10013,7 +10137,7 @@ interface BaseIssue<TInput> extends Config<BaseIssue<TInput>> {
   /**
    * The raw input data.
    */
-  readonly input: TInput;
+  readonly input: TInput$1;
   /**
    * The expected property.
    */
@@ -10037,46 +10161,46 @@ interface BaseIssue<TInput> extends Config<BaseIssue<TInput>> {
   /**
    * The sub issues.
    */
-  readonly issues?: [BaseIssue<TInput>, ...BaseIssue<TInput>[]] | undefined;
+  readonly issues?: [BaseIssue<TInput$1>, ...BaseIssue<TInput$1>[]] | undefined;
 }
 /**
  * Generic issue type.
  */
-type GenericIssue<TInput = unknown> = BaseIssue<TInput>;
+type GenericIssue<TInput$1 = unknown> = BaseIssue<TInput$1>;
 /**
  * Dot path type.
  */
 type DotPath<
-  TKey extends string | number | symbol,
+  TKey$1 extends string | number | symbol,
   TSchema extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = TKey extends string | number
-  ? `${TKey}` | `${TKey}.${IssueDotPath<TSchema>}`
+> = TKey$1 extends string | number
+  ? `${TKey$1}` | `${TKey$1}.${IssueDotPath<TSchema>}`
   : never;
 /**
  * Object path type.
  */
-type ObjectPath<TEntries extends ObjectEntries | ObjectEntriesAsync> = {
-  [TKey in keyof TEntries]: DotPath<TKey, TEntries[TKey]>;
-}[keyof TEntries];
+type ObjectPath<TEntries$1 extends ObjectEntries | ObjectEntriesAsync> = {
+  [TKey in keyof TEntries$1]: DotPath<TKey, TEntries$1[TKey]>;
+}[keyof TEntries$1];
 /**
  * Tuple keys type.
  */
-type TupleKeys<TItems extends TupleItems | TupleItemsAsync> = Exclude<
-  keyof TItems,
+type TupleKeys<TItems$1 extends TupleItems | TupleItemsAsync> = Exclude<
+  keyof TItems$1,
   keyof []
 >;
 /**
  * Tuple path type.
  */
-type TuplePath<TItems extends TupleItems | TupleItemsAsync> = {
-  [TKey in TupleKeys<TItems>]: TItems[TKey] extends
+type TuplePath<TItems$1 extends TupleItems | TupleItemsAsync> = {
+  [TKey in TupleKeys<TItems$1>]: TItems$1[TKey] extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>
-    ? DotPath<TKey, TItems[TKey]>
+    ? DotPath<TKey, TItems$1[TKey]>
     : never;
-}[TupleKeys<TItems>];
+}[TupleKeys<TItems$1>];
 /**
  * Issue dot path type.
  */
@@ -10294,7 +10418,8 @@ type IssueDotPath<
       >
     > ? IssueDotPath<TWrapped>
   : never;
-
+//#endregion
+//#region src/types/config.d.ts
 /**
  * Config interface.
  */
@@ -10316,32 +10441,33 @@ interface Config<TIssue extends BaseIssue<unknown>> {
    */
   readonly abortPipeEarly?: boolean | undefined;
 }
-
+//#endregion
+//#region src/types/pipe.d.ts
 /**
  * Pipe action type.
  */
-type PipeAction<TInput, TOutput, TIssue extends BaseIssue<unknown>> =
-  | BaseValidation<TInput, TOutput, TIssue>
-  | BaseTransformation<TInput, TOutput, TIssue>
-  | BaseMetadata<TInput>;
+type PipeAction<TInput$1, TOutput$1, TIssue extends BaseIssue<unknown>> =
+  | BaseValidation<TInput$1, TOutput$1, TIssue>
+  | BaseTransformation<TInput$1, TOutput$1, TIssue>
+  | BaseMetadata<TInput$1>;
 /**
  * Pipe action async type.
  */
-type PipeActionAsync<TInput, TOutput, TIssue extends BaseIssue<unknown>> =
-  | BaseValidationAsync<TInput, TOutput, TIssue>
-  | BaseTransformationAsync<TInput, TOutput, TIssue>;
+type PipeActionAsync<TInput$1, TOutput$1, TIssue extends BaseIssue<unknown>> =
+  | BaseValidationAsync<TInput$1, TOutput$1, TIssue>
+  | BaseTransformationAsync<TInput$1, TOutput$1, TIssue>;
 /**
  * Pipe item type.
  */
-type PipeItem<TInput, TOutput, TIssue extends BaseIssue<unknown>> =
-  | BaseSchema<TInput, TOutput, TIssue>
-  | PipeAction<TInput, TOutput, TIssue>;
+type PipeItem<TInput$1, TOutput$1, TIssue extends BaseIssue<unknown>> =
+  | BaseSchema<TInput$1, TOutput$1, TIssue>
+  | PipeAction<TInput$1, TOutput$1, TIssue>;
 /**
  * Pipe item async type.
  */
-type PipeItemAsync<TInput, TOutput, TIssue extends BaseIssue<unknown>> =
-  | BaseSchemaAsync<TInput, TOutput, TIssue>
-  | PipeActionAsync<TInput, TOutput, TIssue>;
+type PipeItemAsync<TInput$1, TOutput$1, TIssue extends BaseIssue<unknown>> =
+  | BaseSchemaAsync<TInput$1, TOutput$1, TIssue>
+  | PipeActionAsync<TInput$1, TOutput$1, TIssue>;
 /**
  * Schema without pipe type.
  */
@@ -10356,35 +10482,36 @@ type SchemaWithoutPipe<
  * Generic pipe action type.
  */
 type GenericPipeAction<
-  TInput = any,
-  TOutput = TInput,
+  TInput$1 = any,
+  TOutput$1 = TInput$1,
   TIssue extends BaseIssue<unknown> = BaseIssue<unknown>,
-> = PipeAction<TInput, TOutput, TIssue>;
+> = PipeAction<TInput$1, TOutput$1, TIssue>;
 /**
  * Generic pipe action async type.
  */
 type GenericPipeActionAsync<
-  TInput = any,
-  TOutput = TInput,
+  TInput$1 = any,
+  TOutput$1 = TInput$1,
   TIssue extends BaseIssue<unknown> = BaseIssue<unknown>,
-> = PipeActionAsync<TInput, TOutput, TIssue>;
+> = PipeActionAsync<TInput$1, TOutput$1, TIssue>;
 /**
  * Generic pipe item type.
  */
 type GenericPipeItem<
-  TInput = any,
-  TOutput = TInput,
+  TInput$1 = any,
+  TOutput$1 = TInput$1,
   TIssue extends BaseIssue<unknown> = BaseIssue<unknown>,
-> = PipeItem<TInput, TOutput, TIssue>;
+> = PipeItem<TInput$1, TOutput$1, TIssue>;
 /**
  * Generic pipe item async type.
  */
 type GenericPipeItemAsync<
-  TInput = any,
-  TOutput = TInput,
+  TInput$1 = any,
+  TOutput$1 = TInput$1,
   TIssue extends BaseIssue<unknown> = BaseIssue<unknown>,
-> = PipeItemAsync<TInput, TOutput, TIssue>;
-
+> = PipeItemAsync<TInput$1, TOutput$1, TIssue>;
+//#endregion
+//#region src/schemas/any/any.d.ts
 /**
  * Any schema interface.
  */
@@ -10412,7 +10539,8 @@ interface AnySchema extends BaseSchema<any, any, never> {
  * @returns An any schema.
  */
 declare function any(): AnySchema;
-
+//#endregion
+//#region src/schemas/array/types.d.ts
 /**
  * Array issue interface.
  */
@@ -10430,18 +10558,19 @@ interface ArrayIssue extends BaseIssue<unknown> {
    */
   readonly expected: "Array";
 }
-
+//#endregion
+//#region src/schemas/array/array.d.ts
 /**
  * Array schema interface.
  */
 interface ArraySchema<
-  TItem extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TItem$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<ArrayIssue> | undefined,
 > extends
   BaseSchema<
-    InferInput<TItem>[],
-    InferOutput<TItem>[],
-    ArrayIssue | InferIssue<TItem>
+    InferInput<TItem$1>[],
+    InferOutput<TItem$1>[],
+    ArrayIssue | InferIssue<TItem$1>
   > {
   /**
    * The schema type.
@@ -10458,7 +10587,7 @@ interface ArraySchema<
   /**
    * The array item schema.
    */
-  readonly item: TItem;
+  readonly item: TItem$1;
   /**
    * The error message.
    */
@@ -10472,8 +10601,8 @@ interface ArraySchema<
  * @returns An array schema.
  */
 declare function array<
-  const TItem extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(item: TItem): ArraySchema<TItem, undefined>;
+  const TItem$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(item: TItem$1): ArraySchema<TItem$1, undefined>;
 /**
  * Creates an array schema.
  *
@@ -10483,23 +10612,24 @@ declare function array<
  * @returns An array schema.
  */
 declare function array<
-  const TItem extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TItem$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<ArrayIssue> | undefined,
->(item: TItem, message: TMessage): ArraySchema<TItem, TMessage>;
-
+>(item: TItem$1, message: TMessage): ArraySchema<TItem$1, TMessage>;
+//#endregion
+//#region src/schemas/array/arrayAsync.d.ts
 /**
  * Array schema interface.
  */
 interface ArraySchemaAsync<
-  TItem extends
+  TItem$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<ArrayIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferInput<TItem>[],
-    InferOutput<TItem>[],
-    ArrayIssue | InferIssue<TItem>
+    InferInput<TItem$1>[],
+    InferOutput<TItem$1>[],
+    ArrayIssue | InferIssue<TItem$1>
   > {
   /**
    * The schema type.
@@ -10516,7 +10646,7 @@ interface ArraySchemaAsync<
   /**
    * The array item schema.
    */
-  readonly item: TItem;
+  readonly item: TItem$1;
   /**
    * The error message.
    */
@@ -10530,10 +10660,10 @@ interface ArraySchemaAsync<
  * @returns An array schema.
  */
 declare function arrayAsync<
-  const TItem extends
+  const TItem$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(item: TItem): ArraySchemaAsync<TItem, undefined>;
+>(item: TItem$1): ArraySchemaAsync<TItem$1, undefined>;
 /**
  * Creates an array schema.
  *
@@ -10543,12 +10673,13 @@ declare function arrayAsync<
  * @returns An array schema.
  */
 declare function arrayAsync<
-  const TItem extends
+  const TItem$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<ArrayIssue> | undefined,
->(item: TItem, message: TMessage): ArraySchemaAsync<TItem, TMessage>;
-
+>(item: TItem$1, message: TMessage): ArraySchemaAsync<TItem$1, TMessage>;
+//#endregion
+//#region src/schemas/bigint/bigint.d.ts
 /**
  * Bigint issue interface.
  */
@@ -10604,7 +10735,8 @@ declare function bigint(): BigintSchema<undefined>;
 declare function bigint<
   const TMessage extends ErrorMessage<BigintIssue> | undefined,
 >(message: TMessage): BigintSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/blob/blob.d.ts
 /**
  * Blob issue interface.
  */
@@ -10660,7 +10792,8 @@ declare function blob(): BlobSchema<undefined>;
 declare function blob<
   const TMessage extends ErrorMessage<BlobIssue> | undefined,
 >(message: TMessage): BlobSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/boolean/boolean.d.ts
 /**
  * Boolean issue interface.
  */
@@ -10716,7 +10849,8 @@ declare function boolean(): BooleanSchema<undefined>;
 declare function boolean<
   const TMessage extends ErrorMessage<BooleanIssue> | undefined,
 >(message: TMessage): BooleanSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/custom/types.d.ts
 /**
  * Custom issue interface.
  */
@@ -10734,7 +10868,8 @@ interface CustomIssue extends BaseIssue<unknown> {
    */
   readonly expected: "unknown";
 }
-
+//#endregion
+//#region src/schemas/custom/custom.d.ts
 /**
  * Check type.
  */
@@ -10743,9 +10878,9 @@ type Check = (input: unknown) => boolean;
  * Custom schema interface.
  */
 interface CustomSchema<
-  TInput,
+  TInput$1,
   TMessage extends ErrorMessage<CustomIssue> | undefined,
-> extends BaseSchema<TInput, TInput, CustomIssue> {
+> extends BaseSchema<TInput$1, TInput$1, CustomIssue> {
   /**
    * The schema type.
    */
@@ -10774,7 +10909,9 @@ interface CustomSchema<
  *
  * @returns A custom schema.
  */
-declare function custom<TInput>(check: Check): CustomSchema<TInput, undefined>;
+declare function custom<TInput$1>(
+  check: Check,
+): CustomSchema<TInput$1, undefined>;
 /**
  * Creates a custom schema.
  *
@@ -10784,12 +10921,13 @@ declare function custom<TInput>(check: Check): CustomSchema<TInput, undefined>;
  * @returns A custom schema.
  */
 declare function custom<
-  TInput,
+  TInput$1,
   const TMessage extends ErrorMessage<CustomIssue> | undefined =
     | ErrorMessage<CustomIssue>
     | undefined,
->(check: Check, message: TMessage): CustomSchema<TInput, TMessage>;
-
+>(check: Check, message: TMessage): CustomSchema<TInput$1, TMessage>;
+//#endregion
+//#region src/schemas/custom/customAsync.d.ts
 /**
  * Check async type.
  */
@@ -10798,9 +10936,9 @@ type CheckAsync = (input: unknown) => MaybePromise<boolean>;
  * Custom schema async interface.
  */
 interface CustomSchemaAsync<
-  TInput,
+  TInput$1,
   TMessage extends ErrorMessage<CustomIssue> | undefined,
-> extends BaseSchemaAsync<TInput, TInput, CustomIssue> {
+> extends BaseSchemaAsync<TInput$1, TInput$1, CustomIssue> {
   /**
    * The schema type.
    */
@@ -10829,9 +10967,9 @@ interface CustomSchemaAsync<
  *
  * @returns A custom schema.
  */
-declare function customAsync<TInput>(
+declare function customAsync<TInput$1>(
   check: CheckAsync,
-): CustomSchemaAsync<TInput, undefined>;
+): CustomSchemaAsync<TInput$1, undefined>;
 /**
  * Creates a custom schema.
  *
@@ -10841,12 +10979,13 @@ declare function customAsync<TInput>(
  * @returns A custom schema.
  */
 declare function customAsync<
-  TInput,
+  TInput$1,
   const TMessage extends ErrorMessage<CustomIssue> | undefined =
     | ErrorMessage<CustomIssue>
     | undefined,
->(check: CheckAsync, message: TMessage): CustomSchemaAsync<TInput, TMessage>;
-
+>(check: CheckAsync, message: TMessage): CustomSchemaAsync<TInput$1, TMessage>;
+//#endregion
+//#region src/schemas/date/date.d.ts
 /**
  * Date issue interface.
  */
@@ -10902,7 +11041,8 @@ declare function date(): DateSchema<undefined>;
 declare function date<
   const TMessage extends ErrorMessage<DateIssue> | undefined,
 >(message: TMessage): DateSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/enum/enum.d.ts
 /**
  * Enum interface.
  */
@@ -10914,17 +11054,17 @@ interface Enum {
  */
 type EnumValues<TEnum extends Enum> = {
   [TKey in keyof TEnum]: TKey extends number
-    ? TEnum[TKey] extends string
-      ? TEnum[TEnum[TKey]] extends TKey ? never : TEnum[TKey]
+    ? TEnum[TKey] extends string ? TEnum[TEnum[TKey]] extends TKey ? never
+      : TEnum[TKey]
     : TEnum[TKey]
     : TKey extends "NaN" | "Infinity" | "-Infinity"
-      ? TEnum[TKey] extends string
-        ? TEnum[TEnum[TKey]] extends number ? never : TEnum[TKey]
+      ? TEnum[TKey] extends string ? TEnum[TEnum[TKey]] extends number ? never
+        : TEnum[TKey]
       : TEnum[TKey]
     : TKey extends `+${number}` ? TEnum[TKey]
     : TKey extends `${infer TNumber extends number}`
-      ? TEnum[TKey] extends string
-        ? TEnum[TEnum[TKey]] extends TNumber ? never : TEnum[TKey]
+      ? TEnum[TKey] extends string ? TEnum[TEnum[TKey]] extends TNumber ? never
+        : TEnum[TKey]
       : TEnum[TKey]
     : TEnum[TKey];
 }[keyof TEnum];
@@ -10995,18 +11135,19 @@ declare function enum_<
   const TEnum extends Enum,
   const TMessage extends ErrorMessage<EnumIssue> | undefined,
 >(enum__: TEnum, message: TMessage): EnumSchema<TEnum, TMessage>;
-
+//#endregion
+//#region src/schemas/exactOptional/exactOptional.d.ts
 /**
  * Exact optional schema interface.
  */
 interface ExactOptionalSchema<
-  TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends Default<TWrapped, never>,
+  TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TDefault extends Default<TWrapped$1, never>,
 > extends
   BaseSchema<
-    InferInput<TWrapped>,
-    InferOutput<TWrapped>,
-    InferIssue<TWrapped>
+    InferInput<TWrapped$1>,
+    InferOutput<TWrapped$1>,
+    InferIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -11019,11 +11160,11 @@ interface ExactOptionalSchema<
   /**
    * The expected property.
    */
-  readonly expects: TWrapped["expects"];
+  readonly expects: TWrapped$1["expects"];
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The default value.
    */
@@ -11037,8 +11178,8 @@ interface ExactOptionalSchema<
  * @returns An exact optional schema.
  */
 declare function exactOptional<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): ExactOptionalSchema<TWrapped, undefined>;
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(wrapped: TWrapped$1): ExactOptionalSchema<TWrapped$1, undefined>;
 /**
  * Creates an exact optional schema.
  *
@@ -11048,26 +11189,27 @@ declare function exactOptional<
  * @returns An exact optional schema.
  */
 declare function exactOptional<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  const TDefault extends Default<TWrapped, never>,
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TDefault extends Default<TWrapped$1, never>,
 >(
-  wrapped: TWrapped,
+  wrapped: TWrapped$1,
   default_: TDefault,
-): ExactOptionalSchema<TWrapped, TDefault>;
-
+): ExactOptionalSchema<TWrapped$1, TDefault>;
+//#endregion
+//#region src/schemas/exactOptional/exactOptionalAsync.d.ts
 /**
  * Exact optional schema async interface.
  */
 interface ExactOptionalSchemaAsync<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends DefaultAsync<TWrapped, never>,
+  TDefault extends DefaultAsync<TWrapped$1, never>,
 > extends
   BaseSchemaAsync<
-    InferInput<TWrapped>,
-    InferOutput<TWrapped>,
-    InferIssue<TWrapped>
+    InferInput<TWrapped$1>,
+    InferOutput<TWrapped$1>,
+    InferIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -11080,11 +11222,11 @@ interface ExactOptionalSchemaAsync<
   /**
    * The expected property.
    */
-  readonly expects: TWrapped["expects"];
+  readonly expects: TWrapped$1["expects"];
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The default value.
    */
@@ -11098,10 +11240,10 @@ interface ExactOptionalSchemaAsync<
  * @returns An exact optional schema.
  */
 declare function exactOptionalAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): ExactOptionalSchemaAsync<TWrapped, undefined>;
+>(wrapped: TWrapped$1): ExactOptionalSchemaAsync<TWrapped$1, undefined>;
 /**
  * Creates an exact optional schema.
  *
@@ -11111,15 +11253,16 @@ declare function exactOptionalAsync<
  * @returns An exact optional schema.
  */
 declare function exactOptionalAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  const TDefault extends DefaultAsync<TWrapped, never>,
+  const TDefault extends DefaultAsync<TWrapped$1, never>,
 >(
-  wrapped: TWrapped,
+  wrapped: TWrapped$1,
   default_: TDefault,
-): ExactOptionalSchemaAsync<TWrapped, TDefault>;
-
+): ExactOptionalSchemaAsync<TWrapped$1, TDefault>;
+//#endregion
+//#region src/schemas/file/file.d.ts
 /**
  * File issue interface.
  */
@@ -11175,7 +11318,8 @@ declare function file(): FileSchema<undefined>;
 declare function file<
   const TMessage extends ErrorMessage<FileIssue> | undefined,
 >(message: TMessage): FileSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/function/function.d.ts
 /**
  * Function issue interface.
  */
@@ -11237,7 +11381,8 @@ declare function function_(): FunctionSchema<undefined>;
 declare function function_<
   const TMessage extends ErrorMessage<FunctionIssue> | undefined,
 >(message: TMessage): FunctionSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/instance/instance.d.ts
 /**
  * Class type.
  */
@@ -11306,7 +11451,8 @@ declare function instance<
   TClass extends Class,
   const TMessage extends ErrorMessage<InstanceIssue> | undefined,
 >(class_: TClass, message: TMessage): InstanceSchema<TClass, TMessage>;
-
+//#endregion
+//#region src/schemas/intersect/types.d.ts
 /**
  * Intersect issue interface.
  */
@@ -11342,49 +11488,46 @@ type IntersectOptionsAsync = MaybeReadonly<
 /**
  * Infer option type.
  */
-type InferOption<TInput, TOutput> =
-  | BaseSchema<TInput, TOutput, BaseIssue<unknown>>
-  | BaseSchemaAsync<TInput, TOutput, BaseIssue<unknown>>;
+type InferOption<TInput$1, TOutput$1> =
+  | BaseSchema<TInput$1, TOutput$1, BaseIssue<unknown>>
+  | BaseSchemaAsync<TInput$1, TOutput$1, BaseIssue<unknown>>;
 /**
  * Infer intersect input type.
  */
 type InferIntersectInput<
-  TOptions extends IntersectOptions | IntersectOptionsAsync,
-> = TOptions extends readonly [
-  InferOption<infer TInput, unknown>,
-  ...infer TRest,
-] ? TRest extends readonly [
-    InferOption<unknown, unknown>,
-    ...InferOption<unknown, unknown>[],
-  ] ? TInput & InferIntersectInput<TRest>
+  TOptions$1 extends IntersectOptions | IntersectOptionsAsync,
+> = TOptions$1 extends
+  readonly [InferOption<infer TInput, unknown>, ...infer TRest]
+  ? TRest extends
+    readonly [InferOption<unknown, unknown>, ...InferOption<unknown, unknown>[]]
+    ? TInput & InferIntersectInput<TRest>
   : TInput
   : never;
 /**
  * Infer intersect output type.
  */
 type InferIntersectOutput<
-  TOptions extends IntersectOptions | IntersectOptionsAsync,
-> = TOptions extends readonly [
-  InferOption<unknown, infer TOutput>,
-  ...infer TRest,
-] ? TRest extends readonly [
-    InferOption<unknown, unknown>,
-    ...InferOption<unknown, unknown>[],
-  ] ? TOutput & InferIntersectOutput<TRest>
+  TOptions$1 extends IntersectOptions | IntersectOptionsAsync,
+> = TOptions$1 extends
+  readonly [InferOption<unknown, infer TOutput>, ...infer TRest]
+  ? TRest extends
+    readonly [InferOption<unknown, unknown>, ...InferOption<unknown, unknown>[]]
+    ? TOutput & InferIntersectOutput<TRest>
   : TOutput
   : never;
-
+//#endregion
+//#region src/schemas/intersect/intersect.d.ts
 /**
  * Intersect schema interface.
  */
 interface IntersectSchema<
-  TOptions extends IntersectOptions,
+  TOptions$1 extends IntersectOptions,
   TMessage extends ErrorMessage<IntersectIssue> | undefined,
 > extends
   BaseSchema<
-    InferIntersectInput<TOptions>,
-    InferIntersectOutput<TOptions>,
-    IntersectIssue | InferIssue<TOptions[number]>
+    InferIntersectInput<TOptions$1>,
+    InferIntersectOutput<TOptions$1>,
+    IntersectIssue | InferIssue<TOptions$1[number]>
   > {
   /**
    * The schema type.
@@ -11397,7 +11540,7 @@ interface IntersectSchema<
   /**
    * The intersect options.
    */
-  readonly options: TOptions;
+  readonly options: TOptions$1;
   /**
    * The error message.
    */
@@ -11410,9 +11553,9 @@ interface IntersectSchema<
  *
  * @returns An intersect schema.
  */
-declare function intersect<const TOptions extends IntersectOptions>(
-  options: TOptions,
-): IntersectSchema<TOptions, undefined>;
+declare function intersect<const TOptions$1 extends IntersectOptions>(
+  options: TOptions$1,
+): IntersectSchema<TOptions$1, undefined>;
 /**
  * Creates an intersect schema.
  *
@@ -11422,21 +11565,25 @@ declare function intersect<const TOptions extends IntersectOptions>(
  * @returns An intersect schema.
  */
 declare function intersect<
-  const TOptions extends IntersectOptions,
+  const TOptions$1 extends IntersectOptions,
   const TMessage extends ErrorMessage<IntersectIssue> | undefined,
->(options: TOptions, message: TMessage): IntersectSchema<TOptions, TMessage>;
-
+>(
+  options: TOptions$1,
+  message: TMessage,
+): IntersectSchema<TOptions$1, TMessage>;
+//#endregion
+//#region src/schemas/intersect/intersectAsync.d.ts
 /**
  * Intersect schema async interface.
  */
 interface IntersectSchemaAsync<
-  TOptions extends IntersectOptionsAsync,
+  TOptions$1 extends IntersectOptionsAsync,
   TMessage extends ErrorMessage<IntersectIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferIntersectInput<TOptions>,
-    InferIntersectOutput<TOptions>,
-    IntersectIssue | InferIssue<TOptions[number]>
+    InferIntersectInput<TOptions$1>,
+    InferIntersectOutput<TOptions$1>,
+    IntersectIssue | InferIssue<TOptions$1[number]>
   > {
   /**
    * The schema type.
@@ -11449,7 +11596,7 @@ interface IntersectSchemaAsync<
   /**
    * The intersect options.
    */
-  readonly options: TOptions;
+  readonly options: TOptions$1;
   /**
    * The error message.
    */
@@ -11462,9 +11609,9 @@ interface IntersectSchemaAsync<
  *
  * @returns An intersect schema.
  */
-declare function intersectAsync<const TOptions extends IntersectOptionsAsync>(
-  options: TOptions,
-): IntersectSchemaAsync<TOptions, undefined>;
+declare function intersectAsync<const TOptions$1 extends IntersectOptionsAsync>(
+  options: TOptions$1,
+): IntersectSchemaAsync<TOptions$1, undefined>;
 /**
  * Creates an intersect schema.
  *
@@ -11474,23 +11621,24 @@ declare function intersectAsync<const TOptions extends IntersectOptionsAsync>(
  * @returns An intersect schema.
  */
 declare function intersectAsync<
-  const TOptions extends IntersectOptionsAsync,
+  const TOptions$1 extends IntersectOptionsAsync,
   const TMessage extends ErrorMessage<IntersectIssue> | undefined,
 >(
-  options: TOptions,
+  options: TOptions$1,
   message: TMessage,
-): IntersectSchemaAsync<TOptions, TMessage>;
-
+): IntersectSchemaAsync<TOptions$1, TMessage>;
+//#endregion
+//#region src/schemas/lazy/lazy.d.ts
 /**
  * Lazy schema interface.
  */
 interface LazySchema<
-  TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
 > extends
   BaseSchema<
-    InferInput<TWrapped>,
-    InferOutput<TWrapped>,
-    InferIssue<TWrapped>
+    InferInput<TWrapped$1>,
+    InferOutput<TWrapped$1>,
+    InferIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -11507,7 +11655,7 @@ interface LazySchema<
   /**
    * The schema getter.
    */
-  readonly getter: (input: unknown) => TWrapped;
+  readonly getter: (input: unknown) => TWrapped$1;
 }
 /**
  * Creates a lazy schema.
@@ -11517,21 +11665,22 @@ interface LazySchema<
  * @returns A lazy schema.
  */
 declare function lazy<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(getter: (input: unknown) => TWrapped): LazySchema<TWrapped>;
-
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(getter: (input: unknown) => TWrapped$1): LazySchema<TWrapped$1>;
+//#endregion
+//#region src/schemas/lazy/lazyAsync.d.ts
 /**
  * Lazy schema async interface.
  */
 interface LazySchemaAsync<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 > extends
   BaseSchemaAsync<
-    InferInput<TWrapped>,
-    InferOutput<TWrapped>,
-    InferIssue<TWrapped>
+    InferInput<TWrapped$1>,
+    InferOutput<TWrapped$1>,
+    InferIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -11548,7 +11697,7 @@ interface LazySchemaAsync<
   /**
    * The schema getter.
    */
-  readonly getter: (input: unknown) => MaybePromise<TWrapped>;
+  readonly getter: (input: unknown) => MaybePromise<TWrapped$1>;
 }
 /**
  * Creates a lazy schema.
@@ -11558,13 +11707,14 @@ interface LazySchemaAsync<
  * @returns A lazy schema.
  */
 declare function lazyAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 >(
-  getter: (input: unknown) => MaybePromise<TWrapped>,
-): LazySchemaAsync<TWrapped>;
-
+  getter: (input: unknown) => MaybePromise<TWrapped$1>,
+): LazySchemaAsync<TWrapped$1>;
+//#endregion
+//#region src/schemas/literal/literal.d.ts
 /**
  * Literal type.
  */
@@ -11632,7 +11782,8 @@ declare function literal<
   const TLiteral extends Literal,
   const TMessage extends ErrorMessage<LiteralIssue> | undefined,
 >(literal_: TLiteral, message: TMessage): LiteralSchema<TLiteral, TMessage>;
-
+//#endregion
+//#region src/schemas/looseObject/types.d.ts
 /**
  * Loose object issue interface.
  */
@@ -11650,22 +11801,23 @@ interface LooseObjectIssue extends BaseIssue<unknown> {
    */
   readonly expected: "Object" | `"${string}"`;
 }
-
+//#endregion
+//#region src/schemas/looseObject/looseObject.d.ts
 /**
  * Loose object schema interface.
  */
 interface LooseObjectSchema<
-  TEntries extends ObjectEntries,
+  TEntries$1 extends ObjectEntries,
   TMessage extends ErrorMessage<LooseObjectIssue> | undefined,
 > extends
   BaseSchema<
-    InferObjectInput<TEntries> & {
+    InferObjectInput<TEntries$1> & {
       [key: string]: unknown;
     },
-    InferObjectOutput<TEntries> & {
+    InferObjectOutput<TEntries$1> & {
       [key: string]: unknown;
     },
-    LooseObjectIssue | InferObjectIssue<TEntries>
+    LooseObjectIssue | InferObjectIssue<TEntries$1>
   > {
   /**
    * The schema type.
@@ -11682,7 +11834,7 @@ interface LooseObjectSchema<
   /**
    * The entries schema.
    */
-  readonly entries: TEntries;
+  readonly entries: TEntries$1;
   /**
    * The error message.
    */
@@ -11695,9 +11847,9 @@ interface LooseObjectSchema<
  *
  * @returns A loose object schema.
  */
-declare function looseObject<const TEntries extends ObjectEntries>(
-  entries: TEntries,
-): LooseObjectSchema<TEntries, undefined>;
+declare function looseObject<const TEntries$1 extends ObjectEntries>(
+  entries: TEntries$1,
+): LooseObjectSchema<TEntries$1, undefined>;
 /**
  * Creates a loose object schema.
  *
@@ -11707,25 +11859,29 @@ declare function looseObject<const TEntries extends ObjectEntries>(
  * @returns A loose object schema.
  */
 declare function looseObject<
-  const TEntries extends ObjectEntries,
+  const TEntries$1 extends ObjectEntries,
   const TMessage extends ErrorMessage<LooseObjectIssue> | undefined,
->(entries: TEntries, message: TMessage): LooseObjectSchema<TEntries, TMessage>;
-
+>(
+  entries: TEntries$1,
+  message: TMessage,
+): LooseObjectSchema<TEntries$1, TMessage>;
+//#endregion
+//#region src/schemas/looseObject/looseObjectAsync.d.ts
 /**
  * Object schema async interface.
  */
 interface LooseObjectSchemaAsync<
-  TEntries extends ObjectEntriesAsync,
+  TEntries$1 extends ObjectEntriesAsync,
   TMessage extends ErrorMessage<LooseObjectIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferObjectInput<TEntries> & {
+    InferObjectInput<TEntries$1> & {
       [key: string]: unknown;
     },
-    InferObjectOutput<TEntries> & {
+    InferObjectOutput<TEntries$1> & {
       [key: string]: unknown;
     },
-    LooseObjectIssue | InferObjectIssue<TEntries>
+    LooseObjectIssue | InferObjectIssue<TEntries$1>
   > {
   /**
    * The schema type.
@@ -11742,7 +11898,7 @@ interface LooseObjectSchemaAsync<
   /**
    * The entries schema.
    */
-  readonly entries: TEntries;
+  readonly entries: TEntries$1;
   /**
    * The error message.
    */
@@ -11755,9 +11911,9 @@ interface LooseObjectSchemaAsync<
  *
  * @returns A loose object schema.
  */
-declare function looseObjectAsync<const TEntries extends ObjectEntriesAsync>(
-  entries: TEntries,
-): LooseObjectSchemaAsync<TEntries, undefined>;
+declare function looseObjectAsync<const TEntries$1 extends ObjectEntriesAsync>(
+  entries: TEntries$1,
+): LooseObjectSchemaAsync<TEntries$1, undefined>;
 /**
  * Creates a loose object schema.
  *
@@ -11767,13 +11923,14 @@ declare function looseObjectAsync<const TEntries extends ObjectEntriesAsync>(
  * @returns A loose object schema.
  */
 declare function looseObjectAsync<
-  const TEntries extends ObjectEntriesAsync,
+  const TEntries$1 extends ObjectEntriesAsync,
   const TMessage extends ErrorMessage<LooseObjectIssue> | undefined,
 >(
-  entries: TEntries,
+  entries: TEntries$1,
   message: TMessage,
-): LooseObjectSchemaAsync<TEntries, TMessage>;
-
+): LooseObjectSchemaAsync<TEntries$1, TMessage>;
+//#endregion
+//#region src/schemas/looseTuple/types.d.ts
 /**
  * Loose tuple issue interface.
  */
@@ -11791,21 +11948,20 @@ interface LooseTupleIssue extends BaseIssue<unknown> {
    */
   readonly expected: "Array";
 }
-
+//#endregion
+//#region src/schemas/looseTuple/looseTuple.d.ts
 /**
  * Loose tuple schema interface.
  */
 interface LooseTupleSchema<
-  TItems extends TupleItems,
+  TItems$1 extends TupleItems,
   TMessage extends ErrorMessage<LooseTupleIssue> | undefined,
 > extends
-  BaseSchema<[
-    ...InferTupleInput<TItems>,
-    ...unknown[],
-  ], [
-    ...InferTupleOutput<TItems>,
-    ...unknown[],
-  ], LooseTupleIssue | InferTupleIssue<TItems>> {
+  BaseSchema<
+    [...InferTupleInput<TItems$1>, ...unknown[]],
+    [...InferTupleOutput<TItems$1>, ...unknown[]],
+    LooseTupleIssue | InferTupleIssue<TItems$1>
+  > {
   /**
    * The schema type.
    */
@@ -11821,7 +11977,7 @@ interface LooseTupleSchema<
   /**
    * The items schema.
    */
-  readonly items: TItems;
+  readonly items: TItems$1;
   /**
    * The error message.
    */
@@ -11834,9 +11990,9 @@ interface LooseTupleSchema<
  *
  * @returns A loose tuple schema.
  */
-declare function looseTuple<const TItems extends TupleItems>(
-  items: TItems,
-): LooseTupleSchema<TItems, undefined>;
+declare function looseTuple<const TItems$1 extends TupleItems>(
+  items: TItems$1,
+): LooseTupleSchema<TItems$1, undefined>;
 /**
  * Creates a loose tuple schema.
  *
@@ -11846,24 +12002,23 @@ declare function looseTuple<const TItems extends TupleItems>(
  * @returns A loose tuple schema.
  */
 declare function looseTuple<
-  const TItems extends TupleItems,
+  const TItems$1 extends TupleItems,
   const TMessage extends ErrorMessage<LooseTupleIssue> | undefined,
->(items: TItems, message: TMessage): LooseTupleSchema<TItems, TMessage>;
-
+>(items: TItems$1, message: TMessage): LooseTupleSchema<TItems$1, TMessage>;
+//#endregion
+//#region src/schemas/looseTuple/looseTupleAsync.d.ts
 /**
  * Loose tuple schema async interface.
  */
 interface LooseTupleSchemaAsync<
-  TItems extends TupleItemsAsync,
+  TItems$1 extends TupleItemsAsync,
   TMessage extends ErrorMessage<LooseTupleIssue> | undefined,
 > extends
-  BaseSchemaAsync<[
-    ...InferTupleInput<TItems>,
-    ...unknown[],
-  ], [
-    ...InferTupleOutput<TItems>,
-    ...unknown[],
-  ], LooseTupleIssue | InferTupleIssue<TItems>> {
+  BaseSchemaAsync<
+    [...InferTupleInput<TItems$1>, ...unknown[]],
+    [...InferTupleOutput<TItems$1>, ...unknown[]],
+    LooseTupleIssue | InferTupleIssue<TItems$1>
+  > {
   /**
    * The schema type.
    */
@@ -11879,7 +12034,7 @@ interface LooseTupleSchemaAsync<
   /**
    * The items schema.
    */
-  readonly items: TItems;
+  readonly items: TItems$1;
   /**
    * The error message.
    */
@@ -11892,9 +12047,9 @@ interface LooseTupleSchemaAsync<
  *
  * @returns A loose tuple schema.
  */
-declare function looseTupleAsync<const TItems extends TupleItemsAsync>(
-  items: TItems,
-): LooseTupleSchemaAsync<TItems, undefined>;
+declare function looseTupleAsync<const TItems$1 extends TupleItemsAsync>(
+  items: TItems$1,
+): LooseTupleSchemaAsync<TItems$1, undefined>;
 /**
  * Creates a loose tuple schema.
  *
@@ -11904,10 +12059,14 @@ declare function looseTupleAsync<const TItems extends TupleItemsAsync>(
  * @returns A loose tuple schema.
  */
 declare function looseTupleAsync<
-  const TItems extends TupleItemsAsync,
+  const TItems$1 extends TupleItemsAsync,
   const TMessage extends ErrorMessage<LooseTupleIssue> | undefined,
->(items: TItems, message: TMessage): LooseTupleSchemaAsync<TItems, TMessage>;
-
+>(
+  items: TItems$1,
+  message: TMessage,
+): LooseTupleSchemaAsync<TItems$1, TMessage>;
+//#endregion
+//#region src/schemas/map/types.d.ts
 /**
  * Map issue interface.
  */
@@ -11929,37 +12088,38 @@ interface MapIssue extends BaseIssue<unknown> {
  * Infer map input type.
  */
 type InferMapInput<
-  TKey extends
+  TKey$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TValue extends
+  TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = Map<InferInput<TKey>, InferInput<TValue>>;
+> = Map<InferInput<TKey$1>, InferInput<TValue$1>>;
 /**
  * Infer map output type.
  */
 type InferMapOutput<
-  TKey extends
+  TKey$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TValue extends
+  TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = Map<InferOutput<TKey>, InferOutput<TValue>>;
-
+> = Map<InferOutput<TKey$1>, InferOutput<TValue$1>>;
+//#endregion
+//#region src/schemas/map/map.d.ts
 /**
  * Map schema interface.
  */
 interface MapSchema<
-  TKey extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  TValue extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TKey$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TValue$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<MapIssue> | undefined,
 > extends
   BaseSchema<
-    InferMapInput<TKey, TValue>,
-    InferMapOutput<TKey, TValue>,
-    MapIssue | InferIssue<TKey> | InferIssue<TValue>
+    InferMapInput<TKey$1, TValue$1>,
+    InferMapOutput<TKey$1, TValue$1>,
+    MapIssue | InferIssue<TKey$1> | InferIssue<TValue$1>
   > {
   /**
    * The schema type.
@@ -11976,11 +12136,11 @@ interface MapSchema<
   /**
    * The map key schema.
    */
-  readonly key: TKey;
+  readonly key: TKey$1;
   /**
    * The map value schema.
    */
-  readonly value: TValue;
+  readonly value: TValue$1;
   /**
    * The error message.
    */
@@ -11995,9 +12155,9 @@ interface MapSchema<
  * @returns A map schema.
  */
 declare function map<
-  const TKey extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  const TValue extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(key: TKey, value: TValue): MapSchema<TKey, TValue, undefined>;
+  const TKey$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TValue$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(key: TKey$1, value: TValue$1): MapSchema<TKey$1, TValue$1, undefined>;
 /**
  * Creates a map schema.
  *
@@ -12008,31 +12168,32 @@ declare function map<
  * @returns A map schema.
  */
 declare function map<
-  const TKey extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  const TValue extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TKey$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TValue$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<MapIssue> | undefined,
 >(
-  key: TKey,
-  value: TValue,
+  key: TKey$1,
+  value: TValue$1,
   message: TMessage,
-): MapSchema<TKey, TValue, TMessage>;
-
+): MapSchema<TKey$1, TValue$1, TMessage>;
+//#endregion
+//#region src/schemas/map/mapAsync.d.ts
 /**
  * Map schema async interface.
  */
 interface MapSchemaAsync<
-  TKey extends
+  TKey$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TValue extends
+  TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<MapIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferMapInput<TKey, TValue>,
-    InferMapOutput<TKey, TValue>,
-    MapIssue | InferIssue<TKey> | InferIssue<TValue>
+    InferMapInput<TKey$1, TValue$1>,
+    InferMapOutput<TKey$1, TValue$1>,
+    MapIssue | InferIssue<TKey$1> | InferIssue<TValue$1>
   > {
   /**
    * The schema type.
@@ -12049,11 +12210,11 @@ interface MapSchemaAsync<
   /**
    * The map key schema.
    */
-  readonly key: TKey;
+  readonly key: TKey$1;
   /**
    * The map value schema.
    */
-  readonly value: TValue;
+  readonly value: TValue$1;
   /**
    * The error message.
    */
@@ -12068,13 +12229,13 @@ interface MapSchemaAsync<
  * @returns A map schema.
  */
 declare function mapAsync<
-  const TKey extends
+  const TKey$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  const TValue extends
+  const TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(key: TKey, value: TValue): MapSchemaAsync<TKey, TValue, undefined>;
+>(key: TKey$1, value: TValue$1): MapSchemaAsync<TKey$1, TValue$1, undefined>;
 /**
  * Creates a map schema.
  *
@@ -12085,19 +12246,20 @@ declare function mapAsync<
  * @returns A map schema.
  */
 declare function mapAsync<
-  const TKey extends
+  const TKey$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  const TValue extends
+  const TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<MapIssue> | undefined,
 >(
-  key: TKey,
-  value: TValue,
+  key: TKey$1,
+  value: TValue$1,
   message: TMessage,
-): MapSchemaAsync<TKey, TValue, TMessage>;
-
+): MapSchemaAsync<TKey$1, TValue$1, TMessage>;
+//#endregion
+//#region src/schemas/nan/nan.d.ts
 /**
  * NaN issue interface.
  */
@@ -12153,7 +12315,8 @@ declare function nan(): NanSchema<undefined>;
 declare function nan<const TMessage extends ErrorMessage<NanIssue> | undefined>(
   message: TMessage,
 ): NanSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/never/never.d.ts
 /**
  * Never issue interface.
  */
@@ -12209,7 +12372,8 @@ declare function never(): NeverSchema<undefined>;
 declare function never<
   const TMessage extends ErrorMessage<NeverIssue> | undefined,
 >(message: TMessage): NeverSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/union/types.d.ts
 /**
  * Union issue interface.
  */
@@ -12232,7 +12396,8 @@ interface UnionIssue<TSubIssue extends BaseIssue<unknown>>
    */
   readonly issues?: [TSubIssue, ...TSubIssue[]];
 }
-
+//#endregion
+//#region src/schemas/union/union.d.ts
 /**
  * Union options type.
  */
@@ -12243,15 +12408,15 @@ type UnionOptions = MaybeReadonly<
  * Union schema interface.
  */
 interface UnionSchema<
-  TOptions extends UnionOptions,
+  TOptions$1 extends UnionOptions,
   TMessage extends
-    | ErrorMessage<UnionIssue<InferIssue<TOptions[number]>>>
+    | ErrorMessage<UnionIssue<InferIssue<TOptions$1[number]>>>
     | undefined,
 > extends
   BaseSchema<
-    InferInput<TOptions[number]>,
-    InferOutput<TOptions[number]>,
-    UnionIssue<InferIssue<TOptions[number]>> | InferIssue<TOptions[number]>
+    InferInput<TOptions$1[number]>,
+    InferOutput<TOptions$1[number]>,
+    UnionIssue<InferIssue<TOptions$1[number]>> | InferIssue<TOptions$1[number]>
   > {
   /**
    * The schema type.
@@ -12264,7 +12429,7 @@ interface UnionSchema<
   /**
    * The union options.
    */
-  readonly options: TOptions;
+  readonly options: TOptions$1;
   /**
    * The error message.
    */
@@ -12277,9 +12442,9 @@ interface UnionSchema<
  *
  * @returns An union schema.
  */
-declare function union<const TOptions extends UnionOptions>(
-  options: TOptions,
-): UnionSchema<TOptions, undefined>;
+declare function union<const TOptions$1 extends UnionOptions>(
+  options: TOptions$1,
+): UnionSchema<TOptions$1, undefined>;
 /**
  * Creates an union schema.
  *
@@ -12289,12 +12454,13 @@ declare function union<const TOptions extends UnionOptions>(
  * @returns An union schema.
  */
 declare function union<
-  const TOptions extends UnionOptions,
+  const TOptions$1 extends UnionOptions,
   const TMessage extends
-    | ErrorMessage<UnionIssue<InferIssue<TOptions[number]>>>
+    | ErrorMessage<UnionIssue<InferIssue<TOptions$1[number]>>>
     | undefined,
->(options: TOptions, message: TMessage): UnionSchema<TOptions, TMessage>;
-
+>(options: TOptions$1, message: TMessage): UnionSchema<TOptions$1, TMessage>;
+//#endregion
+//#region src/schemas/union/unionAsync.d.ts
 /**
  * Union options async type.
  */
@@ -12308,15 +12474,15 @@ type UnionOptionsAsync = MaybeReadonly<
  * Union schema async interface.
  */
 interface UnionSchemaAsync<
-  TOptions extends UnionOptionsAsync,
+  TOptions$1 extends UnionOptionsAsync,
   TMessage extends
-    | ErrorMessage<UnionIssue<InferIssue<TOptions[number]>>>
+    | ErrorMessage<UnionIssue<InferIssue<TOptions$1[number]>>>
     | undefined,
 > extends
   BaseSchemaAsync<
-    InferInput<TOptions[number]>,
-    InferOutput<TOptions[number]>,
-    UnionIssue<InferIssue<TOptions[number]>> | InferIssue<TOptions[number]>
+    InferInput<TOptions$1[number]>,
+    InferOutput<TOptions$1[number]>,
+    UnionIssue<InferIssue<TOptions$1[number]>> | InferIssue<TOptions$1[number]>
   > {
   /**
    * The schema type.
@@ -12329,7 +12495,7 @@ interface UnionSchemaAsync<
   /**
    * The union options.
    */
-  readonly options: TOptions;
+  readonly options: TOptions$1;
   /**
    * The error message.
    */
@@ -12342,9 +12508,9 @@ interface UnionSchemaAsync<
  *
  * @returns An union schema.
  */
-declare function unionAsync<const TOptions extends UnionOptionsAsync>(
-  options: TOptions,
-): UnionSchemaAsync<TOptions, undefined>;
+declare function unionAsync<const TOptions$1 extends UnionOptionsAsync>(
+  options: TOptions$1,
+): UnionSchemaAsync<TOptions$1, undefined>;
 /**
  * Creates an union schema.
  *
@@ -12354,12 +12520,16 @@ declare function unionAsync<const TOptions extends UnionOptionsAsync>(
  * @returns An union schema.
  */
 declare function unionAsync<
-  const TOptions extends UnionOptionsAsync,
+  const TOptions$1 extends UnionOptionsAsync,
   const TMessage extends
-    | ErrorMessage<UnionIssue<InferIssue<TOptions[number]>>>
+    | ErrorMessage<UnionIssue<InferIssue<TOptions$1[number]>>>
     | undefined,
->(options: TOptions, message: TMessage): UnionSchemaAsync<TOptions, TMessage>;
-
+>(
+  options: TOptions$1,
+  message: TMessage,
+): UnionSchemaAsync<TOptions$1, TMessage>;
+//#endregion
+//#region src/schemas/nonNullable/types.d.ts
 /**
  * Non nullable issue interface.
  */
@@ -12381,26 +12551,26 @@ interface NonNullableIssue extends BaseIssue<unknown> {
  * Infer non nullable input type.
  */
 type InferNonNullableInput<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = NonNullable$1<InferInput<TWrapped>>;
+> = NonNullable$1<InferInput<TWrapped$1>>;
 /**
  * Infer non nullable output type.
  */
 type InferNonNullableOutput<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = NonNullable$1<InferOutput<TWrapped>>;
+> = NonNullable$1<InferOutput<TWrapped$1>>;
 /**
  * Infer non nullable issue type.
  */
 type InferNonNullableIssue<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = TWrapped extends
+> = TWrapped$1 extends
   | UnionSchema<
     UnionOptions,
     ErrorMessage<UnionIssue<BaseIssue<unknown>>> | undefined
@@ -12409,25 +12579,26 @@ type InferNonNullableIssue<
     UnionOptionsAsync,
     ErrorMessage<UnionIssue<BaseIssue<unknown>>> | undefined
   > ?
-    | Exclude<InferIssue<TWrapped>, {
+    | Exclude<InferIssue<TWrapped$1>, {
       type: "null" | "union";
     }>
-    | UnionIssue<InferNonNullableIssue<TWrapped["options"][number]>>
-  : Exclude<InferIssue<TWrapped>, {
+    | UnionIssue<InferNonNullableIssue<TWrapped$1["options"][number]>>
+  : Exclude<InferIssue<TWrapped$1>, {
     type: "null";
   }>;
-
+//#endregion
+//#region src/schemas/nonNullable/nonNullable.d.ts
 /**
  * Non nullable schema interface.
  */
 interface NonNullableSchema<
-  TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<NonNullableIssue> | undefined,
 > extends
   BaseSchema<
-    InferNonNullableInput<TWrapped>,
-    InferNonNullableOutput<TWrapped>,
-    NonNullableIssue | InferNonNullableIssue<TWrapped>
+    InferNonNullableInput<TWrapped$1>,
+    InferNonNullableOutput<TWrapped$1>,
+    NonNullableIssue | InferNonNullableIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -12444,7 +12615,7 @@ interface NonNullableSchema<
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The error message.
    */
@@ -12458,8 +12629,8 @@ interface NonNullableSchema<
  * @returns A non nullable schema.
  */
 declare function nonNullable<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): NonNullableSchema<TWrapped, undefined>;
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(wrapped: TWrapped$1): NonNullableSchema<TWrapped$1, undefined>;
 /**
  * Creates a non nullable schema.
  *
@@ -12469,23 +12640,27 @@ declare function nonNullable<
  * @returns A non nullable schema.
  */
 declare function nonNullable<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<NonNullableIssue> | undefined,
->(wrapped: TWrapped, message: TMessage): NonNullableSchema<TWrapped, TMessage>;
-
+>(
+  wrapped: TWrapped$1,
+  message: TMessage,
+): NonNullableSchema<TWrapped$1, TMessage>;
+//#endregion
+//#region src/schemas/nonNullable/nonNullableAsync.d.ts
 /**
  * Non nullable schema async interface.
  */
 interface NonNullableSchemaAsync<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<NonNullableIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferNonNullableInput<TWrapped>,
-    InferNonNullableOutput<TWrapped>,
-    NonNullableIssue | InferNonNullableIssue<TWrapped>
+    InferNonNullableInput<TWrapped$1>,
+    InferNonNullableOutput<TWrapped$1>,
+    NonNullableIssue | InferNonNullableIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -12502,7 +12677,7 @@ interface NonNullableSchemaAsync<
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The error message.
    */
@@ -12516,10 +12691,10 @@ interface NonNullableSchemaAsync<
  * @returns A non nullable schema.
  */
 declare function nonNullableAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): NonNullableSchemaAsync<TWrapped, undefined>;
+>(wrapped: TWrapped$1): NonNullableSchemaAsync<TWrapped$1, undefined>;
 /**
  * Creates a non nullable schema.
  *
@@ -12529,15 +12704,16 @@ declare function nonNullableAsync<
  * @returns A non nullable schema.
  */
 declare function nonNullableAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<NonNullableIssue> | undefined,
 >(
-  wrapped: TWrapped,
+  wrapped: TWrapped$1,
   message: TMessage,
-): NonNullableSchemaAsync<TWrapped, TMessage>;
-
+): NonNullableSchemaAsync<TWrapped$1, TMessage>;
+//#endregion
+//#region src/schemas/nonNullish/types.d.ts
 /**
  * Non nullish issue interface.
  */
@@ -12559,26 +12735,26 @@ interface NonNullishIssue extends BaseIssue<unknown> {
  * Infer non nullish input type.
  */
 type InferNonNullishInput<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = NonNullish<InferInput<TWrapped>>;
+> = NonNullish<InferInput<TWrapped$1>>;
 /**
  * Infer non nullish output type.
  */
 type InferNonNullishOutput<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = NonNullish<InferOutput<TWrapped>>;
+> = NonNullish<InferOutput<TWrapped$1>>;
 /**
  * Infer non nullish issue type.
  */
 type InferNonNullishIssue<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = TWrapped extends
+> = TWrapped$1 extends
   | UnionSchema<
     UnionOptions,
     ErrorMessage<UnionIssue<BaseIssue<unknown>>> | undefined
@@ -12587,25 +12763,26 @@ type InferNonNullishIssue<
     UnionOptionsAsync,
     ErrorMessage<UnionIssue<BaseIssue<unknown>>> | undefined
   > ?
-    | Exclude<InferIssue<TWrapped>, {
+    | Exclude<InferIssue<TWrapped$1>, {
       type: "null" | "undefined" | "union";
     }>
-    | UnionIssue<InferNonNullishIssue<TWrapped["options"][number]>>
-  : Exclude<InferIssue<TWrapped>, {
+    | UnionIssue<InferNonNullishIssue<TWrapped$1["options"][number]>>
+  : Exclude<InferIssue<TWrapped$1>, {
     type: "null" | "undefined";
   }>;
-
+//#endregion
+//#region src/schemas/nonNullish/nonNullish.d.ts
 /**
  * Non nullish schema interface.
  */
 interface NonNullishSchema<
-  TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<NonNullishIssue> | undefined,
 > extends
   BaseSchema<
-    InferNonNullishInput<TWrapped>,
-    InferNonNullishOutput<TWrapped>,
-    NonNullishIssue | InferNonNullishIssue<TWrapped>
+    InferNonNullishInput<TWrapped$1>,
+    InferNonNullishOutput<TWrapped$1>,
+    NonNullishIssue | InferNonNullishIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -12622,7 +12799,7 @@ interface NonNullishSchema<
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The error message.
    */
@@ -12636,8 +12813,8 @@ interface NonNullishSchema<
  * @returns A non nullish schema.
  */
 declare function nonNullish<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): NonNullishSchema<TWrapped, undefined>;
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(wrapped: TWrapped$1): NonNullishSchema<TWrapped$1, undefined>;
 /**
  * Creates a non nullish schema.
  *
@@ -12647,23 +12824,27 @@ declare function nonNullish<
  * @returns A non nullish schema.
  */
 declare function nonNullish<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<NonNullishIssue> | undefined,
->(wrapped: TWrapped, message: TMessage): NonNullishSchema<TWrapped, TMessage>;
-
+>(
+  wrapped: TWrapped$1,
+  message: TMessage,
+): NonNullishSchema<TWrapped$1, TMessage>;
+//#endregion
+//#region src/schemas/nonNullish/nonNullishAsync.d.ts
 /**
  * Non nullish schema async interface.
  */
 interface NonNullishSchemaAsync<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<NonNullishIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferNonNullishInput<TWrapped>,
-    InferNonNullishOutput<TWrapped>,
-    NonNullishIssue | InferNonNullishIssue<TWrapped>
+    InferNonNullishInput<TWrapped$1>,
+    InferNonNullishOutput<TWrapped$1>,
+    NonNullishIssue | InferNonNullishIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -12680,7 +12861,7 @@ interface NonNullishSchemaAsync<
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The error message.
    */
@@ -12694,10 +12875,10 @@ interface NonNullishSchemaAsync<
  * @returns A non nullish schema.
  */
 declare function nonNullishAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): NonNullishSchemaAsync<TWrapped, undefined>;
+>(wrapped: TWrapped$1): NonNullishSchemaAsync<TWrapped$1, undefined>;
 /**
  * Creates a non nullish schema.
  *
@@ -12707,15 +12888,16 @@ declare function nonNullishAsync<
  * @returns A non nullish schema.
  */
 declare function nonNullishAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<NonNullishIssue> | undefined,
 >(
-  wrapped: TWrapped,
+  wrapped: TWrapped$1,
   message: TMessage,
-): NonNullishSchemaAsync<TWrapped, TMessage>;
-
+): NonNullishSchemaAsync<TWrapped$1, TMessage>;
+//#endregion
+//#region src/schemas/nonOptional/types.d.ts
 /**
  * Non optional issue interface.
  */
@@ -12737,26 +12919,26 @@ interface NonOptionalIssue extends BaseIssue<unknown> {
  * Infer non optional input type.
  */
 type InferNonOptionalInput<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = NonOptional<InferInput<TWrapped>>;
+> = NonOptional<InferInput<TWrapped$1>>;
 /**
  * Infer non optional output type.
  */
 type InferNonOptionalOutput<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = NonOptional<InferOutput<TWrapped>>;
+> = NonOptional<InferOutput<TWrapped$1>>;
 /**
  * Infer non optional issue type.
  */
 type InferNonOptionalIssue<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = TWrapped extends
+> = TWrapped$1 extends
   | UnionSchema<
     UnionOptions,
     ErrorMessage<UnionIssue<BaseIssue<unknown>>> | undefined
@@ -12765,25 +12947,26 @@ type InferNonOptionalIssue<
     UnionOptionsAsync,
     ErrorMessage<UnionIssue<BaseIssue<unknown>>> | undefined
   > ?
-    | Exclude<InferIssue<TWrapped>, {
+    | Exclude<InferIssue<TWrapped$1>, {
       type: "undefined" | "union";
     }>
-    | UnionIssue<InferNonOptionalIssue<TWrapped["options"][number]>>
-  : Exclude<InferIssue<TWrapped>, {
+    | UnionIssue<InferNonOptionalIssue<TWrapped$1["options"][number]>>
+  : Exclude<InferIssue<TWrapped$1>, {
     type: "undefined";
   }>;
-
+//#endregion
+//#region src/schemas/nonOptional/nonOptional.d.ts
 /**
  * Non optional schema interface.
  */
 interface NonOptionalSchema<
-  TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<NonOptionalIssue> | undefined,
 > extends
   BaseSchema<
-    InferNonOptionalInput<TWrapped>,
-    InferNonOptionalOutput<TWrapped>,
-    NonOptionalIssue | InferNonOptionalIssue<TWrapped>
+    InferNonOptionalInput<TWrapped$1>,
+    InferNonOptionalOutput<TWrapped$1>,
+    NonOptionalIssue | InferNonOptionalIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -12800,7 +12983,7 @@ interface NonOptionalSchema<
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The error message.
    */
@@ -12814,8 +12997,8 @@ interface NonOptionalSchema<
  * @returns A non optional schema.
  */
 declare function nonOptional<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): NonOptionalSchema<TWrapped, undefined>;
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(wrapped: TWrapped$1): NonOptionalSchema<TWrapped$1, undefined>;
 /**
  * Creates a non optional schema.
  *
@@ -12825,23 +13008,27 @@ declare function nonOptional<
  * @returns A non optional schema.
  */
 declare function nonOptional<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<NonOptionalIssue> | undefined,
->(wrapped: TWrapped, message: TMessage): NonOptionalSchema<TWrapped, TMessage>;
-
+>(
+  wrapped: TWrapped$1,
+  message: TMessage,
+): NonOptionalSchema<TWrapped$1, TMessage>;
+//#endregion
+//#region src/schemas/nonOptional/nonOptionalAsync.d.ts
 /**
  * Non optional schema async interface.
  */
 interface NonOptionalSchemaAsync<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<NonOptionalIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferNonOptionalInput<TWrapped>,
-    InferNonOptionalOutput<TWrapped>,
-    NonOptionalIssue | InferNonOptionalIssue<TWrapped>
+    InferNonOptionalInput<TWrapped$1>,
+    InferNonOptionalOutput<TWrapped$1>,
+    NonOptionalIssue | InferNonOptionalIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -12858,7 +13045,7 @@ interface NonOptionalSchemaAsync<
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The error message.
    */
@@ -12872,10 +13059,10 @@ interface NonOptionalSchemaAsync<
  * @returns A non optional schema.
  */
 declare function nonOptionalAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): NonOptionalSchemaAsync<TWrapped, undefined>;
+>(wrapped: TWrapped$1): NonOptionalSchemaAsync<TWrapped$1, undefined>;
 /**
  * Creates a non optional schema.
  *
@@ -12885,15 +13072,16 @@ declare function nonOptionalAsync<
  * @returns A non optional schema.
  */
 declare function nonOptionalAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<NonOptionalIssue> | undefined,
 >(
-  wrapped: TWrapped,
+  wrapped: TWrapped$1,
   message: TMessage,
-): NonOptionalSchemaAsync<TWrapped, TMessage>;
-
+): NonOptionalSchemaAsync<TWrapped$1, TMessage>;
+//#endregion
+//#region src/schemas/null/null.d.ts
 /**
  * Null issue interface.
  */
@@ -12949,29 +13137,31 @@ declare function null_(): NullSchema<undefined>;
 declare function null_<
   const TMessage extends ErrorMessage<NullIssue> | undefined,
 >(message: TMessage): NullSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/nullable/types.d.ts
 /**
  * Infer nullable output type.
  */
 type InferNullableOutput<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends DefaultAsync<TWrapped, null>,
-> = undefined extends TDefault ? InferOutput<TWrapped> | null
-  : InferOutput<TWrapped> | Extract<DefaultValue<TDefault>, null>;
-
+  TDefault extends DefaultAsync<TWrapped$1, null>,
+> = undefined extends TDefault ? InferOutput<TWrapped$1> | null
+  : InferOutput<TWrapped$1> | Extract<DefaultValue<TDefault>, null>;
+//#endregion
+//#region src/schemas/nullable/nullable.d.ts
 /**
  * Nullable schema interface.
  */
 interface NullableSchema<
-  TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends Default<TWrapped, null>,
+  TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TDefault extends Default<TWrapped$1, null>,
 > extends
   BaseSchema<
-    InferInput<TWrapped> | null,
-    InferNullableOutput<TWrapped, TDefault>,
-    InferIssue<TWrapped>
+    InferInput<TWrapped$1> | null,
+    InferNullableOutput<TWrapped$1, TDefault>,
+    InferIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -12984,11 +13174,11 @@ interface NullableSchema<
   /**
    * The expected property.
    */
-  readonly expects: `(${TWrapped["expects"]} | null)`;
+  readonly expects: `(${TWrapped$1["expects"]} | null)`;
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The default value.
    */
@@ -13002,8 +13192,8 @@ interface NullableSchema<
  * @returns A nullable schema.
  */
 declare function nullable<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): NullableSchema<TWrapped, undefined>;
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(wrapped: TWrapped$1): NullableSchema<TWrapped$1, undefined>;
 /**
  * Creates a nullable schema.
  *
@@ -13013,23 +13203,27 @@ declare function nullable<
  * @returns A nullable schema.
  */
 declare function nullable<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  const TDefault extends Default<TWrapped, null>,
->(wrapped: TWrapped, default_: TDefault): NullableSchema<TWrapped, TDefault>;
-
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TDefault extends Default<TWrapped$1, null>,
+>(
+  wrapped: TWrapped$1,
+  default_: TDefault,
+): NullableSchema<TWrapped$1, TDefault>;
+//#endregion
+//#region src/schemas/nullable/nullableAsync.d.ts
 /**
  * Nullable schema async interface.
  */
 interface NullableSchemaAsync<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends DefaultAsync<TWrapped, null>,
+  TDefault extends DefaultAsync<TWrapped$1, null>,
 > extends
   BaseSchemaAsync<
-    InferInput<TWrapped> | null,
-    InferNullableOutput<TWrapped, TDefault>,
-    InferIssue<TWrapped>
+    InferInput<TWrapped$1> | null,
+    InferNullableOutput<TWrapped$1, TDefault>,
+    InferIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -13042,11 +13236,11 @@ interface NullableSchemaAsync<
   /**
    * The expected property.
    */
-  readonly expects: `(${TWrapped["expects"]} | null)`;
+  readonly expects: `(${TWrapped$1["expects"]} | null)`;
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The default value.
    */
@@ -13060,10 +13254,10 @@ interface NullableSchemaAsync<
  * @returns A nullable schema.
  */
 declare function nullableAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): NullableSchemaAsync<TWrapped, undefined>;
+>(wrapped: TWrapped$1): NullableSchemaAsync<TWrapped$1, undefined>;
 /**
  * Creates a nullable schema.
  *
@@ -13073,37 +13267,39 @@ declare function nullableAsync<
  * @returns A nullable schema.
  */
 declare function nullableAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  const TDefault extends DefaultAsync<TWrapped, null>,
+  const TDefault extends DefaultAsync<TWrapped$1, null>,
 >(
-  wrapped: TWrapped,
+  wrapped: TWrapped$1,
   default_: TDefault,
-): NullableSchemaAsync<TWrapped, TDefault>;
-
+): NullableSchemaAsync<TWrapped$1, TDefault>;
+//#endregion
+//#region src/schemas/nullish/types.d.ts
 /**
  * Infer nullish output type.
  */
 type InferNullishOutput<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends DefaultAsync<TWrapped, null | undefined>,
-> = undefined extends TDefault ? InferOutput<TWrapped> | null | undefined
-  : InferOutput<TWrapped> | Extract<DefaultValue<TDefault>, null | undefined>;
-
+  TDefault extends DefaultAsync<TWrapped$1, null | undefined>,
+> = undefined extends TDefault ? InferOutput<TWrapped$1> | null | undefined
+  : InferOutput<TWrapped$1> | Extract<DefaultValue<TDefault>, null | undefined>;
+//#endregion
+//#region src/schemas/nullish/nullish.d.ts
 /**
  * Nullish schema interface.
  */
 interface NullishSchema<
-  TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends Default<TWrapped, null | undefined>,
+  TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TDefault extends Default<TWrapped$1, null | undefined>,
 > extends
   BaseSchema<
-    InferInput<TWrapped> | null | undefined,
-    InferNullishOutput<TWrapped, TDefault>,
-    InferIssue<TWrapped>
+    InferInput<TWrapped$1> | null | undefined,
+    InferNullishOutput<TWrapped$1, TDefault>,
+    InferIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -13116,11 +13312,11 @@ interface NullishSchema<
   /**
    * The expected property.
    */
-  readonly expects: `(${TWrapped["expects"]} | null | undefined)`;
+  readonly expects: `(${TWrapped$1["expects"]} | null | undefined)`;
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The default value.
    */
@@ -13134,8 +13330,8 @@ interface NullishSchema<
  * @returns A nullish schema.
  */
 declare function nullish<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): NullishSchema<TWrapped, undefined>;
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(wrapped: TWrapped$1): NullishSchema<TWrapped$1, undefined>;
 /**
  * Creates a nullish schema.
  *
@@ -13145,23 +13341,24 @@ declare function nullish<
  * @returns A nullish schema.
  */
 declare function nullish<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  const TDefault extends Default<TWrapped, null | undefined>,
->(wrapped: TWrapped, default_: TDefault): NullishSchema<TWrapped, TDefault>;
-
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TDefault extends Default<TWrapped$1, null | undefined>,
+>(wrapped: TWrapped$1, default_: TDefault): NullishSchema<TWrapped$1, TDefault>;
+//#endregion
+//#region src/schemas/nullish/nullishAsync.d.ts
 /**
  * Nullish schema async interface.
  */
 interface NullishSchemaAsync<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends DefaultAsync<TWrapped, null | undefined>,
+  TDefault extends DefaultAsync<TWrapped$1, null | undefined>,
 > extends
   BaseSchemaAsync<
-    InferInput<TWrapped> | null | undefined,
-    InferNullishOutput<TWrapped, TDefault>,
-    InferIssue<TWrapped>
+    InferInput<TWrapped$1> | null | undefined,
+    InferNullishOutput<TWrapped$1, TDefault>,
+    InferIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -13174,11 +13371,11 @@ interface NullishSchemaAsync<
   /**
    * The expected property.
    */
-  readonly expects: `(${TWrapped["expects"]} | null | undefined)`;
+  readonly expects: `(${TWrapped$1["expects"]} | null | undefined)`;
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The default value.
    */
@@ -13192,10 +13389,10 @@ interface NullishSchemaAsync<
  * @returns A nullish schema.
  */
 declare function nullishAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): NullishSchemaAsync<TWrapped, undefined>;
+>(wrapped: TWrapped$1): NullishSchemaAsync<TWrapped$1, undefined>;
 /**
  * Creates a nullish schema.
  *
@@ -13205,15 +13402,16 @@ declare function nullishAsync<
  * @returns A nullish schema.
  */
 declare function nullishAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  const TDefault extends DefaultAsync<TWrapped, null | undefined>,
+  const TDefault extends DefaultAsync<TWrapped$1, null | undefined>,
 >(
-  wrapped: TWrapped,
+  wrapped: TWrapped$1,
   default_: TDefault,
-): NullishSchemaAsync<TWrapped, TDefault>;
-
+): NullishSchemaAsync<TWrapped$1, TDefault>;
+//#endregion
+//#region src/schemas/number/number.d.ts
 /**
  * Number issue interface.
  */
@@ -13269,7 +13467,8 @@ declare function number(): NumberSchema<undefined>;
 declare function number<
   const TMessage extends ErrorMessage<NumberIssue> | undefined,
 >(message: TMessage): NumberSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/object/types.d.ts
 /**
  * Object issue interface.
  */
@@ -13287,18 +13486,19 @@ interface ObjectIssue extends BaseIssue<unknown> {
    */
   readonly expected: "Object" | `"${string}"`;
 }
-
+//#endregion
+//#region src/schemas/object/object.d.ts
 /**
  * Object schema interface.
  */
 interface ObjectSchema<
-  TEntries extends ObjectEntries,
+  TEntries$1 extends ObjectEntries,
   TMessage extends ErrorMessage<ObjectIssue> | undefined,
 > extends
   BaseSchema<
-    InferObjectInput<TEntries>,
-    InferObjectOutput<TEntries>,
-    ObjectIssue | InferObjectIssue<TEntries>
+    InferObjectInput<TEntries$1>,
+    InferObjectOutput<TEntries$1>,
+    ObjectIssue | InferObjectIssue<TEntries$1>
   > {
   /**
    * The schema type.
@@ -13315,7 +13515,7 @@ interface ObjectSchema<
   /**
    * The entries schema.
    */
-  readonly entries: TEntries;
+  readonly entries: TEntries$1;
   /**
    * The error message.
    */
@@ -13333,9 +13533,9 @@ interface ObjectSchema<
  *
  * @returns An object schema.
  */
-declare function object<const TEntries extends ObjectEntries>(
-  entries: TEntries,
-): ObjectSchema<TEntries, undefined>;
+declare function object<const TEntries$1 extends ObjectEntries>(
+  entries: TEntries$1,
+): ObjectSchema<TEntries$1, undefined>;
 /**
  * Creates an object schema.
  *
@@ -13350,21 +13550,22 @@ declare function object<const TEntries extends ObjectEntries>(
  * @returns An object schema.
  */
 declare function object<
-  const TEntries extends ObjectEntries,
+  const TEntries$1 extends ObjectEntries,
   const TMessage extends ErrorMessage<ObjectIssue> | undefined,
->(entries: TEntries, message: TMessage): ObjectSchema<TEntries, TMessage>;
-
+>(entries: TEntries$1, message: TMessage): ObjectSchema<TEntries$1, TMessage>;
+//#endregion
+//#region src/schemas/object/objectAsync.d.ts
 /**
  * Object schema async interface.
  */
 interface ObjectSchemaAsync<
-  TEntries extends ObjectEntriesAsync,
+  TEntries$1 extends ObjectEntriesAsync,
   TMessage extends ErrorMessage<ObjectIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferObjectInput<TEntries>,
-    InferObjectOutput<TEntries>,
-    ObjectIssue | InferObjectIssue<TEntries>
+    InferObjectInput<TEntries$1>,
+    InferObjectOutput<TEntries$1>,
+    ObjectIssue | InferObjectIssue<TEntries$1>
   > {
   /**
    * The schema type.
@@ -13381,7 +13582,7 @@ interface ObjectSchemaAsync<
   /**
    * The entries schema.
    */
-  readonly entries: TEntries;
+  readonly entries: TEntries$1;
   /**
    * The error message.
    */
@@ -13399,9 +13600,9 @@ interface ObjectSchemaAsync<
  *
  * @returns An object schema.
  */
-declare function objectAsync<const TEntries extends ObjectEntriesAsync>(
-  entries: TEntries,
-): ObjectSchemaAsync<TEntries, undefined>;
+declare function objectAsync<const TEntries$1 extends ObjectEntriesAsync>(
+  entries: TEntries$1,
+): ObjectSchemaAsync<TEntries$1, undefined>;
 /**
  * Creates an object schema.
  *
@@ -13416,10 +13617,14 @@ declare function objectAsync<const TEntries extends ObjectEntriesAsync>(
  * @returns An object schema.
  */
 declare function objectAsync<
-  const TEntries extends ObjectEntriesAsync,
+  const TEntries$1 extends ObjectEntriesAsync,
   const TMessage extends ErrorMessage<ObjectIssue> | undefined,
->(entries: TEntries, message: TMessage): ObjectSchemaAsync<TEntries, TMessage>;
-
+>(
+  entries: TEntries$1,
+  message: TMessage,
+): ObjectSchemaAsync<TEntries$1, TMessage>;
+//#endregion
+//#region src/schemas/objectWithRest/types.d.ts
 /**
  * Object with rest issue interface.
  */
@@ -13437,23 +13642,24 @@ interface ObjectWithRestIssue extends BaseIssue<unknown> {
    */
   readonly expected: "Object" | `"${string}"`;
 }
-
+//#endregion
+//#region src/schemas/objectWithRest/objectWithRest.d.ts
 /**
  * Object with rest schema interface.
  */
 interface ObjectWithRestSchema<
-  TEntries extends ObjectEntries,
-  TRest extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TEntries$1 extends ObjectEntries,
+  TRest$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<ObjectWithRestIssue> | undefined,
 > extends
   BaseSchema<
-    InferObjectInput<TEntries> & {
-      [key: string]: InferInput<TRest>;
+    InferObjectInput<TEntries$1> & {
+      [key: string]: InferInput<TRest$1>;
     },
-    InferObjectOutput<TEntries> & {
-      [key: string]: InferOutput<TRest>;
+    InferObjectOutput<TEntries$1> & {
+      [key: string]: InferOutput<TRest$1>;
     },
-    ObjectWithRestIssue | InferObjectIssue<TEntries> | InferIssue<TRest>
+    ObjectWithRestIssue | InferObjectIssue<TEntries$1> | InferIssue<TRest$1>
   > {
   /**
    * The schema type.
@@ -13470,11 +13676,11 @@ interface ObjectWithRestSchema<
   /**
    * The entries schema.
    */
-  readonly entries: TEntries;
+  readonly entries: TEntries$1;
   /**
    * The rest schema.
    */
-  readonly rest: TRest;
+  readonly rest: TRest$1;
   /**
    * The error message.
    */
@@ -13489,12 +13695,12 @@ interface ObjectWithRestSchema<
  * @returns An object with rest schema.
  */
 declare function objectWithRest<
-  const TEntries extends ObjectEntries,
-  const TRest extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TEntries$1 extends ObjectEntries,
+  const TRest$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
 >(
-  entries: TEntries,
-  rest: TRest,
-): ObjectWithRestSchema<TEntries, TRest, undefined>;
+  entries: TEntries$1,
+  rest: TRest$1,
+): ObjectWithRestSchema<TEntries$1, TRest$1, undefined>;
 /**
  * Creates an object with rest schema.
  *
@@ -13505,33 +13711,34 @@ declare function objectWithRest<
  * @returns An object with rest schema.
  */
 declare function objectWithRest<
-  const TEntries extends ObjectEntries,
-  const TRest extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TEntries$1 extends ObjectEntries,
+  const TRest$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<ObjectWithRestIssue> | undefined,
 >(
-  entries: TEntries,
-  rest: TRest,
+  entries: TEntries$1,
+  rest: TRest$1,
   message: TMessage,
-): ObjectWithRestSchema<TEntries, TRest, TMessage>;
-
+): ObjectWithRestSchema<TEntries$1, TRest$1, TMessage>;
+//#endregion
+//#region src/schemas/objectWithRest/objectWithRestAsync.d.ts
 /**
  * Object schema async interface.
  */
 interface ObjectWithRestSchemaAsync<
-  TEntries extends ObjectEntriesAsync,
-  TRest extends
+  TEntries$1 extends ObjectEntriesAsync,
+  TRest$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<ObjectWithRestIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferObjectInput<TEntries> & {
-      [key: string]: InferInput<TRest>;
+    InferObjectInput<TEntries$1> & {
+      [key: string]: InferInput<TRest$1>;
     },
-    InferObjectOutput<TEntries> & {
-      [key: string]: InferOutput<TRest>;
+    InferObjectOutput<TEntries$1> & {
+      [key: string]: InferOutput<TRest$1>;
     },
-    ObjectWithRestIssue | InferObjectIssue<TEntries> | InferIssue<TRest>
+    ObjectWithRestIssue | InferObjectIssue<TEntries$1> | InferIssue<TRest$1>
   > {
   /**
    * The schema type.
@@ -13548,11 +13755,11 @@ interface ObjectWithRestSchemaAsync<
   /**
    * The entries schema.
    */
-  readonly entries: TEntries;
+  readonly entries: TEntries$1;
   /**
    * The rest schema.
    */
-  readonly rest: TRest;
+  readonly rest: TRest$1;
   /**
    * The error message.
    */
@@ -13567,14 +13774,14 @@ interface ObjectWithRestSchemaAsync<
  * @returns An object with rest schema.
  */
 declare function objectWithRestAsync<
-  const TEntries extends ObjectEntriesAsync,
-  const TRest extends
+  const TEntries$1 extends ObjectEntriesAsync,
+  const TRest$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 >(
-  entries: TEntries,
-  rest: TRest,
-): ObjectWithRestSchemaAsync<TEntries, TRest, undefined>;
+  entries: TEntries$1,
+  rest: TRest$1,
+): ObjectWithRestSchemaAsync<TEntries$1, TRest$1, undefined>;
 /**
  * Creates an object with rest schema.
  *
@@ -13585,39 +13792,41 @@ declare function objectWithRestAsync<
  * @returns An object with rest schema.
  */
 declare function objectWithRestAsync<
-  const TEntries extends ObjectEntriesAsync,
-  const TRest extends
+  const TEntries$1 extends ObjectEntriesAsync,
+  const TRest$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<ObjectWithRestIssue> | undefined,
 >(
-  entries: TEntries,
-  rest: TRest,
+  entries: TEntries$1,
+  rest: TRest$1,
   message: TMessage,
-): ObjectWithRestSchemaAsync<TEntries, TRest, TMessage>;
-
+): ObjectWithRestSchemaAsync<TEntries$1, TRest$1, TMessage>;
+//#endregion
+//#region src/schemas/optional/types.d.ts
 /**
  * Infer optional output type.
  */
 type InferOptionalOutput<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends DefaultAsync<TWrapped, undefined>,
-> = undefined extends TDefault ? InferOutput<TWrapped> | undefined
-  : InferOutput<TWrapped> | Extract<DefaultValue<TDefault>, undefined>;
-
+  TDefault extends DefaultAsync<TWrapped$1, undefined>,
+> = undefined extends TDefault ? InferOutput<TWrapped$1> | undefined
+  : InferOutput<TWrapped$1> | Extract<DefaultValue<TDefault>, undefined>;
+//#endregion
+//#region src/schemas/optional/optional.d.ts
 /**
  * Optional schema interface.
  */
 interface OptionalSchema<
-  TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends Default<TWrapped, undefined>,
+  TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TDefault extends Default<TWrapped$1, undefined>,
 > extends
   BaseSchema<
-    InferInput<TWrapped> | undefined,
-    InferOptionalOutput<TWrapped, TDefault>,
-    InferIssue<TWrapped>
+    InferInput<TWrapped$1> | undefined,
+    InferOptionalOutput<TWrapped$1, TDefault>,
+    InferIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -13630,11 +13839,11 @@ interface OptionalSchema<
   /**
    * The expected property.
    */
-  readonly expects: `(${TWrapped["expects"]} | undefined)`;
+  readonly expects: `(${TWrapped$1["expects"]} | undefined)`;
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The default value.
    */
@@ -13648,8 +13857,8 @@ interface OptionalSchema<
  * @returns An optional schema.
  */
 declare function optional<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): OptionalSchema<TWrapped, undefined>;
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(wrapped: TWrapped$1): OptionalSchema<TWrapped$1, undefined>;
 /**
  * Creates an optional schema.
  *
@@ -13659,23 +13868,27 @@ declare function optional<
  * @returns An optional schema.
  */
 declare function optional<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  const TDefault extends Default<TWrapped, undefined>,
->(wrapped: TWrapped, default_: TDefault): OptionalSchema<TWrapped, TDefault>;
-
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TDefault extends Default<TWrapped$1, undefined>,
+>(
+  wrapped: TWrapped$1,
+  default_: TDefault,
+): OptionalSchema<TWrapped$1, TDefault>;
+//#endregion
+//#region src/schemas/optional/optionalAsync.d.ts
 /**
  * Optional schema async interface.
  */
 interface OptionalSchemaAsync<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends DefaultAsync<TWrapped, undefined>,
+  TDefault extends DefaultAsync<TWrapped$1, undefined>,
 > extends
   BaseSchemaAsync<
-    InferInput<TWrapped> | undefined,
-    InferOptionalOutput<TWrapped, TDefault>,
-    InferIssue<TWrapped>
+    InferInput<TWrapped$1> | undefined,
+    InferOptionalOutput<TWrapped$1, TDefault>,
+    InferIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -13688,11 +13901,11 @@ interface OptionalSchemaAsync<
   /**
    * The expected property.
    */
-  readonly expects: `(${TWrapped["expects"]} | undefined)`;
+  readonly expects: `(${TWrapped$1["expects"]} | undefined)`;
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The default value.
    */
@@ -13706,10 +13919,10 @@ interface OptionalSchemaAsync<
  * @returns An optional schema.
  */
 declare function optionalAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): OptionalSchemaAsync<TWrapped, undefined>;
+>(wrapped: TWrapped$1): OptionalSchemaAsync<TWrapped$1, undefined>;
 /**
  * Creates an optional schema.
  *
@@ -13719,15 +13932,16 @@ declare function optionalAsync<
  * @returns An optional schema.
  */
 declare function optionalAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  const TDefault extends DefaultAsync<TWrapped, undefined>,
+  const TDefault extends DefaultAsync<TWrapped$1, undefined>,
 >(
-  wrapped: TWrapped,
+  wrapped: TWrapped$1,
   default_: TDefault,
-): OptionalSchemaAsync<TWrapped, TDefault>;
-
+): OptionalSchemaAsync<TWrapped$1, TDefault>;
+//#endregion
+//#region src/schemas/picklist/picklist.d.ts
 /**
  * Picklist options type.
  */
@@ -13753,9 +13967,9 @@ interface PicklistIssue extends BaseIssue<unknown> {
  * Picklist schema interface.
  */
 interface PicklistSchema<
-  TOptions extends PicklistOptions,
+  TOptions$1 extends PicklistOptions,
   TMessage extends ErrorMessage<PicklistIssue> | undefined,
-> extends BaseSchema<TOptions[number], TOptions[number], PicklistIssue> {
+> extends BaseSchema<TOptions$1[number], TOptions$1[number], PicklistIssue> {
   /**
    * The schema type.
    */
@@ -13767,7 +13981,7 @@ interface PicklistSchema<
   /**
    * The picklist options.
    */
-  readonly options: TOptions;
+  readonly options: TOptions$1;
   /**
    * The error message.
    */
@@ -13780,9 +13994,9 @@ interface PicklistSchema<
  *
  * @returns A picklist schema.
  */
-declare function picklist<const TOptions extends PicklistOptions>(
-  options: TOptions,
-): PicklistSchema<TOptions, undefined>;
+declare function picklist<const TOptions$1 extends PicklistOptions>(
+  options: TOptions$1,
+): PicklistSchema<TOptions$1, undefined>;
 /**
  * Creates a picklist schema.
  *
@@ -13792,10 +14006,11 @@ declare function picklist<const TOptions extends PicklistOptions>(
  * @returns A picklist schema.
  */
 declare function picklist<
-  const TOptions extends PicklistOptions,
+  const TOptions$1 extends PicklistOptions,
   const TMessage extends ErrorMessage<PicklistIssue> | undefined,
->(options: TOptions, message: TMessage): PicklistSchema<TOptions, TMessage>;
-
+>(options: TOptions$1, message: TMessage): PicklistSchema<TOptions$1, TMessage>;
+//#endregion
+//#region src/schemas/promise/promise.d.ts
 /**
  * Promise issue interface.
  */
@@ -13851,7 +14066,8 @@ declare function promise(): PromiseSchema<undefined>;
 declare function promise<
   const TMessage extends ErrorMessage<PromiseIssue> | undefined,
 >(message: TMessage): PromiseSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/record/types.d.ts
 /**
  * Record issue interface.
  */
@@ -13872,11 +14088,11 @@ interface RecordIssue extends BaseIssue<unknown> {
 /**
  * Is literal type.
  */
-type IsLiteral<TKey extends string | number | symbol> = string extends TKey
+type IsLiteral<TKey$1 extends string | number | symbol> = string extends TKey$1
   ? false
-  : number extends TKey ? false
-  : symbol extends TKey ? false
-  : TKey extends Brand<string | number | symbol> ? false
+  : number extends TKey$1 ? false
+  : symbol extends TKey$1 ? false
+  : TKey$1 extends Brand<string | number | symbol> ? false
   : true;
 /**
  * Optional keys type.
@@ -13903,11 +14119,11 @@ type WithQuestionMarks<
  * With readonly type.
  */
 type WithReadonly<
-  TValue extends
+  TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   TObject extends WithQuestionMarks<Record<string | number | symbol, unknown>>,
-> = TValue extends
+> = TValue$1 extends
   SchemaWithPipe<infer TPipe> | SchemaWithPipeAsync<infer TPipe>
   ? ReadonlyAction<any> extends TPipe[number] ? Readonly<TObject> : TObject
   : TObject;
@@ -13915,42 +14131,49 @@ type WithReadonly<
  * Infer record input type.
  */
 type InferRecordInput<
-  TKey extends
+  TKey$1 extends
     | BaseSchema<string, string | number | symbol, BaseIssue<unknown>>
     | BaseSchemaAsync<string, string | number | symbol, BaseIssue<unknown>>,
-  TValue extends
+  TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = Prettify<WithQuestionMarks<Record<InferInput<TKey>, InferInput<TValue>>>>;
+> = Prettify<
+  WithQuestionMarks<Record<InferInput<TKey$1>, InferInput<TValue$1>>>
+>;
 /**
  * Infer record output type.
  */
 type InferRecordOutput<
-  TKey extends
+  TKey$1 extends
     | BaseSchema<string, string | number | symbol, BaseIssue<unknown>>
     | BaseSchemaAsync<string, string | number | symbol, BaseIssue<unknown>>,
-  TValue extends
+  TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 > = Prettify<
   WithReadonly<
-    TValue,
-    WithQuestionMarks<Record<InferOutput<TKey>, InferOutput<TValue>>>
+    TValue$1,
+    WithQuestionMarks<Record<InferOutput<TKey$1>, InferOutput<TValue$1>>>
   >
 >;
-
+//#endregion
+//#region src/schemas/record/record.d.ts
 /**
  * Record schema interface.
  */
 interface RecordSchema<
-  TKey extends BaseSchema<string, string | number | symbol, BaseIssue<unknown>>,
-  TValue extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TKey$1 extends BaseSchema<
+    string,
+    string | number | symbol,
+    BaseIssue<unknown>
+  >,
+  TValue$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<RecordIssue> | undefined,
 > extends
   BaseSchema<
-    InferRecordInput<TKey, TValue>,
-    InferRecordOutput<TKey, TValue>,
-    RecordIssue | InferIssue<TKey> | InferIssue<TValue>
+    InferRecordInput<TKey$1, TValue$1>,
+    InferRecordOutput<TKey$1, TValue$1>,
+    RecordIssue | InferIssue<TKey$1> | InferIssue<TValue$1>
   > {
   /**
    * The schema type.
@@ -13967,11 +14190,11 @@ interface RecordSchema<
   /**
    * The record key schema.
    */
-  readonly key: TKey;
+  readonly key: TKey$1;
   /**
    * The record value schema.
    */
-  readonly value: TValue;
+  readonly value: TValue$1;
   /**
    * The error message.
    */
@@ -13986,13 +14209,13 @@ interface RecordSchema<
  * @returns A record schema.
  */
 declare function record<
-  const TKey extends BaseSchema<
+  const TKey$1 extends BaseSchema<
     string,
     string | number | symbol,
     BaseIssue<unknown>
   >,
-  const TValue extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(key: TKey, value: TValue): RecordSchema<TKey, TValue, undefined>;
+  const TValue$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(key: TKey$1, value: TValue$1): RecordSchema<TKey$1, TValue$1, undefined>;
 /**
  * Creates a record schema.
  *
@@ -14003,35 +14226,36 @@ declare function record<
  * @returns A record schema.
  */
 declare function record<
-  const TKey extends BaseSchema<
+  const TKey$1 extends BaseSchema<
     string,
     string | number | symbol,
     BaseIssue<unknown>
   >,
-  const TValue extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TValue$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<RecordIssue> | undefined,
 >(
-  key: TKey,
-  value: TValue,
+  key: TKey$1,
+  value: TValue$1,
   message: TMessage,
-): RecordSchema<TKey, TValue, TMessage>;
-
+): RecordSchema<TKey$1, TValue$1, TMessage>;
+//#endregion
+//#region src/schemas/record/recordAsync.d.ts
 /**
  * Record schema async interface.
  */
 interface RecordSchemaAsync<
-  TKey extends
+  TKey$1 extends
     | BaseSchema<string, string | number | symbol, BaseIssue<unknown>>
     | BaseSchemaAsync<string, string | number | symbol, BaseIssue<unknown>>,
-  TValue extends
+  TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<RecordIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferRecordInput<TKey, TValue>,
-    InferRecordOutput<TKey, TValue>,
-    RecordIssue | InferIssue<TKey> | InferIssue<TValue>
+    InferRecordInput<TKey$1, TValue$1>,
+    InferRecordOutput<TKey$1, TValue$1>,
+    RecordIssue | InferIssue<TKey$1> | InferIssue<TValue$1>
   > {
   /**
    * The schema type.
@@ -14048,11 +14272,11 @@ interface RecordSchemaAsync<
   /**
    * The record key schema.
    */
-  readonly key: TKey;
+  readonly key: TKey$1;
   /**
    * The record value schema.
    */
-  readonly value: TValue;
+  readonly value: TValue$1;
   /**
    * The error message.
    */
@@ -14067,13 +14291,13 @@ interface RecordSchemaAsync<
  * @returns A record schema.
  */
 declare function recordAsync<
-  const TKey extends
+  const TKey$1 extends
     | BaseSchema<string, string | number | symbol, BaseIssue<unknown>>
     | BaseSchemaAsync<string, string | number | symbol, BaseIssue<unknown>>,
-  const TValue extends
+  const TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(key: TKey, value: TValue): RecordSchemaAsync<TKey, TValue, undefined>;
+>(key: TKey$1, value: TValue$1): RecordSchemaAsync<TKey$1, TValue$1, undefined>;
 /**
  * Creates a record schema.
  *
@@ -14084,19 +14308,20 @@ declare function recordAsync<
  * @returns A record schema.
  */
 declare function recordAsync<
-  const TKey extends
+  const TKey$1 extends
     | BaseSchema<string, string | number | symbol, BaseIssue<unknown>>
     | BaseSchemaAsync<string, string | number | symbol, BaseIssue<unknown>>,
-  const TValue extends
+  const TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<RecordIssue> | undefined,
 >(
-  key: TKey,
-  value: TValue,
+  key: TKey$1,
+  value: TValue$1,
   message: TMessage,
-): RecordSchemaAsync<TKey, TValue, TMessage>;
-
+): RecordSchemaAsync<TKey$1, TValue$1, TMessage>;
+//#endregion
+//#region src/schemas/set/types.d.ts
 /**
  * Set issue interface.
  */
@@ -14118,30 +14343,31 @@ interface SetIssue extends BaseIssue<unknown> {
  * Infer set input type.
  */
 type InferSetInput<
-  TValue extends
+  TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = Set<InferInput<TValue>>;
+> = Set<InferInput<TValue$1>>;
 /**
  * Infer set output type.
  */
 type InferSetOutput<
-  TValue extends
+  TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-> = Set<InferOutput<TValue>>;
-
+> = Set<InferOutput<TValue$1>>;
+//#endregion
+//#region src/schemas/set/set.d.ts
 /**
  * Set schema interface.
  */
 interface SetSchema<
-  TValue extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TValue$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<SetIssue> | undefined,
 > extends
   BaseSchema<
-    InferSetInput<TValue>,
-    InferSetOutput<TValue>,
-    SetIssue | InferIssue<TValue>
+    InferSetInput<TValue$1>,
+    InferSetOutput<TValue$1>,
+    SetIssue | InferIssue<TValue$1>
   > {
   /**
    * The schema type.
@@ -14158,7 +14384,7 @@ interface SetSchema<
   /**
    * The set value schema.
    */
-  readonly value: TValue;
+  readonly value: TValue$1;
   /**
    * The error message.
    */
@@ -14172,8 +14398,8 @@ interface SetSchema<
  * @returns A set schema.
  */
 declare function set<
-  const TValue extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(value: TValue): SetSchema<TValue, undefined>;
+  const TValue$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(value: TValue$1): SetSchema<TValue$1, undefined>;
 /**
  * Creates a set schema.
  *
@@ -14183,23 +14409,24 @@ declare function set<
  * @returns A set schema.
  */
 declare function set<
-  const TValue extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TValue$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<SetIssue> | undefined,
->(value: TValue, message: TMessage): SetSchema<TValue, TMessage>;
-
+>(value: TValue$1, message: TMessage): SetSchema<TValue$1, TMessage>;
+//#endregion
+//#region src/schemas/set/setAsync.d.ts
 /**
  * Set schema async interface.
  */
 interface SetSchemaAsync<
-  TValue extends
+  TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<SetIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferSetInput<TValue>,
-    InferSetOutput<TValue>,
-    SetIssue | InferIssue<TValue>
+    InferSetInput<TValue$1>,
+    InferSetOutput<TValue$1>,
+    SetIssue | InferIssue<TValue$1>
   > {
   /**
    * The schema type.
@@ -14216,7 +14443,7 @@ interface SetSchemaAsync<
   /**
    * The set value schema.
    */
-  readonly value: TValue;
+  readonly value: TValue$1;
   /**
    * The error message.
    */
@@ -14230,10 +14457,10 @@ interface SetSchemaAsync<
  * @returns A set schema.
  */
 declare function setAsync<
-  const TValue extends
+  const TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(value: TValue): SetSchemaAsync<TValue, undefined>;
+>(value: TValue$1): SetSchemaAsync<TValue$1, undefined>;
 /**
  * Creates a set schema.
  *
@@ -14243,12 +14470,13 @@ declare function setAsync<
  * @returns A set schema.
  */
 declare function setAsync<
-  const TValue extends
+  const TValue$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<SetIssue> | undefined,
->(value: TValue, message: TMessage): SetSchemaAsync<TValue, TMessage>;
-
+>(value: TValue$1, message: TMessage): SetSchemaAsync<TValue$1, TMessage>;
+//#endregion
+//#region src/schemas/strictObject/types.d.ts
 /**
  * Strict object issue interface.
  */
@@ -14266,18 +14494,19 @@ interface StrictObjectIssue extends BaseIssue<unknown> {
    */
   readonly expected: "Object" | `"${string}"` | "never";
 }
-
+//#endregion
+//#region src/schemas/strictObject/strictObject.d.ts
 /**
  * Strict object schema interface.
  */
 interface StrictObjectSchema<
-  TEntries extends ObjectEntries,
+  TEntries$1 extends ObjectEntries,
   TMessage extends ErrorMessage<StrictObjectIssue> | undefined,
 > extends
   BaseSchema<
-    InferObjectInput<TEntries>,
-    InferObjectOutput<TEntries>,
-    StrictObjectIssue | InferObjectIssue<TEntries>
+    InferObjectInput<TEntries$1>,
+    InferObjectOutput<TEntries$1>,
+    StrictObjectIssue | InferObjectIssue<TEntries$1>
   > {
   /**
    * The schema type.
@@ -14294,7 +14523,7 @@ interface StrictObjectSchema<
   /**
    * The entries schema.
    */
-  readonly entries: TEntries;
+  readonly entries: TEntries$1;
   /**
    * The error message.
    */
@@ -14307,9 +14536,9 @@ interface StrictObjectSchema<
  *
  * @returns A strict object schema.
  */
-declare function strictObject<const TEntries extends ObjectEntries>(
-  entries: TEntries,
-): StrictObjectSchema<TEntries, undefined>;
+declare function strictObject<const TEntries$1 extends ObjectEntries>(
+  entries: TEntries$1,
+): StrictObjectSchema<TEntries$1, undefined>;
 /**
  * Creates a strict object schema.
  *
@@ -14319,21 +14548,25 @@ declare function strictObject<const TEntries extends ObjectEntries>(
  * @returns A strict object schema.
  */
 declare function strictObject<
-  const TEntries extends ObjectEntries,
+  const TEntries$1 extends ObjectEntries,
   const TMessage extends ErrorMessage<StrictObjectIssue> | undefined,
->(entries: TEntries, message: TMessage): StrictObjectSchema<TEntries, TMessage>;
-
+>(
+  entries: TEntries$1,
+  message: TMessage,
+): StrictObjectSchema<TEntries$1, TMessage>;
+//#endregion
+//#region src/schemas/strictObject/strictObjectAsync.d.ts
 /**
  * Strict object schema async interface.
  */
 interface StrictObjectSchemaAsync<
-  TEntries extends ObjectEntriesAsync,
+  TEntries$1 extends ObjectEntriesAsync,
   TMessage extends ErrorMessage<StrictObjectIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferObjectInput<TEntries>,
-    InferObjectOutput<TEntries>,
-    StrictObjectIssue | InferObjectIssue<TEntries>
+    InferObjectInput<TEntries$1>,
+    InferObjectOutput<TEntries$1>,
+    StrictObjectIssue | InferObjectIssue<TEntries$1>
   > {
   /**
    * The schema type.
@@ -14350,7 +14583,7 @@ interface StrictObjectSchemaAsync<
   /**
    * The entries schema.
    */
-  readonly entries: TEntries;
+  readonly entries: TEntries$1;
   /**
    * The error message.
    */
@@ -14363,9 +14596,9 @@ interface StrictObjectSchemaAsync<
  *
  * @returns A strict object schema.
  */
-declare function strictObjectAsync<const TEntries extends ObjectEntriesAsync>(
-  entries: TEntries,
-): StrictObjectSchemaAsync<TEntries, undefined>;
+declare function strictObjectAsync<const TEntries$1 extends ObjectEntriesAsync>(
+  entries: TEntries$1,
+): StrictObjectSchemaAsync<TEntries$1, undefined>;
 /**
  * Creates a strict object schema.
  *
@@ -14375,13 +14608,14 @@ declare function strictObjectAsync<const TEntries extends ObjectEntriesAsync>(
  * @returns A strict object schema.
  */
 declare function strictObjectAsync<
-  const TEntries extends ObjectEntriesAsync,
+  const TEntries$1 extends ObjectEntriesAsync,
   const TMessage extends ErrorMessage<StrictObjectIssue> | undefined,
 >(
-  entries: TEntries,
+  entries: TEntries$1,
   message: TMessage,
-): StrictObjectSchemaAsync<TEntries, TMessage>;
-
+): StrictObjectSchemaAsync<TEntries$1, TMessage>;
+//#endregion
+//#region src/schemas/strictTuple/types.d.ts
 /**
  * Strict tuple issue interface.
  */
@@ -14399,18 +14633,19 @@ interface StrictTupleIssue extends BaseIssue<unknown> {
    */
   readonly expected: "Array" | "never";
 }
-
+//#endregion
+//#region src/schemas/strictTuple/strictTuple.d.ts
 /**
  * Strict tuple schema interface.
  */
 interface StrictTupleSchema<
-  TItems extends TupleItems,
+  TItems$1 extends TupleItems,
   TMessage extends ErrorMessage<StrictTupleIssue> | undefined,
 > extends
   BaseSchema<
-    InferTupleInput<TItems>,
-    InferTupleOutput<TItems>,
-    StrictTupleIssue | InferTupleIssue<TItems>
+    InferTupleInput<TItems$1>,
+    InferTupleOutput<TItems$1>,
+    StrictTupleIssue | InferTupleIssue<TItems$1>
   > {
   /**
    * The schema type.
@@ -14427,7 +14662,7 @@ interface StrictTupleSchema<
   /**
    * The items schema.
    */
-  readonly items: TItems;
+  readonly items: TItems$1;
   /**
    * The error message.
    */
@@ -14440,9 +14675,9 @@ interface StrictTupleSchema<
  *
  * @returns A strict tuple schema.
  */
-declare function strictTuple<const TItems extends TupleItems>(
-  items: TItems,
-): StrictTupleSchema<TItems, undefined>;
+declare function strictTuple<const TItems$1 extends TupleItems>(
+  items: TItems$1,
+): StrictTupleSchema<TItems$1, undefined>;
 /**
  * Creates a strict tuple schema.
  *
@@ -14452,21 +14687,22 @@ declare function strictTuple<const TItems extends TupleItems>(
  * @returns A strict tuple schema.
  */
 declare function strictTuple<
-  const TItems extends TupleItems,
+  const TItems$1 extends TupleItems,
   const TMessage extends ErrorMessage<StrictTupleIssue> | undefined,
->(items: TItems, message: TMessage): StrictTupleSchema<TItems, TMessage>;
-
+>(items: TItems$1, message: TMessage): StrictTupleSchema<TItems$1, TMessage>;
+//#endregion
+//#region src/schemas/strictTuple/strictTupleAsync.d.ts
 /**
  * Strict tuple schema async interface.
  */
 interface StrictTupleSchemaAsync<
-  TItems extends TupleItemsAsync,
+  TItems$1 extends TupleItemsAsync,
   TMessage extends ErrorMessage<StrictTupleIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferTupleInput<TItems>,
-    InferTupleOutput<TItems>,
-    StrictTupleIssue | InferTupleIssue<TItems>
+    InferTupleInput<TItems$1>,
+    InferTupleOutput<TItems$1>,
+    StrictTupleIssue | InferTupleIssue<TItems$1>
   > {
   /**
    * The schema type.
@@ -14483,7 +14719,7 @@ interface StrictTupleSchemaAsync<
   /**
    * The items schema.
    */
-  readonly items: TItems;
+  readonly items: TItems$1;
   /**
    * The error message.
    */
@@ -14496,9 +14732,9 @@ interface StrictTupleSchemaAsync<
  *
  * @returns A strict tuple schema.
  */
-declare function strictTupleAsync<const TItems extends TupleItemsAsync>(
-  items: TItems,
-): StrictTupleSchemaAsync<TItems, undefined>;
+declare function strictTupleAsync<const TItems$1 extends TupleItemsAsync>(
+  items: TItems$1,
+): StrictTupleSchemaAsync<TItems$1, undefined>;
 /**
  * Creates a strict tuple schema.
  *
@@ -14508,10 +14744,14 @@ declare function strictTupleAsync<const TItems extends TupleItemsAsync>(
  * @returns A strict tuple schema.
  */
 declare function strictTupleAsync<
-  const TItems extends TupleItemsAsync,
+  const TItems$1 extends TupleItemsAsync,
   const TMessage extends ErrorMessage<StrictTupleIssue> | undefined,
->(items: TItems, message: TMessage): StrictTupleSchemaAsync<TItems, TMessage>;
-
+>(
+  items: TItems$1,
+  message: TMessage,
+): StrictTupleSchemaAsync<TItems$1, TMessage>;
+//#endregion
+//#region src/schemas/string/string.d.ts
 /**
  * String issue interface.
  */
@@ -14567,7 +14807,8 @@ declare function string(): StringSchema<undefined>;
 declare function string<
   const TMessage extends ErrorMessage<StringIssue> | undefined,
 >(message: TMessage): StringSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/symbol/symbol.d.ts
 /**
  * Symbol issue interface.
  */
@@ -14623,7 +14864,8 @@ declare function symbol(): SymbolSchema<undefined>;
 declare function symbol<
   const TMessage extends ErrorMessage<SymbolIssue> | undefined,
 >(message: TMessage): SymbolSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/tuple/types.d.ts
 /**
  * Tuple issue interface.
  */
@@ -14641,18 +14883,19 @@ interface TupleIssue extends BaseIssue<unknown> {
    */
   readonly expected: "Array";
 }
-
+//#endregion
+//#region src/schemas/tuple/tuple.d.ts
 /**
  * Tuple schema interface.
  */
 interface TupleSchema<
-  TItems extends TupleItems,
+  TItems$1 extends TupleItems,
   TMessage extends ErrorMessage<TupleIssue> | undefined,
 > extends
   BaseSchema<
-    InferTupleInput<TItems>,
-    InferTupleOutput<TItems>,
-    TupleIssue | InferTupleIssue<TItems>
+    InferTupleInput<TItems$1>,
+    InferTupleOutput<TItems$1>,
+    TupleIssue | InferTupleIssue<TItems$1>
   > {
   /**
    * The schema type.
@@ -14669,7 +14912,7 @@ interface TupleSchema<
   /**
    * The items schema.
    */
-  readonly items: TItems;
+  readonly items: TItems$1;
   /**
    * The error message.
    */
@@ -14687,9 +14930,9 @@ interface TupleSchema<
  *
  * @returns A tuple schema.
  */
-declare function tuple<const TItems extends TupleItems>(
-  items: TItems,
-): TupleSchema<TItems, undefined>;
+declare function tuple<const TItems$1 extends TupleItems>(
+  items: TItems$1,
+): TupleSchema<TItems$1, undefined>;
 /**
  * Creates a tuple schema.
  *
@@ -14704,21 +14947,22 @@ declare function tuple<const TItems extends TupleItems>(
  * @returns A tuple schema.
  */
 declare function tuple<
-  const TItems extends TupleItems,
+  const TItems$1 extends TupleItems,
   const TMessage extends ErrorMessage<TupleIssue> | undefined,
->(items: TItems, message: TMessage): TupleSchema<TItems, TMessage>;
-
+>(items: TItems$1, message: TMessage): TupleSchema<TItems$1, TMessage>;
+//#endregion
+//#region src/schemas/tuple/tupleAsync.d.ts
 /**
  * Tuple schema async interface.
  */
 interface TupleSchemaAsync<
-  TItems extends TupleItemsAsync,
+  TItems$1 extends TupleItemsAsync,
   TMessage extends ErrorMessage<TupleIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferTupleInput<TItems>,
-    InferTupleOutput<TItems>,
-    TupleIssue | InferTupleIssue<TItems>
+    InferTupleInput<TItems$1>,
+    InferTupleOutput<TItems$1>,
+    TupleIssue | InferTupleIssue<TItems$1>
   > {
   /**
    * The schema type.
@@ -14735,7 +14979,7 @@ interface TupleSchemaAsync<
   /**
    * The items schema.
    */
-  readonly items: TItems;
+  readonly items: TItems$1;
   /**
    * The error message.
    */
@@ -14753,9 +14997,9 @@ interface TupleSchemaAsync<
  *
  * @returns A tuple schema.
  */
-declare function tupleAsync<const TItems extends TupleItemsAsync>(
-  items: TItems,
-): TupleSchemaAsync<TItems, undefined>;
+declare function tupleAsync<const TItems$1 extends TupleItemsAsync>(
+  items: TItems$1,
+): TupleSchemaAsync<TItems$1, undefined>;
 /**
  * Creates a tuple schema.
  *
@@ -14770,10 +15014,11 @@ declare function tupleAsync<const TItems extends TupleItemsAsync>(
  * @returns A tuple schema.
  */
 declare function tupleAsync<
-  const TItems extends TupleItemsAsync,
+  const TItems$1 extends TupleItemsAsync,
   const TMessage extends ErrorMessage<TupleIssue> | undefined,
->(items: TItems, message: TMessage): TupleSchemaAsync<TItems, TMessage>;
-
+>(items: TItems$1, message: TMessage): TupleSchemaAsync<TItems$1, TMessage>;
+//#endregion
+//#region src/schemas/tupleWithRest/types.d.ts
 /**
  * Tuple with rest issue interface.
  */
@@ -14791,22 +15036,21 @@ interface TupleWithRestIssue extends BaseIssue<unknown> {
    */
   readonly expected: "Array";
 }
-
+//#endregion
+//#region src/schemas/tupleWithRest/tupleWithRest.d.ts
 /**
  * Tuple with rest schema interface.
  */
 interface TupleWithRestSchema<
-  TItems extends TupleItems,
-  TRest extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TItems$1 extends TupleItems,
+  TRest$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<TupleWithRestIssue> | undefined,
 > extends
-  BaseSchema<[
-    ...InferTupleInput<TItems>,
-    ...InferInput<TRest>[],
-  ], [
-    ...InferTupleOutput<TItems>,
-    ...InferOutput<TRest>[],
-  ], TupleWithRestIssue | InferTupleIssue<TItems> | InferIssue<TRest>> {
+  BaseSchema<
+    [...InferTupleInput<TItems$1>, ...InferInput<TRest$1>[]],
+    [...InferTupleOutput<TItems$1>, ...InferOutput<TRest$1>[]],
+    TupleWithRestIssue | InferTupleIssue<TItems$1> | InferIssue<TRest$1>
+  > {
   /**
    * The schema type.
    */
@@ -14822,11 +15066,11 @@ interface TupleWithRestSchema<
   /**
    * The items schema.
    */
-  readonly items: TItems;
+  readonly items: TItems$1;
   /**
    * The rest schema.
    */
-  readonly rest: TRest;
+  readonly rest: TRest$1;
   /**
    * The error message.
    */
@@ -14841,9 +15085,12 @@ interface TupleWithRestSchema<
  * @returns A tuple with rest schema.
  */
 declare function tupleWithRest<
-  const TItems extends TupleItems,
-  const TRest extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(items: TItems, rest: TRest): TupleWithRestSchema<TItems, TRest, undefined>;
+  const TItems$1 extends TupleItems,
+  const TRest$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(
+  items: TItems$1,
+  rest: TRest$1,
+): TupleWithRestSchema<TItems$1, TRest$1, undefined>;
 /**
  * Creates a tuple with rest schema.
  *
@@ -14854,32 +15101,31 @@ declare function tupleWithRest<
  * @returns A tuple with rest schema.
  */
 declare function tupleWithRest<
-  const TItems extends TupleItems,
-  const TRest extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TItems$1 extends TupleItems,
+  const TRest$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<TupleWithRestIssue> | undefined,
 >(
-  items: TItems,
-  rest: TRest,
+  items: TItems$1,
+  rest: TRest$1,
   message: TMessage,
-): TupleWithRestSchema<TItems, TRest, TMessage>;
-
+): TupleWithRestSchema<TItems$1, TRest$1, TMessage>;
+//#endregion
+//#region src/schemas/tupleWithRest/tupleWithRestAsync.d.ts
 /**
  * Tuple with rest schema async interface.
  */
 interface TupleWithRestSchemaAsync<
-  TItems extends TupleItemsAsync,
-  TRest extends
+  TItems$1 extends TupleItemsAsync,
+  TRest$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   TMessage extends ErrorMessage<TupleWithRestIssue> | undefined,
 > extends
-  BaseSchemaAsync<[
-    ...InferTupleInput<TItems>,
-    ...InferInput<TRest>[],
-  ], [
-    ...InferTupleOutput<TItems>,
-    ...InferOutput<TRest>[],
-  ], TupleWithRestIssue | InferTupleIssue<TItems> | InferIssue<TRest>> {
+  BaseSchemaAsync<
+    [...InferTupleInput<TItems$1>, ...InferInput<TRest$1>[]],
+    [...InferTupleOutput<TItems$1>, ...InferOutput<TRest$1>[]],
+    TupleWithRestIssue | InferTupleIssue<TItems$1> | InferIssue<TRest$1>
+  > {
   /**
    * The schema type.
    */
@@ -14895,11 +15141,11 @@ interface TupleWithRestSchemaAsync<
   /**
    * The items schema.
    */
-  readonly items: TItems;
+  readonly items: TItems$1;
   /**
    * The rest schema.
    */
-  readonly rest: TRest;
+  readonly rest: TRest$1;
   /**
    * The error message.
    */
@@ -14914,14 +15160,14 @@ interface TupleWithRestSchemaAsync<
  * @returns A tuple with rest schema.
  */
 declare function tupleWithRestAsync<
-  const TItems extends TupleItemsAsync,
-  const TRest extends
+  const TItems$1 extends TupleItemsAsync,
+  const TRest$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 >(
-  items: TItems,
-  rest: TRest,
-): TupleWithRestSchemaAsync<TItems, TRest, undefined>;
+  items: TItems$1,
+  rest: TRest$1,
+): TupleWithRestSchemaAsync<TItems$1, TRest$1, undefined>;
 /**
  * Creates a tuple with rest schema.
  *
@@ -14932,17 +15178,18 @@ declare function tupleWithRestAsync<
  * @returns A tuple with rest schema.
  */
 declare function tupleWithRestAsync<
-  const TItems extends TupleItemsAsync,
-  const TRest extends
+  const TItems$1 extends TupleItemsAsync,
+  const TRest$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
   const TMessage extends ErrorMessage<TupleWithRestIssue> | undefined,
 >(
-  items: TItems,
-  rest: TRest,
+  items: TItems$1,
+  rest: TRest$1,
   message: TMessage,
-): TupleWithRestSchemaAsync<TItems, TRest, TMessage>;
-
+): TupleWithRestSchemaAsync<TItems$1, TRest$1, TMessage>;
+//#endregion
+//#region src/schemas/undefined/undefined.d.ts
 /**
  * Undefined issue interface.
  */
@@ -14999,29 +15246,31 @@ declare function undefined_(): UndefinedSchema<undefined>;
 declare function undefined_<
   const TMessage extends ErrorMessage<UndefinedIssue> | undefined,
 >(message: TMessage): UndefinedSchema<TMessage>;
-
+//#endregion
+//#region src/schemas/undefinedable/types.d.ts
 /**
  * Infer undefinedable output type.
  */
 type InferUndefinedableOutput<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends DefaultAsync<TWrapped, undefined>,
-> = undefined extends TDefault ? InferOutput<TWrapped> | undefined
-  : InferOutput<TWrapped> | Extract<DefaultValue<TDefault>, undefined>;
-
+  TDefault extends DefaultAsync<TWrapped$1, undefined>,
+> = undefined extends TDefault ? InferOutput<TWrapped$1> | undefined
+  : InferOutput<TWrapped$1> | Extract<DefaultValue<TDefault>, undefined>;
+//#endregion
+//#region src/schemas/undefinedable/undefinedable.d.ts
 /**
  * Undefinedable schema interface.
  */
 interface UndefinedableSchema<
-  TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends Default<TWrapped, undefined>,
+  TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  TDefault extends Default<TWrapped$1, undefined>,
 > extends
   BaseSchema<
-    InferInput<TWrapped> | undefined,
-    InferUndefinedableOutput<TWrapped, TDefault>,
-    InferIssue<TWrapped>
+    InferInput<TWrapped$1> | undefined,
+    InferUndefinedableOutput<TWrapped$1, TDefault>,
+    InferIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -15034,11 +15283,11 @@ interface UndefinedableSchema<
   /**
    * The expected property.
    */
-  readonly expects: `(${TWrapped["expects"]} | undefined)`;
+  readonly expects: `(${TWrapped$1["expects"]} | undefined)`;
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The default value.
    */
@@ -15052,8 +15301,8 @@ interface UndefinedableSchema<
  * @returns An undefinedable schema.
  */
 declare function undefinedable<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): UndefinedableSchema<TWrapped, undefined>;
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+>(wrapped: TWrapped$1): UndefinedableSchema<TWrapped$1, undefined>;
 /**
  * Creates an undefinedable schema.
  *
@@ -15063,26 +15312,27 @@ declare function undefinedable<
  * @returns An undefinedable schema.
  */
 declare function undefinedable<
-  const TWrapped extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-  const TDefault extends Default<TWrapped, undefined>,
+  const TWrapped$1 extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
+  const TDefault extends Default<TWrapped$1, undefined>,
 >(
-  wrapped: TWrapped,
+  wrapped: TWrapped$1,
   default_: TDefault,
-): UndefinedableSchema<TWrapped, TDefault>;
-
+): UndefinedableSchema<TWrapped$1, TDefault>;
+//#endregion
+//#region src/schemas/undefinedable/undefinedableAsync.d.ts
 /**
  * Undefinedable schema async interface.
  */
 interface UndefinedableSchemaAsync<
-  TWrapped extends
+  TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  TDefault extends DefaultAsync<TWrapped, undefined>,
+  TDefault extends DefaultAsync<TWrapped$1, undefined>,
 > extends
   BaseSchemaAsync<
-    InferInput<TWrapped> | undefined,
-    InferUndefinedableOutput<TWrapped, TDefault>,
-    InferIssue<TWrapped>
+    InferInput<TWrapped$1> | undefined,
+    InferUndefinedableOutput<TWrapped$1, TDefault>,
+    InferIssue<TWrapped$1>
   > {
   /**
    * The schema type.
@@ -15095,11 +15345,11 @@ interface UndefinedableSchemaAsync<
   /**
    * The expected property.
    */
-  readonly expects: `(${TWrapped["expects"]} | undefined)`;
+  readonly expects: `(${TWrapped$1["expects"]} | undefined)`;
   /**
    * The wrapped schema.
    */
-  readonly wrapped: TWrapped;
+  readonly wrapped: TWrapped$1;
   /**
    * The default value.
    */
@@ -15113,10 +15363,10 @@ interface UndefinedableSchemaAsync<
  * @returns An undefinedable schema.
  */
 declare function undefinedableAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(wrapped: TWrapped): UndefinedableSchemaAsync<TWrapped, undefined>;
+>(wrapped: TWrapped$1): UndefinedableSchemaAsync<TWrapped$1, undefined>;
 /**
  * Creates an undefinedable schema.
  *
@@ -15126,15 +15376,16 @@ declare function undefinedableAsync<
  * @returns An undefinedable schema.
  */
 declare function undefinedableAsync<
-  const TWrapped extends
+  const TWrapped$1 extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
-  const TDefault extends DefaultAsync<TWrapped, undefined>,
+  const TDefault extends DefaultAsync<TWrapped$1, undefined>,
 >(
-  wrapped: TWrapped,
+  wrapped: TWrapped$1,
   default_: TDefault,
-): UndefinedableSchemaAsync<TWrapped, TDefault>;
-
+): UndefinedableSchemaAsync<TWrapped$1, TDefault>;
+//#endregion
+//#region src/schemas/unknown/unknown.d.ts
 /**
  * Unknown schema interface.
  */
@@ -15158,19 +15409,20 @@ interface UnknownSchema extends BaseSchema<unknown, unknown, never> {
  * @returns A unknown schema.
  */
 declare function unknown(): UnknownSchema;
-
+//#endregion
+//#region src/schemas/variant/variant.d.ts
 /**
  * Variant schema interface.
  */
 interface VariantSchema<
-  TKey extends string,
-  TOptions extends VariantOptions<TKey>,
+  TKey$1 extends string,
+  TOptions$1 extends VariantOptions<TKey$1>,
   TMessage extends ErrorMessage<VariantIssue> | undefined,
 > extends
   BaseSchema<
-    InferInput<TOptions[number]>,
-    InferOutput<TOptions[number]>,
-    VariantIssue | InferVariantIssue<TOptions>
+    InferInput<TOptions$1[number]>,
+    InferOutput<TOptions$1[number]>,
+    VariantIssue | InferVariantIssue<TOptions$1>
   > {
   /**
    * The schema type.
@@ -15187,11 +15439,11 @@ interface VariantSchema<
   /**
    * The discriminator key.
    */
-  readonly key: TKey;
+  readonly key: TKey$1;
   /**
    * The variant options.
    */
-  readonly options: TOptions;
+  readonly options: TOptions$1;
   /**
    * The error message.
    */
@@ -15206,9 +15458,12 @@ interface VariantSchema<
  * @returns A variant schema.
  */
 declare function variant<
-  const TKey extends string,
-  const TOptions extends VariantOptions<TKey>,
->(key: TKey, options: TOptions): VariantSchema<TKey, TOptions, undefined>;
+  const TKey$1 extends string,
+  const TOptions$1 extends VariantOptions<TKey$1>,
+>(
+  key: TKey$1,
+  options: TOptions$1,
+): VariantSchema<TKey$1, TOptions$1, undefined>;
 /**
  * Creates a variant schema.
  *
@@ -15219,27 +15474,28 @@ declare function variant<
  * @returns An variant schema.
  */
 declare function variant<
-  const TKey extends string,
-  const TOptions extends VariantOptions<TKey>,
+  const TKey$1 extends string,
+  const TOptions$1 extends VariantOptions<TKey$1>,
   const TMessage extends ErrorMessage<VariantIssue> | undefined,
 >(
-  key: TKey,
-  options: TOptions,
+  key: TKey$1,
+  options: TOptions$1,
   message: TMessage,
-): VariantSchema<TKey, TOptions, TMessage>;
-
+): VariantSchema<TKey$1, TOptions$1, TMessage>;
+//#endregion
+//#region src/schemas/variant/variantAsync.d.ts
 /**
  * Variant schema async interface.
  */
 interface VariantSchemaAsync<
-  TKey extends string,
-  TOptions extends VariantOptionsAsync<TKey>,
+  TKey$1 extends string,
+  TOptions$1 extends VariantOptionsAsync<TKey$1>,
   TMessage extends ErrorMessage<VariantIssue> | undefined,
 > extends
   BaseSchemaAsync<
-    InferInput<TOptions[number]>,
-    InferOutput<TOptions[number]>,
-    VariantIssue | InferVariantIssue<TOptions>
+    InferInput<TOptions$1[number]>,
+    InferOutput<TOptions$1[number]>,
+    VariantIssue | InferVariantIssue<TOptions$1>
   > {
   /**
    * The schema type.
@@ -15256,11 +15512,11 @@ interface VariantSchemaAsync<
   /**
    * The discriminator key.
    */
-  readonly key: TKey;
+  readonly key: TKey$1;
   /**
    * The variant options.
    */
-  readonly options: TOptions;
+  readonly options: TOptions$1;
   /**
    * The error message.
    */
@@ -15275,9 +15531,12 @@ interface VariantSchemaAsync<
  * @returns A variant schema.
  */
 declare function variantAsync<
-  const TKey extends string,
-  const TOptions extends VariantOptionsAsync<TKey>,
->(key: TKey, options: TOptions): VariantSchemaAsync<TKey, TOptions, undefined>;
+  const TKey$1 extends string,
+  const TOptions$1 extends VariantOptionsAsync<TKey$1>,
+>(
+  key: TKey$1,
+  options: TOptions$1,
+): VariantSchemaAsync<TKey$1, TOptions$1, undefined>;
 /**
  * Creates a variant schema.
  *
@@ -15288,15 +15547,16 @@ declare function variantAsync<
  * @returns An variant schema.
  */
 declare function variantAsync<
-  const TKey extends string,
-  const TOptions extends VariantOptionsAsync<TKey>,
+  const TKey$1 extends string,
+  const TOptions$1 extends VariantOptionsAsync<TKey$1>,
   const TMessage extends ErrorMessage<VariantIssue> | undefined,
 >(
-  key: TKey,
-  options: TOptions,
+  key: TKey$1,
+  options: TOptions$1,
   message: TMessage,
-): VariantSchemaAsync<TKey, TOptions, TMessage>;
-
+): VariantSchemaAsync<TKey$1, TOptions$1, TMessage>;
+//#endregion
+//#region src/schemas/variant/types.d.ts
 /**
  * Variant issue interface.
  */
@@ -15317,40 +15577,40 @@ interface VariantIssue extends BaseIssue<unknown> {
 /**
  * Variant option schema interface.
  */
-interface VariantOptionSchema<TKey extends string>
+interface VariantOptionSchema<TKey$1 extends string>
   extends BaseSchema<unknown, unknown, VariantIssue | BaseIssue<unknown>> {
   readonly type: "variant";
   readonly reference: typeof variant;
   readonly key: string;
-  readonly options: VariantOptions<TKey>;
+  readonly options: VariantOptions<TKey$1>;
   readonly message: ErrorMessage<VariantIssue> | undefined;
 }
 /**
  * Variant option schema async interface.
  */
-interface VariantOptionSchemaAsync<TKey extends string>
+interface VariantOptionSchemaAsync<TKey$1 extends string>
   extends BaseSchemaAsync<unknown, unknown, VariantIssue | BaseIssue<unknown>> {
   readonly type: "variant";
   readonly reference: typeof variant | typeof variantAsync;
   readonly key: string;
-  readonly options: VariantOptionsAsync<TKey>;
+  readonly options: VariantOptionsAsync<TKey$1>;
   readonly message: ErrorMessage<VariantIssue> | undefined;
 }
 /**
  * Variant object entries type.
  */
-type VariantObjectEntries<TKey extends string> =
+type VariantObjectEntries<TKey$1 extends string> =
   & Record<
-    TKey,
+    TKey$1,
     BaseSchema<unknown, unknown, BaseIssue<unknown>> | OptionalEntrySchema
   >
   & ObjectEntries;
 /**
  * Variant object entries async type.
  */
-type VariantObjectEntriesAsync<TKey extends string> =
+type VariantObjectEntriesAsync<TKey$1 extends string> =
   & Record<
-    TKey,
+    TKey$1,
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>
     | OptionalEntrySchema
@@ -15360,67 +15620,70 @@ type VariantObjectEntriesAsync<TKey extends string> =
 /**
  * Variant option type.
  */
-type VariantOption<TKey extends string> =
+type VariantOption<TKey$1 extends string> =
   | LooseObjectSchema<
-    VariantObjectEntries<TKey>,
+    VariantObjectEntries<TKey$1>,
     ErrorMessage<LooseObjectIssue> | undefined
   >
   | ObjectSchema<
-    VariantObjectEntries<TKey>,
+    VariantObjectEntries<TKey$1>,
     ErrorMessage<ObjectIssue> | undefined
   >
   | ObjectWithRestSchema<
-    VariantObjectEntries<TKey>,
+    VariantObjectEntries<TKey$1>,
     BaseSchema<unknown, unknown, BaseIssue<unknown>>,
     ErrorMessage<ObjectWithRestIssue> | undefined
   >
   | StrictObjectSchema<
-    VariantObjectEntries<TKey>,
+    VariantObjectEntries<TKey$1>,
     ErrorMessage<StrictObjectIssue> | undefined
   >
-  | VariantOptionSchema<TKey>;
+  | VariantOptionSchema<TKey$1>;
 /**
  * Variant option async type.
  */
-type VariantOptionAsync<TKey extends string> =
+type VariantOptionAsync<TKey$1 extends string> =
   | LooseObjectSchemaAsync<
-    VariantObjectEntriesAsync<TKey>,
+    VariantObjectEntriesAsync<TKey$1>,
     ErrorMessage<LooseObjectIssue> | undefined
   >
   | ObjectSchemaAsync<
-    VariantObjectEntriesAsync<TKey>,
+    VariantObjectEntriesAsync<TKey$1>,
     ErrorMessage<ObjectIssue> | undefined
   >
   | ObjectWithRestSchemaAsync<
-    VariantObjectEntriesAsync<TKey>,
+    VariantObjectEntriesAsync<TKey$1>,
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
     ErrorMessage<ObjectWithRestIssue> | undefined
   >
   | StrictObjectSchemaAsync<
-    VariantObjectEntriesAsync<TKey>,
+    VariantObjectEntriesAsync<TKey$1>,
     ErrorMessage<StrictObjectIssue> | undefined
   >
-  | VariantOptionSchemaAsync<TKey>;
+  | VariantOptionSchemaAsync<TKey$1>;
 /**
  * Variant options type.
  */
-type VariantOptions<TKey extends string> = MaybeReadonly<VariantOption<TKey>[]>;
+type VariantOptions<TKey$1 extends string> = MaybeReadonly<
+  VariantOption<TKey$1>[]
+>;
 /**
  * Variant options async type.
  */
-type VariantOptionsAsync<TKey extends string> = MaybeReadonly<
-  (VariantOption<TKey> | VariantOptionAsync<TKey>)[]
+type VariantOptionsAsync<TKey$1 extends string> = MaybeReadonly<
+  (VariantOption<TKey$1> | VariantOptionAsync<TKey$1>)[]
 >;
 /**
  * Infer variant issue type.
  */
 type InferVariantIssue<
-  TOptions extends VariantOptions<string> | VariantOptionsAsync<string>,
-> = Exclude<InferIssue<TOptions[number]>, {
+  TOptions$1 extends VariantOptions<string> | VariantOptionsAsync<string>,
+> = Exclude<InferIssue<TOptions$1[number]>, {
   type: "loose_object" | "object" | "object_with_rest";
 }>;
-
+//#endregion
+//#region src/schemas/void/void.d.ts
 /**
  * Void issue interface.
  */
@@ -15476,7 +15739,8 @@ declare function void_(): VoidSchema<undefined>;
 declare function void_<
   const TMessage extends ErrorMessage<VoidIssue> | undefined,
 >(message: TMessage): VoidSchema<TMessage>;
-
+//#endregion
+//#region src/actions/args/args.d.ts
 /**
  * Schema type.
  */
@@ -15493,12 +15757,12 @@ type Schema$3 =
  * Args action type.
  */
 interface ArgsAction<
-  TInput extends (...args: any[]) => unknown,
+  TInput$1 extends (...args: any[]) => unknown,
   TSchema extends Schema$3,
 > extends
   BaseTransformation<
-    TInput,
-    (...args: InferInput<TSchema>) => ReturnType<TInput>,
+    TInput$1,
+    (...args: InferInput<TSchema>) => ReturnType<TInput$1>,
     never
   > {
   /**
@@ -15522,10 +15786,11 @@ interface ArgsAction<
  * @returns An args action.
  */
 declare function args<
-  TInput extends (...args: any[]) => unknown,
+  TInput$1 extends (...args: any[]) => unknown,
   TSchema extends Schema$3,
->(schema: TSchema): ArgsAction<TInput, TSchema>;
-
+>(schema: TSchema): ArgsAction<TInput$1, TSchema>;
+//#endregion
+//#region src/actions/args/argsAsync.d.ts
 /**
  * Schema type.
  */
@@ -15557,12 +15822,12 @@ type Schema$2 =
  * Args action async type.
  */
 interface ArgsActionAsync<
-  TInput extends (...args: any[]) => unknown,
+  TInput$1 extends (...args: any[]) => unknown,
   TSchema extends Schema$2,
 > extends
   BaseTransformation<
-    TInput,
-    (...args: InferInput<TSchema>) => Promise<Awaited<ReturnType<TInput>>>,
+    TInput$1,
+    (...args: InferInput<TSchema>) => Promise<Awaited<ReturnType<TInput$1>>>,
     never
   > {
   /**
@@ -15586,15 +15851,16 @@ interface ArgsActionAsync<
  * @returns An args action.
  */
 declare function argsAsync<
-  TInput extends (...args: any[]) => unknown,
+  TInput$1 extends (...args: any[]) => unknown,
   TSchema extends Schema$2,
->(schema: TSchema): ArgsActionAsync<TInput, TSchema>;
-
+>(schema: TSchema): ArgsActionAsync<TInput$1, TSchema>;
+//#endregion
+//#region src/actions/await/awaitAsync.d.ts
 /**
  * Await action async interface.
  */
-interface AwaitActionAsync<TInput extends Promise<unknown>>
-  extends BaseTransformationAsync<TInput, Awaited<TInput>, never> {
+interface AwaitActionAsync<TInput$1 extends Promise<unknown>>
+  extends BaseTransformationAsync<TInput$1, Awaited<TInput$1>, never> {
   /**
    * The action type.
    */
@@ -15610,13 +15876,14 @@ interface AwaitActionAsync<TInput extends Promise<unknown>>
  * @returns An await action.
  */
 declare function awaitAsync<
-  TInput extends Promise<unknown>,
->(): AwaitActionAsync<TInput>;
-
+  TInput$1 extends Promise<unknown>,
+>(): AwaitActionAsync<TInput$1>;
+//#endregion
+//#region src/actions/base64/base64.d.ts
 /**
  * Base64 issue interface.
  */
-interface Base64Issue<TInput extends string> extends BaseIssue<TInput> {
+interface Base64Issue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -15642,9 +15909,9 @@ interface Base64Issue<TInput extends string> extends BaseIssue<TInput> {
  * Base64 action interface.
  */
 interface Base64Action<
-  TInput extends string,
-  TMessage extends ErrorMessage<Base64Issue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, Base64Issue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<Base64Issue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, Base64Issue<TInput$1>> {
   /**
    * The action type.
    */
@@ -15671,8 +15938,8 @@ interface Base64Action<
  *
  * @returns A Base64 action.
  */
-declare function base64<TInput extends string>(): Base64Action<
-  TInput,
+declare function base64<TInput$1 extends string>(): Base64Action<
+  TInput$1,
   undefined
 >;
 /**
@@ -15683,14 +15950,15 @@ declare function base64<TInput extends string>(): Base64Action<
  * @returns A Base64 action.
  */
 declare function base64<
-  TInput extends string,
-  const TMessage extends ErrorMessage<Base64Issue<TInput>> | undefined,
->(message: TMessage): Base64Action<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<Base64Issue<TInput$1>> | undefined,
+>(message: TMessage): Base64Action<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/bic/bic.d.ts
 /**
  * BIC issue interface.
  */
-interface BicIssue<TInput extends string> extends BaseIssue<TInput> {
+interface BicIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -15716,9 +15984,9 @@ interface BicIssue<TInput extends string> extends BaseIssue<TInput> {
  * BIC action interface.
  */
 interface BicAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<BicIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, BicIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<BicIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, BicIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -15745,7 +16013,7 @@ interface BicAction<
  *
  * @returns A BIC action.
  */
-declare function bic<TInput extends string>(): BicAction<TInput, undefined>;
+declare function bic<TInput$1 extends string>(): BicAction<TInput$1, undefined>;
 /**
  * Creates a [BIC](https://en.wikipedia.org/wiki/ISO_9362) validation action.
  *
@@ -15754,10 +16022,11 @@ declare function bic<TInput extends string>(): BicAction<TInput, undefined>;
  * @returns A BIC action.
  */
 declare function bic<
-  TInput extends string,
-  const TMessage extends ErrorMessage<BicIssue<TInput>> | undefined,
->(message: TMessage): BicAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<BicIssue<TInput$1>> | undefined,
+>(message: TMessage): BicAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/brand/brand.d.ts
 /**
  * Brand symbol.
  */
@@ -15770,15 +16039,13 @@ type BrandName = string | number | symbol;
  * Brand interface.
  */
 interface Brand<TName extends BrandName> {
-  [BrandSymbol]: {
-    [TValue in TName]: TValue;
-  };
+  [BrandSymbol]: { [TValue in TName]: TValue };
 }
 /**
  * Brand action interface.
  */
-interface BrandAction<TInput, TName extends BrandName>
-  extends BaseTransformation<TInput, TInput & Brand<TName>, never> {
+interface BrandAction<TInput$1, TName extends BrandName>
+  extends BaseTransformation<TInput$1, TInput$1 & Brand<TName>, never> {
   /**
    * The action type.
    */
@@ -15799,15 +16066,16 @@ interface BrandAction<TInput, TName extends BrandName>
  *
  * @returns A brand action.
  */
-declare function brand<TInput, TName extends BrandName>(
+declare function brand<TInput$1, TName extends BrandName>(
   name: TName,
-): BrandAction<TInput, TName>;
-
+): BrandAction<TInput$1, TName>;
+//#endregion
+//#region src/actions/bytes/bytes.d.ts
 /**
  * Bytes issue interface.
  */
-interface BytesIssue<TInput extends string, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface BytesIssue<TInput$1 extends string, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -15833,10 +16101,11 @@ interface BytesIssue<TInput extends string, TRequirement extends number>
  * Bytes action interface.
  */
 interface BytesAction<
-  TInput extends string,
+  TInput$1 extends string,
   TRequirement extends number,
-  TMessage extends ErrorMessage<BytesIssue<TInput, TRequirement>> | undefined,
-> extends BaseValidation<TInput, TInput, BytesIssue<TInput, TRequirement>> {
+  TMessage extends ErrorMessage<BytesIssue<TInput$1, TRequirement>> | undefined,
+> extends
+  BaseValidation<TInput$1, TInput$1, BytesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -15866,9 +16135,9 @@ interface BytesAction<
  * @returns A bytes action.
  */
 declare function bytes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
->(requirement: TRequirement): BytesAction<TInput, TRequirement, undefined>;
+>(requirement: TRequirement): BytesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a [bytes](https://en.wikipedia.org/wiki/Byte) validation action.
  *
@@ -15878,20 +16147,21 @@ declare function bytes<
  * @returns A bytes action.
  */
 declare function bytes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<BytesIssue<TInput, TRequirement>>
+    | ErrorMessage<BytesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): BytesAction<TInput, TRequirement, TMessage>;
-
+): BytesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/check/types.d.ts
 /**
  * Check issue interface.
  */
-interface CheckIssue<TInput> extends BaseIssue<TInput> {
+interface CheckIssue<TInput$1> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -15907,16 +16177,17 @@ interface CheckIssue<TInput> extends BaseIssue<TInput> {
   /**
    * The validation function.
    */
-  readonly requirement: (input: TInput) => MaybePromise<boolean>;
+  readonly requirement: (input: TInput$1) => MaybePromise<boolean>;
 }
-
+//#endregion
+//#region src/actions/check/check.d.ts
 /**
  * Check action interface.
  */
 interface CheckAction<
-  TInput,
-  TMessage extends ErrorMessage<CheckIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, CheckIssue<TInput>> {
+  TInput$1,
+  TMessage extends ErrorMessage<CheckIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, CheckIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -15932,7 +16203,7 @@ interface CheckAction<
   /**
    * The validation function.
    */
-  readonly requirement: (input: TInput) => boolean;
+  readonly requirement: (input: TInput$1) => boolean;
   /**
    * The error message.
    */
@@ -15945,9 +16216,9 @@ interface CheckAction<
  *
  * @returns A check action.
  */
-declare function check<TInput>(
-  requirement: (input: TInput) => boolean,
-): CheckAction<TInput, undefined>;
+declare function check<TInput$1>(
+  requirement: (input: TInput$1) => boolean,
+): CheckAction<TInput$1, undefined>;
 /**
  * Creates a check validation action.
  *
@@ -15957,20 +16228,21 @@ declare function check<TInput>(
  * @returns A check action.
  */
 declare function check<
-  TInput,
-  const TMessage extends ErrorMessage<CheckIssue<TInput>> | undefined,
+  TInput$1,
+  const TMessage extends ErrorMessage<CheckIssue<TInput$1>> | undefined,
 >(
-  requirement: (input: TInput) => boolean,
+  requirement: (input: TInput$1) => boolean,
   message: TMessage,
-): CheckAction<TInput, TMessage>;
-
+): CheckAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/check/checkAsync.d.ts
 /**
  * Check action async interface.
  */
 interface CheckActionAsync<
-  TInput,
-  TMessage extends ErrorMessage<CheckIssue<TInput>> | undefined,
-> extends BaseValidationAsync<TInput, TInput, CheckIssue<TInput>> {
+  TInput$1,
+  TMessage extends ErrorMessage<CheckIssue<TInput$1>> | undefined,
+> extends BaseValidationAsync<TInput$1, TInput$1, CheckIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -15986,7 +16258,7 @@ interface CheckActionAsync<
   /**
    * The validation function.
    */
-  readonly requirement: (input: TInput) => MaybePromise<boolean>;
+  readonly requirement: (input: TInput$1) => MaybePromise<boolean>;
   /**
    * The error message.
    */
@@ -15999,9 +16271,9 @@ interface CheckActionAsync<
  *
  * @returns A check action.
  */
-declare function checkAsync<TInput>(
-  requirement: (input: TInput) => MaybePromise<boolean>,
-): CheckActionAsync<TInput, undefined>;
+declare function checkAsync<TInput$1>(
+  requirement: (input: TInput$1) => MaybePromise<boolean>,
+): CheckActionAsync<TInput$1, undefined>;
 /**
  * Creates a check validation action.
  *
@@ -16011,13 +16283,14 @@ declare function checkAsync<TInput>(
  * @returns A check action.
  */
 declare function checkAsync<
-  TInput,
-  const TMessage extends ErrorMessage<CheckIssue<TInput>> | undefined,
+  TInput$1,
+  const TMessage extends ErrorMessage<CheckIssue<TInput$1>> | undefined,
 >(
-  requirement: (input: TInput) => MaybePromise<boolean>,
+  requirement: (input: TInput$1) => MaybePromise<boolean>,
   message: TMessage,
-): CheckActionAsync<TInput, TMessage>;
-
+): CheckActionAsync<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/types.d.ts
 /**
  * Array input type.
  */
@@ -16025,18 +16298,18 @@ type ArrayInput = MaybeReadonly<unknown[]>;
 /**
  * Array requirement type.
  */
-type ArrayRequirement$1<TInput extends ArrayInput> = (
-  item: TInput[number],
+type ArrayRequirement<TInput$1 extends ArrayInput> = (
+  item: TInput$1[number],
   index: number,
-  array: TInput,
+  array: TInput$1,
 ) => boolean;
 /**
  * Array requirement async type.
  */
-type ArrayRequirementAsync<TInput extends ArrayInput> = (
-  item: TInput[number],
+type ArrayRequirementAsync<TInput$1 extends ArrayInput> = (
+  item: TInput$1[number],
   index: number,
-  array: TInput,
+  array: TInput$1,
 ) => MaybePromise<boolean>;
 /**
  * Content input type.
@@ -16045,8 +16318,8 @@ type ContentInput = string | MaybeReadonly<unknown[]>;
 /**
  * Content requirement type.
  */
-type ContentRequirement<TInput extends ContentInput> = TInput extends
-  readonly unknown[] ? TInput[number] : TInput;
+type ContentRequirement<TInput$1 extends ContentInput> = TInput$1 extends
+  readonly unknown[] ? TInput$1[number] : TInput$1;
 /**
  * Entries input type.
  */
@@ -16063,12 +16336,13 @@ type SizeInput = Blob | Map<unknown, unknown> | Set<unknown>;
  * Value input type.
  */
 type ValueInput = string | number | bigint | boolean | Date;
-
+//#endregion
+//#region src/actions/checkItems/types.d.ts
 /**
  * Check items issue interface.
  */
-interface CheckItemsIssue<TInput extends ArrayInput>
-  extends BaseIssue<TInput[number]> {
+interface CheckItemsIssue<TInput$1 extends ArrayInput>
+  extends BaseIssue<TInput$1[number]> {
   /**
    * The issue kind.
    */
@@ -16084,16 +16358,17 @@ interface CheckItemsIssue<TInput extends ArrayInput>
   /**
    * The validation function.
    */
-  readonly requirement: ArrayRequirementAsync<TInput>;
+  readonly requirement: ArrayRequirementAsync<TInput$1>;
 }
-
+//#endregion
+//#region src/actions/checkItems/checkItems.d.ts
 /**
  * Check items action interface.
  */
 interface CheckItemsAction<
-  TInput extends ArrayInput,
-  TMessage extends ErrorMessage<CheckItemsIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, CheckItemsIssue<TInput>> {
+  TInput$1 extends ArrayInput,
+  TMessage extends ErrorMessage<CheckItemsIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, CheckItemsIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -16109,7 +16384,7 @@ interface CheckItemsAction<
   /**
    * The validation function.
    */
-  readonly requirement: ArrayRequirement$1<TInput>;
+  readonly requirement: ArrayRequirement<TInput$1>;
   /**
    * The error message.
    */
@@ -16122,9 +16397,9 @@ interface CheckItemsAction<
  *
  * @returns An check items action.
  */
-declare function checkItems<TInput extends ArrayInput>(
-  requirement: ArrayRequirement$1<TInput>,
-): CheckItemsAction<TInput, undefined>;
+declare function checkItems<TInput$1 extends ArrayInput>(
+  requirement: ArrayRequirement<TInput$1>,
+): CheckItemsAction<TInput$1, undefined>;
 /**
  * Creates an check items validation action.
  *
@@ -16134,20 +16409,21 @@ declare function checkItems<TInput extends ArrayInput>(
  * @returns An check items action.
  */
 declare function checkItems<
-  TInput extends ArrayInput,
-  const TMessage extends ErrorMessage<CheckItemsIssue<TInput>> | undefined,
+  TInput$1 extends ArrayInput,
+  const TMessage extends ErrorMessage<CheckItemsIssue<TInput$1>> | undefined,
 >(
-  requirement: ArrayRequirement$1<TInput>,
+  requirement: ArrayRequirement<TInput$1>,
   message: TMessage,
-): CheckItemsAction<TInput, TMessage>;
-
+): CheckItemsAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/checkItems/checkItemsAsync.d.ts
 /**
  * Check items action async interface.
  */
 interface CheckItemsActionAsync<
-  TInput extends ArrayInput,
-  TMessage extends ErrorMessage<CheckItemsIssue<TInput>> | undefined,
-> extends BaseValidationAsync<TInput, TInput, CheckItemsIssue<TInput>> {
+  TInput$1 extends ArrayInput,
+  TMessage extends ErrorMessage<CheckItemsIssue<TInput$1>> | undefined,
+> extends BaseValidationAsync<TInput$1, TInput$1, CheckItemsIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -16163,7 +16439,7 @@ interface CheckItemsActionAsync<
   /**
    * The validation function.
    */
-  readonly requirement: ArrayRequirementAsync<TInput>;
+  readonly requirement: ArrayRequirementAsync<TInput$1>;
   /**
    * The error message.
    */
@@ -16176,9 +16452,9 @@ interface CheckItemsActionAsync<
  *
  * @returns A check items action.
  */
-declare function checkItemsAsync<TInput extends ArrayInput>(
-  requirement: ArrayRequirementAsync<TInput>,
-): CheckItemsActionAsync<TInput, undefined>;
+declare function checkItemsAsync<TInput$1 extends ArrayInput>(
+  requirement: ArrayRequirementAsync<TInput$1>,
+): CheckItemsActionAsync<TInput$1, undefined>;
 /**
  * Creates a check items validation action.
  *
@@ -16188,17 +16464,18 @@ declare function checkItemsAsync<TInput extends ArrayInput>(
  * @returns A check items action.
  */
 declare function checkItemsAsync<
-  TInput extends ArrayInput,
-  const TMessage extends ErrorMessage<CheckItemsIssue<TInput>> | undefined,
+  TInput$1 extends ArrayInput,
+  const TMessage extends ErrorMessage<CheckItemsIssue<TInput$1>> | undefined,
 >(
-  requirement: ArrayRequirementAsync<TInput>,
+  requirement: ArrayRequirementAsync<TInput$1>,
   message: TMessage,
-): CheckItemsActionAsync<TInput, TMessage>;
-
+): CheckItemsActionAsync<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/creditCard/creditCard.d.ts
 /**
  * Credit card issue interface.
  */
-interface CreditCardIssue<TInput extends string> extends BaseIssue<TInput> {
+interface CreditCardIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -16224,9 +16501,9 @@ interface CreditCardIssue<TInput extends string> extends BaseIssue<TInput> {
  * Credit card action interface.
  */
 interface CreditCardAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<CreditCardIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, CreditCardIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<CreditCardIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, CreditCardIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -16253,8 +16530,8 @@ interface CreditCardAction<
  *
  * @returns A Credit card action.
  */
-declare function creditCard<TInput extends string>(): CreditCardAction<
-  TInput,
+declare function creditCard<TInput$1 extends string>(): CreditCardAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -16265,14 +16542,15 @@ declare function creditCard<TInput extends string>(): CreditCardAction<
  * @returns A credit card action.
  */
 declare function creditCard<
-  TInput extends string,
-  const TMessage extends ErrorMessage<CreditCardIssue<TInput>> | undefined,
->(message: TMessage): CreditCardAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<CreditCardIssue<TInput$1>> | undefined,
+>(message: TMessage): CreditCardAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/cuid2/cuid2.d.ts
 /**
  * Cuid2 issue interface.
  */
-interface Cuid2Issue<TInput extends string> extends BaseIssue<TInput> {
+interface Cuid2Issue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -16298,9 +16576,9 @@ interface Cuid2Issue<TInput extends string> extends BaseIssue<TInput> {
  * Cuid2 action interface.
  */
 interface Cuid2Action<
-  TInput extends string,
-  TMessage extends ErrorMessage<Cuid2Issue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, Cuid2Issue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<Cuid2Issue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, Cuid2Issue<TInput$1>> {
   /**
    * The action type.
    */
@@ -16327,7 +16605,10 @@ interface Cuid2Action<
  *
  * @returns A Cuid2 action.
  */
-declare function cuid2<TInput extends string>(): Cuid2Action<TInput, undefined>;
+declare function cuid2<TInput$1 extends string>(): Cuid2Action<
+  TInput$1,
+  undefined
+>;
 /**
  * Creates a [Cuid2](https://github.com/paralleldrive/cuid2) validation action.
  *
@@ -16336,14 +16617,15 @@ declare function cuid2<TInput extends string>(): Cuid2Action<TInput, undefined>;
  * @returns A Cuid2 action.
  */
 declare function cuid2<
-  TInput extends string,
-  const TMessage extends ErrorMessage<Cuid2Issue<TInput>> | undefined,
->(message: TMessage): Cuid2Action<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<Cuid2Issue<TInput$1>> | undefined,
+>(message: TMessage): Cuid2Action<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/decimal/decimal.d.ts
 /**
  * Decimal issue interface.
  */
-interface DecimalIssue<TInput extends string> extends BaseIssue<TInput> {
+interface DecimalIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -16369,9 +16651,9 @@ interface DecimalIssue<TInput extends string> extends BaseIssue<TInput> {
  * Decimal action interface.
  */
 interface DecimalAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<DecimalIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, DecimalIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<DecimalIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, DecimalIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -16396,29 +16678,38 @@ interface DecimalAction<
 /**
  * Creates a [decimal](https://en.wikipedia.org/wiki/Decimal) validation action.
  *
+ * The difference between `decimal` and `digits` is that `decimal` accepts
+ * floating point numbers and negative numbers, while `digits` accepts only the
+ * digits 0-9.
+ *
  * @returns An decimal action.
  */
-declare function decimal<TInput extends string>(): DecimalAction<
-  TInput,
+declare function decimal<TInput$1 extends string>(): DecimalAction<
+  TInput$1,
   undefined
 >;
 /**
  * Creates a [decimal](https://en.wikipedia.org/wiki/Decimal) validation action.
+ *
+ * The difference between `decimal` and `digits` is that `decimal` accepts
+ * floating point numbers and negative numbers, while `digits` accepts only the
+ * digits 0-9.
  *
  * @param message The error message.
  *
  * @returns An decimal action.
  */
 declare function decimal<
-  TInput extends string,
-  const TMessage extends ErrorMessage<DecimalIssue<TInput>> | undefined,
->(message: TMessage): DecimalAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<DecimalIssue<TInput$1>> | undefined,
+>(message: TMessage): DecimalAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/description/description.d.ts
 /**
  * Description action interface.
  */
-interface DescriptionAction<TInput, TDescription extends string>
-  extends BaseMetadata<TInput> {
+interface DescriptionAction<TInput$1, TDescription extends string>
+  extends BaseMetadata<TInput$1> {
   /**
    * The action type.
    */
@@ -16439,14 +16730,15 @@ interface DescriptionAction<TInput, TDescription extends string>
  *
  * @returns A description action.
  */
-declare function description<TInput, TDescription extends string>(
+declare function description<TInput$1, TDescription extends string>(
   description_: TDescription,
-): DescriptionAction<TInput, TDescription>;
-
+): DescriptionAction<TInput$1, TDescription>;
+//#endregion
+//#region src/actions/digits/digits.d.ts
 /**
  * Digits issue interface.
  */
-interface DigitsIssue<TInput extends string> extends BaseIssue<TInput> {
+interface DigitsIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -16472,9 +16764,9 @@ interface DigitsIssue<TInput extends string> extends BaseIssue<TInput> {
  * Digits action interface.
  */
 interface DigitsAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<DigitsIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, DigitsIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<DigitsIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, DigitsIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -16499,28 +16791,37 @@ interface DigitsAction<
 /**
  * Creates a [digits](https://en.wikipedia.org/wiki/Numerical_digit) validation action.
  *
+ * The difference between `digits` and `decimal` is that `digits` accepts only
+ * the digits 0-9, while `decimal` accepts floating point numbers and negative
+ * numbers.
+ *
  * @returns An digits action.
  */
-declare function digits<TInput extends string>(): DigitsAction<
-  TInput,
+declare function digits<TInput$1 extends string>(): DigitsAction<
+  TInput$1,
   undefined
 >;
 /**
  * Creates a [digits](https://en.wikipedia.org/wiki/Numerical_digit) validation action.
+ *
+ * The difference between `digits` and `decimal` is that `digits` accepts only
+ * the digits 0-9, while `decimal` accepts floating point numbers and negative
+ * numbers.
  *
  * @param message The error message.
  *
  * @returns An digits action.
  */
 declare function digits<
-  TInput extends string,
-  const TMessage extends ErrorMessage<DigitsIssue<TInput>> | undefined,
->(message: TMessage): DigitsAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<DigitsIssue<TInput$1>> | undefined,
+>(message: TMessage): DigitsAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/email/email.d.ts
 /**
  * Email issue interface.
  */
-interface EmailIssue<TInput extends string> extends BaseIssue<TInput> {
+interface EmailIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -16546,9 +16847,9 @@ interface EmailIssue<TInput extends string> extends BaseIssue<TInput> {
  * Email action interface.
  */
 interface EmailAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<EmailIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, EmailIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<EmailIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, EmailIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -16580,7 +16881,10 @@ interface EmailAction<
  *
  * @returns An email action.
  */
-declare function email<TInput extends string>(): EmailAction<TInput, undefined>;
+declare function email<TInput$1 extends string>(): EmailAction<
+  TInput$1,
+  undefined
+>;
 /**
  * Creates an [email](https://en.wikipedia.org/wiki/Email_address) validation
  * action.
@@ -16594,14 +16898,15 @@ declare function email<TInput extends string>(): EmailAction<TInput, undefined>;
  * @returns An email action.
  */
 declare function email<
-  TInput extends string,
-  const TMessage extends ErrorMessage<EmailIssue<TInput>> | undefined,
->(message: TMessage): EmailAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<EmailIssue<TInput$1>> | undefined,
+>(message: TMessage): EmailAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/emoji/emoji.d.ts
 /**
  * Emoji issue interface.
  */
-interface EmojiIssue<TInput extends string> extends BaseIssue<TInput> {
+interface EmojiIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -16627,9 +16932,9 @@ interface EmojiIssue<TInput extends string> extends BaseIssue<TInput> {
  * Emoji action interface.
  */
 interface EmojiAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<EmojiIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, EmojiIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<EmojiIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, EmojiIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -16656,7 +16961,10 @@ interface EmojiAction<
  *
  * @returns An emoji action.
  */
-declare function emoji<TInput extends string>(): EmojiAction<TInput, undefined>;
+declare function emoji<TInput$1 extends string>(): EmojiAction<
+  TInput$1,
+  undefined
+>;
 /**
  * Creates an [emoji](https://en.wikipedia.org/wiki/Emoji) validation action.
  *
@@ -16665,14 +16973,15 @@ declare function emoji<TInput extends string>(): EmojiAction<TInput, undefined>;
  * @returns An emoji action.
  */
 declare function emoji<
-  TInput extends string,
-  const TMessage extends ErrorMessage<EmojiIssue<TInput>> | undefined,
->(message: TMessage): EmojiAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<EmojiIssue<TInput$1>> | undefined,
+>(message: TMessage): EmojiAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/empty/empty.d.ts
 /**
  * Empty issue interface.
  */
-interface EmptyIssue<TInput extends LengthInput> extends BaseIssue<TInput> {
+interface EmptyIssue<TInput$1 extends LengthInput> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -16694,9 +17003,9 @@ interface EmptyIssue<TInput extends LengthInput> extends BaseIssue<TInput> {
  * Empty action interface.
  */
 interface EmptyAction<
-  TInput extends LengthInput,
-  TMessage extends ErrorMessage<EmptyIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, EmptyIssue<TInput>> {
+  TInput$1 extends LengthInput,
+  TMessage extends ErrorMessage<EmptyIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, EmptyIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -16719,8 +17028,8 @@ interface EmptyAction<
  *
  * @returns An empty action.
  */
-declare function empty<TInput extends LengthInput>(): EmptyAction<
-  TInput,
+declare function empty<TInput$1 extends LengthInput>(): EmptyAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -16731,15 +17040,16 @@ declare function empty<TInput extends LengthInput>(): EmptyAction<
  * @returns An empty action.
  */
 declare function empty<
-  TInput extends LengthInput,
-  const TMessage extends ErrorMessage<EmptyIssue<TInput>> | undefined,
->(message: TMessage): EmptyAction<TInput, TMessage>;
-
+  TInput$1 extends LengthInput,
+  const TMessage extends ErrorMessage<EmptyIssue<TInput$1>> | undefined,
+>(message: TMessage): EmptyAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/endsWith/endsWith.d.ts
 /**
  * Ends with issue interface.
  */
-interface EndsWithIssue<TInput extends string, TRequirement extends string>
-  extends BaseIssue<TInput> {
+interface EndsWithIssue<TInput$1 extends string, TRequirement extends string>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -16765,12 +17075,13 @@ interface EndsWithIssue<TInput extends string, TRequirement extends string>
  * Ends with action interface.
  */
 interface EndsWithAction<
-  TInput extends string,
+  TInput$1 extends string,
   TRequirement extends string,
   TMessage extends
-    | ErrorMessage<EndsWithIssue<TInput, TRequirement>>
+    | ErrorMessage<EndsWithIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, EndsWithIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, EndsWithIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -16800,9 +17111,9 @@ interface EndsWithAction<
  * @returns An ends with action.
  */
 declare function endsWith<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends string,
->(requirement: TRequirement): EndsWithAction<TInput, TRequirement, undefined>;
+>(requirement: TRequirement): EndsWithAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates an ends with validation action.
  *
@@ -16812,23 +17123,26 @@ declare function endsWith<
  * @returns An ends with action.
  */
 declare function endsWith<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends string,
   const TMessage extends
-    | ErrorMessage<EndsWithIssue<TInput, TRequirement>>
+    | ErrorMessage<EndsWithIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): EndsWithAction<TInput, TRequirement, TMessage>;
-
+): EndsWithAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/entries/entries.d.ts
 /**
  * Entries issue interface.
  *
  * @beta
  */
-interface EntriesIssue<TInput extends EntriesInput, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface EntriesIssue<
+  TInput$1 extends EntriesInput,
+  TRequirement extends number,
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -16856,10 +17170,13 @@ interface EntriesIssue<TInput extends EntriesInput, TRequirement extends number>
  * @beta
  */
 interface EntriesAction<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   TRequirement extends number,
-  TMessage extends ErrorMessage<EntriesIssue<TInput, TRequirement>> | undefined,
-> extends BaseValidation<TInput, TInput, EntriesIssue<TInput, TRequirement>> {
+  TMessage extends
+    | ErrorMessage<EntriesIssue<TInput$1, TRequirement>>
+    | undefined,
+> extends
+  BaseValidation<TInput$1, TInput$1, EntriesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -16891,9 +17208,9 @@ interface EntriesAction<
  * @beta
  */
 declare function entries<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   const TRequirement extends number,
->(requirement: TRequirement): EntriesAction<TInput, TRequirement, undefined>;
+>(requirement: TRequirement): EntriesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates an entries validation action.
  *
@@ -16905,20 +17222,22 @@ declare function entries<
  * @beta
  */
 declare function entries<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<EntriesIssue<TInput, TRequirement>>
+    | ErrorMessage<EntriesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): EntriesAction<TInput, TRequirement, TMessage>;
-
+): EntriesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/everyItem/everyItem.d.ts
 /**
  * Every item issue interface.
  */
-interface EveryItemIssue<TInput extends ArrayInput> extends BaseIssue<TInput> {
+interface EveryItemIssue<TInput$1 extends ArrayInput>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -16934,15 +17253,15 @@ interface EveryItemIssue<TInput extends ArrayInput> extends BaseIssue<TInput> {
   /**
    * The validation function.
    */
-  readonly requirement: ArrayRequirement$1<TInput>;
+  readonly requirement: ArrayRequirement<TInput$1>;
 }
 /**
  * Every item action interface.
  */
 interface EveryItemAction<
-  TInput extends ArrayInput,
-  TMessage extends ErrorMessage<EveryItemIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, EveryItemIssue<TInput>> {
+  TInput$1 extends ArrayInput,
+  TMessage extends ErrorMessage<EveryItemIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, EveryItemIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -16958,7 +17277,7 @@ interface EveryItemAction<
   /**
    * The validation function.
    */
-  readonly requirement: ArrayRequirement$1<TInput>;
+  readonly requirement: ArrayRequirement<TInput$1>;
   /**
    * The error message.
    */
@@ -16971,9 +17290,9 @@ interface EveryItemAction<
  *
  * @returns An every item action.
  */
-declare function everyItem<TInput extends ArrayInput>(
-  requirement: ArrayRequirement$1<TInput>,
-): EveryItemAction<TInput, undefined>;
+declare function everyItem<TInput$1 extends ArrayInput>(
+  requirement: ArrayRequirement<TInput$1>,
+): EveryItemAction<TInput$1, undefined>;
 /**
  * Creates an every item validation action.
  *
@@ -16983,20 +17302,54 @@ declare function everyItem<TInput extends ArrayInput>(
  * @returns An every item action.
  */
 declare function everyItem<
-  TInput extends ArrayInput,
-  const TMessage extends ErrorMessage<EveryItemIssue<TInput>> | undefined,
+  TInput$1 extends ArrayInput,
+  const TMessage extends ErrorMessage<EveryItemIssue<TInput$1>> | undefined,
 >(
-  requirement: ArrayRequirement$1<TInput>,
+  requirement: ArrayRequirement<TInput$1>,
   message: TMessage,
-): EveryItemAction<TInput, TMessage>;
-
+): EveryItemAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/examples/examples.d.ts
+/**
+ * Examples action interface.
+ */
+interface ExamplesAction<TInput$1, TExamples extends readonly TInput$1[]>
+  extends BaseMetadata<TInput$1> {
+  /**
+   * The action type.
+   */
+  readonly type: "examples";
+  /**
+   * The action reference.
+   */
+  readonly reference: typeof examples;
+  /**
+   * The examples.
+   */
+  readonly examples: TExamples;
+}
+/**
+ * Creates an examples metadata action.
+ *
+ * @param examples_ The examples.
+ *
+ * @returns An examples action.
+ *
+ * @beta
+ */
+declare function examples<
+  TInput$1,
+  const TExamples extends readonly TInput$1[],
+>(examples_: TExamples): ExamplesAction<TInput$1, TExamples>;
+//#endregion
+//#region src/actions/excludes/excludes.d.ts
 /**
  * Excludes issue interface.
  */
 interface ExcludesIssue<
-  TInput extends ContentInput,
-  TRequirement extends ContentRequirement<TInput>,
-> extends BaseIssue<TInput> {
+  TInput$1 extends ContentInput,
+  TRequirement extends ContentRequirement<TInput$1>,
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -17018,12 +17371,13 @@ interface ExcludesIssue<
  * Excludes action interface.
  */
 interface ExcludesAction<
-  TInput extends ContentInput,
-  TRequirement extends ContentRequirement<TInput>,
+  TInput$1 extends ContentInput,
+  TRequirement extends ContentRequirement<TInput$1>,
   TMessage extends
-    | ErrorMessage<ExcludesIssue<TInput, TRequirement>>
+    | ErrorMessage<ExcludesIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, ExcludesIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, ExcludesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -17053,9 +17407,9 @@ interface ExcludesAction<
  * @returns An excludes action.
  */
 declare function excludes<
-  TInput extends ContentInput,
-  const TRequirement extends ContentRequirement<TInput>,
->(requirement: TRequirement): ExcludesAction<TInput, TRequirement, undefined>;
+  TInput$1 extends ContentInput,
+  const TRequirement extends ContentRequirement<TInput$1>,
+>(requirement: TRequirement): ExcludesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates an excludes validation action.
  *
@@ -17065,21 +17419,22 @@ declare function excludes<
  * @returns An excludes action.
  */
 declare function excludes<
-  TInput extends ContentInput,
-  const TRequirement extends ContentRequirement<TInput>,
+  TInput$1 extends ContentInput,
+  const TRequirement extends ContentRequirement<TInput$1>,
   const TMessage extends
-    | ErrorMessage<ExcludesIssue<TInput, TRequirement>>
+    | ErrorMessage<ExcludesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): ExcludesAction<TInput, TRequirement, TMessage>;
-
+): ExcludesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/filterItems/filterItems.d.ts
 /**
  * Filter items action interface.
  */
-interface FilterItemsAction<TInput extends ArrayInput>
-  extends BaseTransformation<TInput, TInput, never> {
+interface FilterItemsAction<TInput$1 extends ArrayInput>
+  extends BaseTransformation<TInput$1, TInput$1, never> {
   /**
    * The action type.
    */
@@ -17091,7 +17446,7 @@ interface FilterItemsAction<TInput extends ArrayInput>
   /**
    * The filter items operation.
    */
-  readonly operation: ArrayRequirement$1<TInput>;
+  readonly operation: ArrayRequirement<TInput$1>;
 }
 /**
  * Creates a filter items transformation action.
@@ -17100,26 +17455,27 @@ interface FilterItemsAction<TInput extends ArrayInput>
  *
  * @returns A filter items action.
  */
-declare function filterItems<TInput extends ArrayInput>(
-  operation: ArrayRequirement$1<TInput>,
-): FilterItemsAction<TInput>;
-
+declare function filterItems<TInput$1 extends ArrayInput>(
+  operation: ArrayRequirement<TInput$1>,
+): FilterItemsAction<TInput$1>;
+//#endregion
+//#region src/actions/findItem/findItem.d.ts
 /**
  * Array requirement type.
  */
-type ArrayRequirement<
-  TInput extends ArrayInput,
-  TOuput extends TInput[number],
+type ArrayRequirement$1<
+  TInput$1 extends ArrayInput,
+  TOuput extends TInput$1[number],
 > =
-  | ((item: TInput[number], index: number, array: TInput) => item is TOuput)
-  | ((item: TInput[number], index: number, array: TInput) => boolean);
+  | ((item: TInput$1[number], index: number, array: TInput$1) => item is TOuput)
+  | ((item: TInput$1[number], index: number, array: TInput$1) => boolean);
 /**
  * Find item action interface.
  */
 interface FindItemAction<
-  TInput extends ArrayInput,
-  TOuput extends TInput[number],
-> extends BaseTransformation<TInput, TOuput | undefined, never> {
+  TInput$1 extends ArrayInput,
+  TOuput extends TInput$1[number],
+> extends BaseTransformation<TInput$1, TOuput | undefined, never> {
   /**
    * The action type.
    */
@@ -17131,7 +17487,7 @@ interface FindItemAction<
   /**
    * The find item operation.
    */
-  readonly operation: ArrayRequirement<TInput, TOuput>;
+  readonly operation: ArrayRequirement$1<TInput$1, TOuput>;
 }
 /**
  * Creates a find item transformation action.
@@ -17141,14 +17497,17 @@ interface FindItemAction<
  * @returns A find item action.
  */
 declare function findItem<
-  TInput extends ArrayInput,
-  TOuput extends TInput[number],
->(operation: ArrayRequirement<TInput, TOuput>): FindItemAction<TInput, TOuput>;
-
+  TInput$1 extends ArrayInput,
+  TOuput extends TInput$1[number],
+>(
+  operation: ArrayRequirement$1<TInput$1, TOuput>,
+): FindItemAction<TInput$1, TOuput>;
+//#endregion
+//#region src/actions/finite/finite.d.ts
 /**
  * Finite issue interface.
  */
-interface FiniteIssue<TInput extends number> extends BaseIssue<TInput> {
+interface FiniteIssue<TInput$1 extends number> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -17174,9 +17533,9 @@ interface FiniteIssue<TInput extends number> extends BaseIssue<TInput> {
  * Finite action interface.
  */
 interface FiniteAction<
-  TInput extends number,
-  TMessage extends ErrorMessage<FiniteIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, FiniteIssue<TInput>> {
+  TInput$1 extends number,
+  TMessage extends ErrorMessage<FiniteIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, FiniteIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -17203,8 +17562,8 @@ interface FiniteAction<
  *
  * @returns A finite action.
  */
-declare function finite<TInput extends number>(): FiniteAction<
-  TInput,
+declare function finite<TInput$1 extends number>(): FiniteAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -17215,10 +17574,11 @@ declare function finite<TInput extends number>(): FiniteAction<
  * @returns A finite action.
  */
 declare function finite<
-  TInput extends number,
-  const TMessage extends ErrorMessage<FiniteIssue<TInput>> | undefined,
->(message: TMessage): FiniteAction<TInput, TMessage>;
-
+  TInput$1 extends number,
+  const TMessage extends ErrorMessage<FiniteIssue<TInput$1>> | undefined,
+>(message: TMessage): FiniteAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/flavor/flavor.d.ts
 /**
  * Flavor symbol.
  *
@@ -17237,17 +17597,15 @@ type FlavorName = string | number | symbol;
  * @beta
  */
 interface Flavor<TName extends FlavorName> {
-  [FlavorSymbol]?: {
-    [TValue in TName]: TValue;
-  };
+  [FlavorSymbol]?: { [TValue in TName]: TValue };
 }
 /**
  * Flavor action interface.
  *
  * @beta
  */
-interface FlavorAction<TInput, TName extends FlavorName>
-  extends BaseTransformation<TInput, TInput & Flavor<TName>, never> {
+interface FlavorAction<TInput$1, TName extends FlavorName>
+  extends BaseTransformation<TInput$1, TInput$1 & Flavor<TName>, never> {
   /**
    * The action type.
    */
@@ -17270,15 +17628,16 @@ interface FlavorAction<TInput, TName extends FlavorName>
  *
  * @beta
  */
-declare function flavor<TInput, TName extends FlavorName>(
+declare function flavor<TInput$1, TName extends FlavorName>(
   name: TName,
-): FlavorAction<TInput, TName>;
-
+): FlavorAction<TInput$1, TName>;
+//#endregion
+//#region src/actions/graphemes/graphemes.d.ts
 /**
  * Graphemes issue interface.
  */
-interface GraphemesIssue<TInput extends string, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface GraphemesIssue<TInput$1 extends string, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -17304,12 +17663,13 @@ interface GraphemesIssue<TInput extends string, TRequirement extends number>
  * Graphemes action interface.
  */
 interface GraphemesAction<
-  TInput extends string,
+  TInput$1 extends string,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<GraphemesIssue<TInput, TRequirement>>
+    | ErrorMessage<GraphemesIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, GraphemesIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, GraphemesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -17339,9 +17699,11 @@ interface GraphemesAction<
  * @returns A graphemes action.
  */
 declare function graphemes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
->(requirement: TRequirement): GraphemesAction<TInput, TRequirement, undefined>;
+>(
+  requirement: TRequirement,
+): GraphemesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a graphemes validation action.
  *
@@ -17351,21 +17713,24 @@ declare function graphemes<
  * @returns A graphemes action.
  */
 declare function graphemes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<GraphemesIssue<TInput, TRequirement>>
+    | ErrorMessage<GraphemesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): GraphemesAction<TInput, TRequirement, TMessage>;
-
+): GraphemesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/gtValue/gtValue.d.ts
 /**
  * Greater than value issue type.
  */
-interface GtValueIssue<TInput extends ValueInput, TRequirement extends TInput>
-  extends BaseIssue<TInput> {
+interface GtValueIssue<
+  TInput$1 extends ValueInput,
+  TRequirement extends TInput$1,
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -17387,10 +17752,13 @@ interface GtValueIssue<TInput extends ValueInput, TRequirement extends TInput>
  * Greater than value action type.
  */
 interface GtValueAction<
-  TInput extends ValueInput,
-  TRequirement extends TInput,
-  TMessage extends ErrorMessage<GtValueIssue<TInput, TRequirement>> | undefined,
-> extends BaseValidation<TInput, TInput, GtValueIssue<TInput, TRequirement>> {
+  TInput$1 extends ValueInput,
+  TRequirement extends TInput$1,
+  TMessage extends
+    | ErrorMessage<GtValueIssue<TInput$1, TRequirement>>
+    | undefined,
+> extends
+  BaseValidation<TInput$1, TInput$1, GtValueIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -17420,9 +17788,9 @@ interface GtValueAction<
  * @returns A greater than value action.
  */
 declare function gtValue<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
->(requirement: TRequirement): GtValueAction<TInput, TRequirement, undefined>;
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
+>(requirement: TRequirement): GtValueAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a greater than value validation action.
  *
@@ -17432,16 +17800,17 @@ declare function gtValue<
  * @returns A greater than value action.
  */
 declare function gtValue<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
   const TMessage extends
-    | ErrorMessage<GtValueIssue<TInput, TRequirement>>
+    | ErrorMessage<GtValueIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): GtValueAction<TInput, TRequirement, TMessage>;
-
+): GtValueAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/hash/hash.d.ts
 /**
  * Hash lengths object.
  */
@@ -17468,7 +17837,7 @@ type HashType = keyof typeof HASH_LENGTHS;
 /**
  * Hash issue interface.
  */
-interface HashIssue<TInput extends string> extends BaseIssue<TInput> {
+interface HashIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -17494,9 +17863,9 @@ interface HashIssue<TInput extends string> extends BaseIssue<TInput> {
  * Hash action interface.
  */
 interface HashAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<HashIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, HashIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<HashIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, HashIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -17525,9 +17894,9 @@ interface HashAction<
  *
  * @returns A hash action.
  */
-declare function hash<TInput extends string>(
+declare function hash<TInput$1 extends string>(
   types: [HashType, ...HashType[]],
-): HashAction<TInput, undefined>;
+): HashAction<TInput$1, undefined>;
 /**
  * Creates a [hash](https://en.wikipedia.org/wiki/Hash_function) validation action.
  *
@@ -17537,17 +17906,19 @@ declare function hash<TInput extends string>(
  * @returns A hash action.
  */
 declare function hash<
-  TInput extends string,
-  const TMessage extends ErrorMessage<HashIssue<TInput>> | undefined,
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<HashIssue<TInput$1>> | undefined,
 >(
   types: [HashType, ...HashType[]],
   message: TMessage,
-): HashAction<TInput, TMessage>;
-
+): HashAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/hexadecimal/hexadecimal.d.ts
 /**
  * Hexadecimal issue interface.
  */
-interface HexadecimalIssue<TInput extends string> extends BaseIssue<TInput> {
+interface HexadecimalIssue<TInput$1 extends string>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -17573,9 +17944,9 @@ interface HexadecimalIssue<TInput extends string> extends BaseIssue<TInput> {
  * Hexadecimal action interface.
  */
 interface HexadecimalAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<HexadecimalIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, HexadecimalIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<HexadecimalIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, HexadecimalIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -17602,8 +17973,8 @@ interface HexadecimalAction<
  *
  * @returns A hexadecimal action.
  */
-declare function hexadecimal<TInput extends string>(): HexadecimalAction<
-  TInput,
+declare function hexadecimal<TInput$1 extends string>(): HexadecimalAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -17614,14 +17985,15 @@ declare function hexadecimal<TInput extends string>(): HexadecimalAction<
  * @returns A hexadecimal action.
  */
 declare function hexadecimal<
-  TInput extends string,
-  const TMessage extends ErrorMessage<HexadecimalIssue<TInput>> | undefined,
->(message: TMessage): HexadecimalAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<HexadecimalIssue<TInput$1>> | undefined,
+>(message: TMessage): HexadecimalAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/hexColor/hexColor.d.ts
 /**
  * Hex color issue interface.
  */
-interface HexColorIssue<TInput extends string> extends BaseIssue<TInput> {
+interface HexColorIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -17647,9 +18019,9 @@ interface HexColorIssue<TInput extends string> extends BaseIssue<TInput> {
  * Hex color action interface.
  */
 interface HexColorAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<HexColorIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, HexColorIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<HexColorIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, HexColorIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -17676,8 +18048,8 @@ interface HexColorAction<
  *
  * @returns A hex color action.
  */
-declare function hexColor<TInput extends string>(): HexColorAction<
-  TInput,
+declare function hexColor<TInput$1 extends string>(): HexColorAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -17688,14 +18060,15 @@ declare function hexColor<TInput extends string>(): HexColorAction<
  * @returns A hex color action.
  */
 declare function hexColor<
-  TInput extends string,
-  const TMessage extends ErrorMessage<HexColorIssue<TInput>> | undefined,
->(message: TMessage): HexColorAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<HexColorIssue<TInput$1>> | undefined,
+>(message: TMessage): HexColorAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/imei/imei.d.ts
 /**
  * IMEI issue interface.
  */
-interface ImeiIssue<TInput extends string> extends BaseIssue<TInput> {
+interface ImeiIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -17721,9 +18094,9 @@ interface ImeiIssue<TInput extends string> extends BaseIssue<TInput> {
  * IMEI action interface.
  */
 interface ImeiAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<ImeiIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, ImeiIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<ImeiIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, ImeiIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -17754,7 +18127,10 @@ interface ImeiAction<
  *
  * @returns An IMEI action.
  */
-declare function imei<TInput extends string>(): ImeiAction<TInput, undefined>;
+declare function imei<TInput$1 extends string>(): ImeiAction<
+  TInput$1,
+  undefined
+>;
 /**
  * Creates an [IMEI](https://en.wikipedia.org/wiki/International_Mobile_Equipment_Identity) validation action.
  *
@@ -17767,17 +18143,18 @@ declare function imei<TInput extends string>(): ImeiAction<TInput, undefined>;
  * @returns An IMEI action.
  */
 declare function imei<
-  TInput extends string,
-  const TMessage extends ErrorMessage<ImeiIssue<TInput>> | undefined,
->(message: TMessage): ImeiAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<ImeiIssue<TInput$1>> | undefined,
+>(message: TMessage): ImeiAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/includes/includes.d.ts
 /**
  * Includes issue interface.
  */
 interface IncludesIssue<
-  TInput extends ContentInput,
-  TRequirement extends ContentRequirement<TInput>,
-> extends BaseIssue<TInput> {
+  TInput$1 extends ContentInput,
+  TRequirement extends ContentRequirement<TInput$1>,
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -17799,12 +18176,13 @@ interface IncludesIssue<
  * Includes action interface.
  */
 interface IncludesAction<
-  TInput extends ContentInput,
-  TRequirement extends ContentRequirement<TInput>,
+  TInput$1 extends ContentInput,
+  TRequirement extends ContentRequirement<TInput$1>,
   TMessage extends
-    | ErrorMessage<IncludesIssue<TInput, TRequirement>>
+    | ErrorMessage<IncludesIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, IncludesIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, IncludesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -17834,9 +18212,9 @@ interface IncludesAction<
  * @returns An includes action.
  */
 declare function includes<
-  TInput extends ContentInput,
-  const TRequirement extends ContentRequirement<TInput>,
->(requirement: TRequirement): IncludesAction<TInput, TRequirement, undefined>;
+  TInput$1 extends ContentInput,
+  const TRequirement extends ContentRequirement<TInput$1>,
+>(requirement: TRequirement): IncludesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates an includes validation action.
  *
@@ -17846,20 +18224,21 @@ declare function includes<
  * @returns An includes action.
  */
 declare function includes<
-  TInput extends ContentInput,
-  const TRequirement extends ContentRequirement<TInput>,
+  TInput$1 extends ContentInput,
+  const TRequirement extends ContentRequirement<TInput$1>,
   const TMessage extends
-    | ErrorMessage<IncludesIssue<TInput, TRequirement>>
+    | ErrorMessage<IncludesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): IncludesAction<TInput, TRequirement, TMessage>;
-
+): IncludesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/integer/integer.d.ts
 /**
  * Integer issue interface.
  */
-interface IntegerIssue<TInput extends number> extends BaseIssue<TInput> {
+interface IntegerIssue<TInput$1 extends number> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -17885,9 +18264,9 @@ interface IntegerIssue<TInput extends number> extends BaseIssue<TInput> {
  * Integer action interface.
  */
 interface IntegerAction<
-  TInput extends number,
-  TMessage extends ErrorMessage<IntegerIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, IntegerIssue<TInput>> {
+  TInput$1 extends number,
+  TMessage extends ErrorMessage<IntegerIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, IntegerIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -17914,8 +18293,8 @@ interface IntegerAction<
  *
  * @returns An integer action.
  */
-declare function integer<TInput extends number>(): IntegerAction<
-  TInput,
+declare function integer<TInput$1 extends number>(): IntegerAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -17926,14 +18305,15 @@ declare function integer<TInput extends number>(): IntegerAction<
  * @returns An integer action.
  */
 declare function integer<
-  TInput extends number,
-  const TMessage extends ErrorMessage<IntegerIssue<TInput>> | undefined,
->(message: TMessage): IntegerAction<TInput, TMessage>;
-
+  TInput$1 extends number,
+  const TMessage extends ErrorMessage<IntegerIssue<TInput$1>> | undefined,
+>(message: TMessage): IntegerAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/ip/ip.d.ts
 /**
  * IP issue interface.
  */
-interface IpIssue<TInput extends string> extends BaseIssue<TInput> {
+interface IpIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -17959,9 +18339,9 @@ interface IpIssue<TInput extends string> extends BaseIssue<TInput> {
  * IP action interface.
  */
 interface IpAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<IpIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, IpIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<IpIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, IpIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -17988,7 +18368,7 @@ interface IpAction<
  *
  * @returns An IP action.
  */
-declare function ip<TInput extends string>(): IpAction<TInput, undefined>;
+declare function ip<TInput$1 extends string>(): IpAction<TInput$1, undefined>;
 /**
  * Creates an [IP address](https://en.wikipedia.org/wiki/IP_address) validation action.
  *
@@ -17997,14 +18377,15 @@ declare function ip<TInput extends string>(): IpAction<TInput, undefined>;
  * @returns An IP action.
  */
 declare function ip<
-  TInput extends string,
-  const TMessage extends ErrorMessage<IpIssue<TInput>> | undefined,
->(message: TMessage): IpAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<IpIssue<TInput$1>> | undefined,
+>(message: TMessage): IpAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/ipv4/ipv4.d.ts
 /**
  * IPv4 issue interface.
  */
-interface Ipv4Issue<TInput extends string> extends BaseIssue<TInput> {
+interface Ipv4Issue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -18030,9 +18411,9 @@ interface Ipv4Issue<TInput extends string> extends BaseIssue<TInput> {
  * IPv4 action interface.
  */
 interface Ipv4Action<
-  TInput extends string,
-  TMessage extends ErrorMessage<Ipv4Issue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, Ipv4Issue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<Ipv4Issue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, Ipv4Issue<TInput$1>> {
   /**
    * The action type.
    */
@@ -18059,7 +18440,10 @@ interface Ipv4Action<
  *
  * @returns An IPv4 action.
  */
-declare function ipv4<TInput extends string>(): Ipv4Action<TInput, undefined>;
+declare function ipv4<TInput$1 extends string>(): Ipv4Action<
+  TInput$1,
+  undefined
+>;
 /**
  * Creates an [IPv4](https://en.wikipedia.org/wiki/IPv4) address validation action.
  *
@@ -18068,14 +18452,15 @@ declare function ipv4<TInput extends string>(): Ipv4Action<TInput, undefined>;
  * @returns An IPv4 action.
  */
 declare function ipv4<
-  TInput extends string,
-  const TMessage extends ErrorMessage<Ipv4Issue<TInput>> | undefined,
->(message: TMessage): Ipv4Action<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<Ipv4Issue<TInput$1>> | undefined,
+>(message: TMessage): Ipv4Action<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/ipv6/ipv6.d.ts
 /**
  * IPv6 issue interface.
  */
-interface Ipv6Issue<TInput extends string> extends BaseIssue<TInput> {
+interface Ipv6Issue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -18101,9 +18486,9 @@ interface Ipv6Issue<TInput extends string> extends BaseIssue<TInput> {
  * IPv6 action interface.
  */
 interface Ipv6Action<
-  TInput extends string,
-  TMessage extends ErrorMessage<Ipv6Issue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, Ipv6Issue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<Ipv6Issue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, Ipv6Issue<TInput$1>> {
   /**
    * The action type.
    */
@@ -18130,7 +18515,10 @@ interface Ipv6Action<
  *
  * @returns An IPv6 action.
  */
-declare function ipv6<TInput extends string>(): Ipv6Action<TInput, undefined>;
+declare function ipv6<TInput$1 extends string>(): Ipv6Action<
+  TInput$1,
+  undefined
+>;
 /**
  * Creates an [IPv6](https://en.wikipedia.org/wiki/IPv6) address validation action.
  *
@@ -18139,14 +18527,15 @@ declare function ipv6<TInput extends string>(): Ipv6Action<TInput, undefined>;
  * @returns An IPv6 action.
  */
 declare function ipv6<
-  TInput extends string,
-  const TMessage extends ErrorMessage<Ipv6Issue<TInput>> | undefined,
->(message: TMessage): Ipv6Action<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<Ipv6Issue<TInput$1>> | undefined,
+>(message: TMessage): Ipv6Action<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/isoDate/isoDate.d.ts
 /**
  * ISO date issue interface.
  */
-interface IsoDateIssue<TInput extends string> extends BaseIssue<TInput> {
+interface IsoDateIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -18172,9 +18561,9 @@ interface IsoDateIssue<TInput extends string> extends BaseIssue<TInput> {
  * ISO date action interface.
  */
 interface IsoDateAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<IsoDateIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, IsoDateIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<IsoDateIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, IsoDateIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -18207,8 +18596,8 @@ interface IsoDateAction<
  *
  * @returns An ISO date action.
  */
-declare function isoDate<TInput extends string>(): IsoDateAction<
-  TInput,
+declare function isoDate<TInput$1 extends string>(): IsoDateAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -18225,14 +18614,16 @@ declare function isoDate<TInput extends string>(): IsoDateAction<
  * @returns An ISO date action.
  */
 declare function isoDate<
-  TInput extends string,
-  const TMessage extends ErrorMessage<IsoDateIssue<TInput>> | undefined,
->(message: TMessage): IsoDateAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<IsoDateIssue<TInput$1>> | undefined,
+>(message: TMessage): IsoDateAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/isoDateTime/isoDateTime.d.ts
 /**
  * ISO date time issue interface.
  */
-interface IsoDateTimeIssue<TInput extends string> extends BaseIssue<TInput> {
+interface IsoDateTimeIssue<TInput$1 extends string>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -18258,9 +18649,9 @@ interface IsoDateTimeIssue<TInput extends string> extends BaseIssue<TInput> {
  * ISO date time action interface.
  */
 interface IsoDateTimeAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<IsoDateTimeIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, IsoDateTimeIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<IsoDateTimeIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, IsoDateTimeIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -18296,8 +18687,8 @@ interface IsoDateTimeAction<
  *
  * @returns An ISO date time action.
  */
-declare function isoDateTime<TInput extends string>(): IsoDateTimeAction<
-  TInput,
+declare function isoDateTime<TInput$1 extends string>(): IsoDateTimeAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -18317,14 +18708,15 @@ declare function isoDateTime<TInput extends string>(): IsoDateTimeAction<
  * @returns An ISO date time action.
  */
 declare function isoDateTime<
-  TInput extends string,
-  const TMessage extends ErrorMessage<IsoDateTimeIssue<TInput>> | undefined,
->(message: TMessage): IsoDateTimeAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<IsoDateTimeIssue<TInput$1>> | undefined,
+>(message: TMessage): IsoDateTimeAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/isoTime/isoTime.d.ts
 /**
  * ISO time issue interface.
  */
-interface IsoTimeIssue<TInput extends string> extends BaseIssue<TInput> {
+interface IsoTimeIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -18350,9 +18742,9 @@ interface IsoTimeIssue<TInput extends string> extends BaseIssue<TInput> {
  * ISO time action interface.
  */
 interface IsoTimeAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<IsoTimeIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, IsoTimeIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<IsoTimeIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, IsoTimeIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -18381,8 +18773,8 @@ interface IsoTimeAction<
  *
  * @returns An ISO time action.
  */
-declare function isoTime<TInput extends string>(): IsoTimeAction<
-  TInput,
+declare function isoTime<TInput$1 extends string>(): IsoTimeAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -18395,14 +18787,16 @@ declare function isoTime<TInput extends string>(): IsoTimeAction<
  * @returns An ISO time action.
  */
 declare function isoTime<
-  TInput extends string,
-  const TMessage extends ErrorMessage<IsoTimeIssue<TInput>> | undefined,
->(message: TMessage): IsoTimeAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<IsoTimeIssue<TInput$1>> | undefined,
+>(message: TMessage): IsoTimeAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/isoTimeSecond/isoTimeSecond.d.ts
 /**
  * ISO time second issue interface.
  */
-interface IsoTimeSecondIssue<TInput extends string> extends BaseIssue<TInput> {
+interface IsoTimeSecondIssue<TInput$1 extends string>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -18428,9 +18822,9 @@ interface IsoTimeSecondIssue<TInput extends string> extends BaseIssue<TInput> {
  * ISO time second action interface.
  */
 interface IsoTimeSecondAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<IsoTimeSecondIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, IsoTimeSecondIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<IsoTimeSecondIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, IsoTimeSecondIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -18459,8 +18853,8 @@ interface IsoTimeSecondAction<
  *
  * @returns An ISO time second action.
  */
-declare function isoTimeSecond<TInput extends string>(): IsoTimeSecondAction<
-  TInput,
+declare function isoTimeSecond<TInput$1 extends string>(): IsoTimeSecondAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -18473,14 +18867,16 @@ declare function isoTimeSecond<TInput extends string>(): IsoTimeSecondAction<
  * @returns An ISO time second action.
  */
 declare function isoTimeSecond<
-  TInput extends string,
-  const TMessage extends ErrorMessage<IsoTimeSecondIssue<TInput>> | undefined,
->(message: TMessage): IsoTimeSecondAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<IsoTimeSecondIssue<TInput$1>> | undefined,
+>(message: TMessage): IsoTimeSecondAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/isoTimestamp/isoTimestamp.d.ts
 /**
  * ISO timestamp issue interface.
  */
-interface IsoTimestampIssue<TInput extends string> extends BaseIssue<TInput> {
+interface IsoTimestampIssue<TInput$1 extends string>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -18506,9 +18902,9 @@ interface IsoTimestampIssue<TInput extends string> extends BaseIssue<TInput> {
  * ISO timestamp action interface.
  */
 interface IsoTimestampAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<IsoTimestampIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, IsoTimestampIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<IsoTimestampIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, IsoTimestampIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -18551,8 +18947,8 @@ interface IsoTimestampAction<
  *
  * @returns An ISO timestamp action.
  */
-declare function isoTimestamp<TInput extends string>(): IsoTimestampAction<
-  TInput,
+declare function isoTimestamp<TInput$1 extends string>(): IsoTimestampAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -18580,14 +18976,15 @@ declare function isoTimestamp<TInput extends string>(): IsoTimestampAction<
  * @returns An ISO timestamp action.
  */
 declare function isoTimestamp<
-  TInput extends string,
-  const TMessage extends ErrorMessage<IsoTimestampIssue<TInput>> | undefined,
->(message: TMessage): IsoTimestampAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<IsoTimestampIssue<TInput$1>> | undefined,
+>(message: TMessage): IsoTimestampAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/isoWeek/isoWeek.d.ts
 /**
  * ISO week issue interface.
  */
-interface IsoWeekIssue<TInput extends string> extends BaseIssue<TInput> {
+interface IsoWeekIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -18613,9 +19010,9 @@ interface IsoWeekIssue<TInput extends string> extends BaseIssue<TInput> {
  * ISO week action interface.
  */
 interface IsoWeekAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<IsoWeekIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, IsoWeekIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<IsoWeekIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, IsoWeekIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -18647,8 +19044,8 @@ interface IsoWeekAction<
  *
  * @returns An ISO week action.
  */
-declare function isoWeek<TInput extends string>(): IsoWeekAction<
-  TInput,
+declare function isoWeek<TInput$1 extends string>(): IsoWeekAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -18664,15 +19061,16 @@ declare function isoWeek<TInput extends string>(): IsoWeekAction<
  * @returns An ISO week action.
  */
 declare function isoWeek<
-  TInput extends string,
-  const TMessage extends ErrorMessage<IsoWeekIssue<TInput>> | undefined,
->(message: TMessage): IsoWeekAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<IsoWeekIssue<TInput$1>> | undefined,
+>(message: TMessage): IsoWeekAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/length/length.d.ts
 /**
  * Length issue interface.
  */
-interface LengthIssue<TInput extends LengthInput, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface LengthIssue<TInput$1 extends LengthInput, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -18698,10 +19096,13 @@ interface LengthIssue<TInput extends LengthInput, TRequirement extends number>
  * Length action interface.
  */
 interface LengthAction<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   TRequirement extends number,
-  TMessage extends ErrorMessage<LengthIssue<TInput, TRequirement>> | undefined,
-> extends BaseValidation<TInput, TInput, LengthIssue<TInput, TRequirement>> {
+  TMessage extends
+    | ErrorMessage<LengthIssue<TInput$1, TRequirement>>
+    | undefined,
+> extends
+  BaseValidation<TInput$1, TInput$1, LengthIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -18731,9 +19132,9 @@ interface LengthAction<
  * @returns A length action.
  */
 declare function length<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   const TRequirement extends number,
->(requirement: TRequirement): LengthAction<TInput, TRequirement, undefined>;
+>(requirement: TRequirement): LengthAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a length validation action.
  *
@@ -18743,21 +19144,24 @@ declare function length<
  * @returns A length action.
  */
 declare function length<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<LengthIssue<TInput, TRequirement>>
+    | ErrorMessage<LengthIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): LengthAction<TInput, TRequirement, TMessage>;
-
+): LengthAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/ltValue/ltValue.d.ts
 /**
  * Less than value issue type.
  */
-interface LtValueIssue<TInput extends ValueInput, TRequirement extends TInput>
-  extends BaseIssue<TInput> {
+interface LtValueIssue<
+  TInput$1 extends ValueInput,
+  TRequirement extends TInput$1,
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -18779,10 +19183,13 @@ interface LtValueIssue<TInput extends ValueInput, TRequirement extends TInput>
  * Less than value action type.
  */
 interface LtValueAction<
-  TInput extends ValueInput,
-  TRequirement extends TInput,
-  TMessage extends ErrorMessage<LtValueIssue<TInput, TRequirement>> | undefined,
-> extends BaseValidation<TInput, TInput, LtValueIssue<TInput, TRequirement>> {
+  TInput$1 extends ValueInput,
+  TRequirement extends TInput$1,
+  TMessage extends
+    | ErrorMessage<LtValueIssue<TInput$1, TRequirement>>
+    | undefined,
+> extends
+  BaseValidation<TInput$1, TInput$1, LtValueIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -18812,9 +19219,9 @@ interface LtValueAction<
  * @returns A less than value action.
  */
 declare function ltValue<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
->(requirement: TRequirement): LtValueAction<TInput, TRequirement, undefined>;
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
+>(requirement: TRequirement): LtValueAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a less than value validation action.
  *
@@ -18824,20 +19231,21 @@ declare function ltValue<
  * @returns A less than value action.
  */
 declare function ltValue<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
   const TMessage extends
-    | ErrorMessage<LtValueIssue<TInput, TRequirement>>
+    | ErrorMessage<LtValueIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): LtValueAction<TInput, TRequirement, TMessage>;
-
+): LtValueAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/mac/mac.d.ts
 /**
  * MAC issue interface.
  */
-interface MacIssue<TInput extends string> extends BaseIssue<TInput> {
+interface MacIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -18863,9 +19271,9 @@ interface MacIssue<TInput extends string> extends BaseIssue<TInput> {
  * MAC action interface.
  */
 interface MacAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<MacIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, MacIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<MacIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, MacIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -18892,7 +19300,7 @@ interface MacAction<
  *
  * @returns A MAC action.
  */
-declare function mac<TInput extends string>(): MacAction<TInput, undefined>;
+declare function mac<TInput$1 extends string>(): MacAction<TInput$1, undefined>;
 /**
  * Creates a [MAC address](https://en.wikipedia.org/wiki/MAC_address) validation action.
  *
@@ -18901,14 +19309,15 @@ declare function mac<TInput extends string>(): MacAction<TInput, undefined>;
  * @returns A MAC action.
  */
 declare function mac<
-  TInput extends string,
-  const TMessage extends ErrorMessage<MacIssue<TInput>> | undefined,
->(message: TMessage): MacAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<MacIssue<TInput$1>> | undefined,
+>(message: TMessage): MacAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/mac48/mac48.d.ts
 /**
  * 48-bit MAC issue interface.
  */
-interface Mac48Issue<TInput extends string> extends BaseIssue<TInput> {
+interface Mac48Issue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -18934,9 +19343,9 @@ interface Mac48Issue<TInput extends string> extends BaseIssue<TInput> {
  * 48-bit MAC action interface.
  */
 interface Mac48Action<
-  TInput extends string,
-  TMessage extends ErrorMessage<Mac48Issue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, Mac48Issue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<Mac48Issue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, Mac48Issue<TInput$1>> {
   /**
    * The action type.
    */
@@ -18963,7 +19372,10 @@ interface Mac48Action<
  *
  * @returns A 48-bit MAC action.
  */
-declare function mac48<TInput extends string>(): Mac48Action<TInput, undefined>;
+declare function mac48<TInput$1 extends string>(): Mac48Action<
+  TInput$1,
+  undefined
+>;
 /**
  * Creates a 48-bit [MAC address](https://en.wikipedia.org/wiki/MAC_address) validation action.
  *
@@ -18972,14 +19384,15 @@ declare function mac48<TInput extends string>(): Mac48Action<TInput, undefined>;
  * @returns A 48-bit MAC action.
  */
 declare function mac48<
-  TInput extends string,
-  const TMessage extends ErrorMessage<Mac48Issue<TInput>> | undefined,
->(message: TMessage): Mac48Action<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<Mac48Issue<TInput$1>> | undefined,
+>(message: TMessage): Mac48Action<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/mac64/mac64.d.ts
 /**
  * 64-bit MAC issue interface.
  */
-interface Mac64Issue<TInput extends string> extends BaseIssue<TInput> {
+interface Mac64Issue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -19005,9 +19418,9 @@ interface Mac64Issue<TInput extends string> extends BaseIssue<TInput> {
  * 64-bit MAC action interface.
  */
 interface Mac64Action<
-  TInput extends string,
-  TMessage extends ErrorMessage<Mac64Issue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, Mac64Issue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<Mac64Issue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, Mac64Issue<TInput$1>> {
   /**
    * The action type.
    */
@@ -19034,7 +19447,10 @@ interface Mac64Action<
  *
  * @returns A 64-bit MAC action.
  */
-declare function mac64<TInput extends string>(): Mac64Action<TInput, undefined>;
+declare function mac64<TInput$1 extends string>(): Mac64Action<
+  TInput$1,
+  undefined
+>;
 /**
  * Creates a 64-bit [MAC address](https://en.wikipedia.org/wiki/MAC_address) validation action.
  *
@@ -19043,23 +19459,24 @@ declare function mac64<TInput extends string>(): Mac64Action<TInput, undefined>;
  * @returns A 64-bit MAC action.
  */
 declare function mac64<
-  TInput extends string,
-  const TMessage extends ErrorMessage<Mac64Issue<TInput>> | undefined,
->(message: TMessage): Mac64Action<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<Mac64Issue<TInput$1>> | undefined,
+>(message: TMessage): Mac64Action<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/mapItems/mapItems.d.ts
 /**
  * Array action type.
  */
-type ArrayAction$2<TInput extends ArrayInput, TOutput> = (
-  item: TInput[number],
+type ArrayAction$2<TInput$1 extends ArrayInput, TOutput$1> = (
+  item: TInput$1[number],
   index: number,
-  array: TInput,
-) => TOutput;
+  array: TInput$1,
+) => TOutput$1;
 /**
  * Map items action interface.
  */
-interface MapItemsAction<TInput extends ArrayInput, TOutput>
-  extends BaseTransformation<TInput, TOutput[], never> {
+interface MapItemsAction<TInput$1 extends ArrayInput, TOutput$1>
+  extends BaseTransformation<TInput$1, TOutput$1[], never> {
   /**
    * The action type.
    */
@@ -19071,7 +19488,7 @@ interface MapItemsAction<TInput extends ArrayInput, TOutput>
   /**
    * The map items operation.
    */
-  readonly operation: ArrayAction$2<TInput, TOutput>;
+  readonly operation: ArrayAction$2<TInput$1, TOutput$1>;
 }
 /**
  * Creates a map items transformation action.
@@ -19080,15 +19497,16 @@ interface MapItemsAction<TInput extends ArrayInput, TOutput>
  *
  * @returns A map items action.
  */
-declare function mapItems<TInput extends ArrayInput, TOutput>(
-  operation: ArrayAction$2<TInput, TOutput>,
-): MapItemsAction<TInput, TOutput>;
-
+declare function mapItems<TInput$1 extends ArrayInput, TOutput$1>(
+  operation: ArrayAction$2<TInput$1, TOutput$1>,
+): MapItemsAction<TInput$1, TOutput$1>;
+//#endregion
+//#region src/actions/maxBytes/maxBytes.d.ts
 /**
  * Max bytes issue interface.
  */
-interface MaxBytesIssue<TInput extends string, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface MaxBytesIssue<TInput$1 extends string, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -19114,12 +19532,13 @@ interface MaxBytesIssue<TInput extends string, TRequirement extends number>
  * Max bytes action interface.
  */
 interface MaxBytesAction<
-  TInput extends string,
+  TInput$1 extends string,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<MaxBytesIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxBytesIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, MaxBytesIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, MaxBytesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -19149,9 +19568,9 @@ interface MaxBytesAction<
  * @returns A max bytes action.
  */
 declare function maxBytes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
->(requirement: TRequirement): MaxBytesAction<TInput, TRequirement, undefined>;
+>(requirement: TRequirement): MaxBytesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a max [bytes](https://en.wikipedia.org/wiki/Byte) validation action.
  *
@@ -19161,25 +19580,26 @@ declare function maxBytes<
  * @returns A max bytes action.
  */
 declare function maxBytes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MaxBytesIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxBytesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MaxBytesAction<TInput, TRequirement, TMessage>;
-
+): MaxBytesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/maxEntries/maxEntries.d.ts
 /**
  * Max entries issue interface.
  *
  * @beta
  */
 interface MaxEntriesIssue<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   TRequirement extends number,
-> extends BaseIssue<TInput> {
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -19207,13 +19627,13 @@ interface MaxEntriesIssue<
  * @beta
  */
 interface MaxEntriesAction<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<MaxEntriesIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxEntriesIssue<TInput$1, TRequirement>>
     | undefined,
 > extends
-  BaseValidation<TInput, TInput, MaxEntriesIssue<TInput, TRequirement>> {
+  BaseValidation<TInput$1, TInput$1, MaxEntriesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -19245,9 +19665,11 @@ interface MaxEntriesAction<
  * @beta
  */
 declare function maxEntries<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   const TRequirement extends number,
->(requirement: TRequirement): MaxEntriesAction<TInput, TRequirement, undefined>;
+>(
+  requirement: TRequirement,
+): MaxEntriesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a max entries validation action.
  *
@@ -19259,21 +19681,24 @@ declare function maxEntries<
  * @beta
  */
 declare function maxEntries<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MaxEntriesIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxEntriesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MaxEntriesAction<TInput, TRequirement, TMessage>;
-
+): MaxEntriesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/maxGraphemes/maxGraphemes.d.ts
 /**
  * Max graphemes issue interface.
  */
-interface MaxGraphemesIssue<TInput extends string, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface MaxGraphemesIssue<
+  TInput$1 extends string,
+  TRequirement extends number,
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -19299,13 +19724,17 @@ interface MaxGraphemesIssue<TInput extends string, TRequirement extends number>
  * Max graphemes action interface.
  */
 interface MaxGraphemesAction<
-  TInput extends string,
+  TInput$1 extends string,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<MaxGraphemesIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxGraphemesIssue<TInput$1, TRequirement>>
     | undefined,
 > extends
-  BaseValidation<TInput, TInput, MaxGraphemesIssue<TInput, TRequirement>> {
+  BaseValidation<
+    TInput$1,
+    TInput$1,
+    MaxGraphemesIssue<TInput$1, TRequirement>
+  > {
   /**
    * The action type.
    */
@@ -19335,11 +19764,11 @@ interface MaxGraphemesAction<
  * @returns A max graphemes action.
  */
 declare function maxGraphemes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
 >(
   requirement: TRequirement,
-): MaxGraphemesAction<TInput, TRequirement, undefined>;
+): MaxGraphemesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a max graphemes validation action.
  *
@@ -19349,23 +19778,24 @@ declare function maxGraphemes<
  * @returns A max graphemes action.
  */
 declare function maxGraphemes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MaxGraphemesIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxGraphemesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MaxGraphemesAction<TInput, TRequirement, TMessage>;
-
+): MaxGraphemesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/maxLength/maxLength.d.ts
 /**
  * Max length issue interface.
  */
 interface MaxLengthIssue<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   TRequirement extends number,
-> extends BaseIssue<TInput> {
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -19391,12 +19821,13 @@ interface MaxLengthIssue<
  * Max length action interface.
  */
 interface MaxLengthAction<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<MaxLengthIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxLengthIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, MaxLengthIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, MaxLengthIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -19426,9 +19857,11 @@ interface MaxLengthAction<
  * @returns A max length action.
  */
 declare function maxLength<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   const TRequirement extends number,
->(requirement: TRequirement): MaxLengthAction<TInput, TRequirement, undefined>;
+>(
+  requirement: TRequirement,
+): MaxLengthAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a max length validation action.
  *
@@ -19438,21 +19871,22 @@ declare function maxLength<
  * @returns A max length action.
  */
 declare function maxLength<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MaxLengthIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxLengthIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MaxLengthAction<TInput, TRequirement, TMessage>;
-
+): MaxLengthAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/maxSize/maxSize.d.ts
 /**
  * Max size issue interface.
  */
-interface MaxSizeIssue<TInput extends SizeInput, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface MaxSizeIssue<TInput$1 extends SizeInput, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -19478,10 +19912,13 @@ interface MaxSizeIssue<TInput extends SizeInput, TRequirement extends number>
  * Max size action interface.
  */
 interface MaxSizeAction<
-  TInput extends SizeInput,
+  TInput$1 extends SizeInput,
   TRequirement extends number,
-  TMessage extends ErrorMessage<MaxSizeIssue<TInput, TRequirement>> | undefined,
-> extends BaseValidation<TInput, TInput, MaxSizeIssue<TInput, TRequirement>> {
+  TMessage extends
+    | ErrorMessage<MaxSizeIssue<TInput$1, TRequirement>>
+    | undefined,
+> extends
+  BaseValidation<TInput$1, TInput$1, MaxSizeIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -19511,9 +19948,9 @@ interface MaxSizeAction<
  * @returns A max size action.
  */
 declare function maxSize<
-  TInput extends SizeInput,
+  TInput$1 extends SizeInput,
   const TRequirement extends number,
->(requirement: TRequirement): MaxSizeAction<TInput, TRequirement, undefined>;
+>(requirement: TRequirement): MaxSizeAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a max size validation action.
  *
@@ -19523,23 +19960,24 @@ declare function maxSize<
  * @returns A max size action.
  */
 declare function maxSize<
-  TInput extends SizeInput,
+  TInput$1 extends SizeInput,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MaxSizeIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxSizeIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MaxSizeAction<TInput, TRequirement, TMessage>;
-
+): MaxSizeAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/maxValue/maxValue.d.ts
 /**
  * Max value issue interface.
  */
 interface MaxValueIssue<
-  TInput extends ValueInput,
+  TInput$1 extends ValueInput,
   TRequirement extends ValueInput,
-> extends BaseIssue<TInput> {
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -19561,12 +19999,13 @@ interface MaxValueIssue<
  * Max value action interface.
  */
 interface MaxValueAction<
-  TInput extends ValueInput,
-  TRequirement extends TInput,
+  TInput$1 extends ValueInput,
+  TRequirement extends TInput$1,
   TMessage extends
-    | ErrorMessage<MaxValueIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxValueIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, MaxValueIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, MaxValueIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -19596,9 +20035,9 @@ interface MaxValueAction<
  * @returns A max value action.
  */
 declare function maxValue<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
->(requirement: TRequirement): MaxValueAction<TInput, TRequirement, undefined>;
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
+>(requirement: TRequirement): MaxValueAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a max value validation action.
  *
@@ -19608,21 +20047,22 @@ declare function maxValue<
  * @returns A max value action.
  */
 declare function maxValue<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
   const TMessage extends
-    | ErrorMessage<MaxValueIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxValueIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MaxValueAction<TInput, TRequirement, TMessage>;
-
+): MaxValueAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/maxWords/maxWords.d.ts
 /**
  * Max words issue interface.
  */
-interface MaxWordsIssue<TInput extends string, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface MaxWordsIssue<TInput$1 extends string, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -19648,13 +20088,14 @@ interface MaxWordsIssue<TInput extends string, TRequirement extends number>
  * Max words action interface.
  */
 interface MaxWordsAction<
-  TInput extends string,
+  TInput$1 extends string,
   TLocales extends Intl.LocalesArgument,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<MaxWordsIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxWordsIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, MaxWordsIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, MaxWordsIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -19689,13 +20130,13 @@ interface MaxWordsAction<
  * @returns A max words action.
  */
 declare function maxWords<
-  TInput extends string,
+  TInput$1 extends string,
   TLocales extends Intl.LocalesArgument,
   const TRequirement extends number,
 >(
   locales: TLocales,
   requirement: TRequirement,
-): MaxWordsAction<TInput, TLocales, TRequirement, undefined>;
+): MaxWordsAction<TInput$1, TLocales, TRequirement, undefined>;
 /**
  * Creates a max words validation action.
  *
@@ -19706,23 +20147,24 @@ declare function maxWords<
  * @returns A max words action.
  */
 declare function maxWords<
-  TInput extends string,
+  TInput$1 extends string,
   TLocales extends Intl.LocalesArgument,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MaxWordsIssue<TInput, TRequirement>>
+    | ErrorMessage<MaxWordsIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   locales: TLocales,
   requirement: TRequirement,
   message: TMessage,
-): MaxWordsAction<TInput, TLocales, TRequirement, TMessage>;
-
+): MaxWordsAction<TInput$1, TLocales, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/metadata/metadata.d.ts
 /**
  * Metadata action interface.
  */
-interface MetadataAction$1<TInput, TMetadata extends Record<string, unknown>>
-  extends BaseMetadata<TInput> {
+interface MetadataAction<TInput$1, TMetadata extends Record<string, unknown>>
+  extends BaseMetadata<TInput$1> {
   /**
    * The action type.
    */
@@ -19744,10 +20186,11 @@ interface MetadataAction$1<TInput, TMetadata extends Record<string, unknown>>
  * @returns A metadata action.
  */
 declare function metadata<
-  TInput,
+  TInput$1,
   const TMetadata extends Record<string, unknown>,
->(metadata_: TMetadata): MetadataAction$1<TInput, TMetadata>;
-
+>(metadata_: TMetadata): MetadataAction<TInput$1, TMetadata>;
+//#endregion
+//#region src/actions/mimeType/mimeType.d.ts
 /**
  * Requirement type.
  */
@@ -19755,8 +20198,8 @@ type Requirement = readonly `${string}/${string}`[];
 /**
  * MIME type issue interface.
  */
-interface MimeTypeIssue<TInput extends Blob, TRequirement extends Requirement>
-  extends BaseIssue<TInput> {
+interface MimeTypeIssue<TInput$1 extends Blob, TRequirement extends Requirement>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -19782,12 +20225,13 @@ interface MimeTypeIssue<TInput extends Blob, TRequirement extends Requirement>
  * MIME type action interface.
  */
 interface MimeTypeAction<
-  TInput extends Blob,
+  TInput$1 extends Blob,
   TRequirement extends Requirement,
   TMessage extends
-    | ErrorMessage<MimeTypeIssue<TInput, TRequirement>>
+    | ErrorMessage<MimeTypeIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, MimeTypeIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, MimeTypeIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -19817,9 +20261,9 @@ interface MimeTypeAction<
  * @returns A MIME type action.
  */
 declare function mimeType<
-  TInput extends Blob,
+  TInput$1 extends Blob,
   const TRequirement extends Requirement,
->(requirement: TRequirement): MimeTypeAction<TInput, TRequirement, undefined>;
+>(requirement: TRequirement): MimeTypeAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a [MIME type](https://developer.mozilla.org/docs/Web/HTTP/Basics_of_HTTP/MIME_types) validation action.
  *
@@ -19829,21 +20273,22 @@ declare function mimeType<
  * @returns A MIME type action.
  */
 declare function mimeType<
-  TInput extends Blob,
+  TInput$1 extends Blob,
   const TRequirement extends Requirement,
   const TMessage extends
-    | ErrorMessage<MimeTypeIssue<TInput, TRequirement>>
+    | ErrorMessage<MimeTypeIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MimeTypeAction<TInput, TRequirement, TMessage>;
-
+): MimeTypeAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/minBytes/minBytes.d.ts
 /**
  * Min bytes issue interface.
  */
-interface MinBytesIssue<TInput extends string, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface MinBytesIssue<TInput$1 extends string, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -19869,12 +20314,13 @@ interface MinBytesIssue<TInput extends string, TRequirement extends number>
  * Min bytes action interface.
  */
 interface MinBytesAction<
-  TInput extends string,
+  TInput$1 extends string,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<MinBytesIssue<TInput, TRequirement>>
+    | ErrorMessage<MinBytesIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, MinBytesIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, MinBytesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -19904,9 +20350,9 @@ interface MinBytesAction<
  * @returns A min bytes action.
  */
 declare function minBytes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
->(requirement: TRequirement): MinBytesAction<TInput, TRequirement, undefined>;
+>(requirement: TRequirement): MinBytesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a min [bytes](https://en.wikipedia.org/wiki/Byte) validation action.
  *
@@ -19916,25 +20362,26 @@ declare function minBytes<
  * @returns A min bytes action.
  */
 declare function minBytes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MinBytesIssue<TInput, TRequirement>>
+    | ErrorMessage<MinBytesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MinBytesAction<TInput, TRequirement, TMessage>;
-
+): MinBytesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/minEntries/minEntries.d.ts
 /**
  * Min entries issue interface.
  *
  * @beta
  */
 interface MinEntriesIssue<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   TRequirement extends number,
-> extends BaseIssue<TInput> {
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -19962,13 +20409,13 @@ interface MinEntriesIssue<
  * @beta
  */
 interface MinEntriesAction<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<MinEntriesIssue<TInput, TRequirement>>
+    | ErrorMessage<MinEntriesIssue<TInput$1, TRequirement>>
     | undefined,
 > extends
-  BaseValidation<TInput, TInput, MinEntriesIssue<TInput, TRequirement>> {
+  BaseValidation<TInput$1, TInput$1, MinEntriesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -20000,9 +20447,11 @@ interface MinEntriesAction<
  * @beta
  */
 declare function minEntries<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   const TRequirement extends number,
->(requirement: TRequirement): MinEntriesAction<TInput, TRequirement, undefined>;
+>(
+  requirement: TRequirement,
+): MinEntriesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a min entries validation action.
  *
@@ -20014,21 +20463,24 @@ declare function minEntries<
  * @beta
  */
 declare function minEntries<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MinEntriesIssue<TInput, TRequirement>>
+    | ErrorMessage<MinEntriesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MinEntriesAction<TInput, TRequirement, TMessage>;
-
+): MinEntriesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/minGraphemes/minGraphemes.d.ts
 /**
  * Min graphemes issue interface.
  */
-interface MinGraphemesIssue<TInput extends string, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface MinGraphemesIssue<
+  TInput$1 extends string,
+  TRequirement extends number,
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -20054,13 +20506,17 @@ interface MinGraphemesIssue<TInput extends string, TRequirement extends number>
  * Min graphemes action interface.
  */
 interface MinGraphemesAction<
-  TInput extends string,
+  TInput$1 extends string,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<MinGraphemesIssue<TInput, TRequirement>>
+    | ErrorMessage<MinGraphemesIssue<TInput$1, TRequirement>>
     | undefined,
 > extends
-  BaseValidation<TInput, TInput, MinGraphemesIssue<TInput, TRequirement>> {
+  BaseValidation<
+    TInput$1,
+    TInput$1,
+    MinGraphemesIssue<TInput$1, TRequirement>
+  > {
   /**
    * The action type.
    */
@@ -20090,11 +20546,11 @@ interface MinGraphemesAction<
  * @returns A min graphemes action.
  */
 declare function minGraphemes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
 >(
   requirement: TRequirement,
-): MinGraphemesAction<TInput, TRequirement, undefined>;
+): MinGraphemesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a min graphemes validation action.
  *
@@ -20104,23 +20560,24 @@ declare function minGraphemes<
  * @returns A min graphemes action.
  */
 declare function minGraphemes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MinGraphemesIssue<TInput, TRequirement>>
+    | ErrorMessage<MinGraphemesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MinGraphemesAction<TInput, TRequirement, TMessage>;
-
+): MinGraphemesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/minLength/minLength.d.ts
 /**
  * Min length issue interface.
  */
 interface MinLengthIssue<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   TRequirement extends number,
-> extends BaseIssue<TInput> {
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -20146,12 +20603,13 @@ interface MinLengthIssue<
  * Min length action interface.
  */
 interface MinLengthAction<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<MinLengthIssue<TInput, TRequirement>>
+    | ErrorMessage<MinLengthIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, MinLengthIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, MinLengthIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -20181,9 +20639,11 @@ interface MinLengthAction<
  * @returns A min length action.
  */
 declare function minLength<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   const TRequirement extends number,
->(requirement: TRequirement): MinLengthAction<TInput, TRequirement, undefined>;
+>(
+  requirement: TRequirement,
+): MinLengthAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a min length validation action.
  *
@@ -20193,21 +20653,22 @@ declare function minLength<
  * @returns A min length action.
  */
 declare function minLength<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MinLengthIssue<TInput, TRequirement>>
+    | ErrorMessage<MinLengthIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MinLengthAction<TInput, TRequirement, TMessage>;
-
+): MinLengthAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/minSize/minSize.d.ts
 /**
  * Min size issue interface.
  */
-interface MinSizeIssue<TInput extends SizeInput, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface MinSizeIssue<TInput$1 extends SizeInput, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -20233,10 +20694,13 @@ interface MinSizeIssue<TInput extends SizeInput, TRequirement extends number>
  * Min size action interface.
  */
 interface MinSizeAction<
-  TInput extends SizeInput,
+  TInput$1 extends SizeInput,
   TRequirement extends number,
-  TMessage extends ErrorMessage<MinSizeIssue<TInput, TRequirement>> | undefined,
-> extends BaseValidation<TInput, TInput, MinSizeIssue<TInput, TRequirement>> {
+  TMessage extends
+    | ErrorMessage<MinSizeIssue<TInput$1, TRequirement>>
+    | undefined,
+> extends
+  BaseValidation<TInput$1, TInput$1, MinSizeIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -20266,9 +20730,9 @@ interface MinSizeAction<
  * @returns A min size action.
  */
 declare function minSize<
-  TInput extends SizeInput,
+  TInput$1 extends SizeInput,
   const TRequirement extends number,
->(requirement: TRequirement): MinSizeAction<TInput, TRequirement, undefined>;
+>(requirement: TRequirement): MinSizeAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a min size validation action.
  *
@@ -20278,23 +20742,24 @@ declare function minSize<
  * @returns A min size action.
  */
 declare function minSize<
-  TInput extends SizeInput,
+  TInput$1 extends SizeInput,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MinSizeIssue<TInput, TRequirement>>
+    | ErrorMessage<MinSizeIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MinSizeAction<TInput, TRequirement, TMessage>;
-
+): MinSizeAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/minValue/minValue.d.ts
 /**
  * Min value issue interface.
  */
 interface MinValueIssue<
-  TInput extends ValueInput,
+  TInput$1 extends ValueInput,
   TRequirement extends ValueInput,
-> extends BaseIssue<TInput> {
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -20316,12 +20781,13 @@ interface MinValueIssue<
  * Min value action interface.
  */
 interface MinValueAction<
-  TInput extends ValueInput,
-  TRequirement extends TInput,
+  TInput$1 extends ValueInput,
+  TRequirement extends TInput$1,
   TMessage extends
-    | ErrorMessage<MinValueIssue<TInput, TRequirement>>
+    | ErrorMessage<MinValueIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, MinValueIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, MinValueIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -20351,9 +20817,9 @@ interface MinValueAction<
  * @returns A min value action.
  */
 declare function minValue<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
->(requirement: TRequirement): MinValueAction<TInput, TRequirement, undefined>;
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
+>(requirement: TRequirement): MinValueAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a min value validation action.
  *
@@ -20363,21 +20829,22 @@ declare function minValue<
  * @returns A min value action.
  */
 declare function minValue<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
   const TMessage extends
-    | ErrorMessage<MinValueIssue<TInput, TRequirement>>
+    | ErrorMessage<MinValueIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MinValueAction<TInput, TRequirement, TMessage>;
-
+): MinValueAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/minWords/minWords.d.ts
 /**
  * Min words issue interface.
  */
-interface MinWordsIssue<TInput extends string, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface MinWordsIssue<TInput$1 extends string, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -20403,13 +20870,14 @@ interface MinWordsIssue<TInput extends string, TRequirement extends number>
  * Min words action interface.
  */
 interface MinWordsAction<
-  TInput extends string,
+  TInput$1 extends string,
   TLocales extends Intl.LocalesArgument,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<MinWordsIssue<TInput, TRequirement>>
+    | ErrorMessage<MinWordsIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, MinWordsIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, MinWordsIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -20444,13 +20912,13 @@ interface MinWordsAction<
  * @returns A min words action.
  */
 declare function minWords<
-  TInput extends string,
+  TInput$1 extends string,
   TLocales extends Intl.LocalesArgument,
   const TRequirement extends number,
 >(
   locales: TLocales,
   requirement: TRequirement,
-): MinWordsAction<TInput, TLocales, TRequirement, undefined>;
+): MinWordsAction<TInput$1, TLocales, TRequirement, undefined>;
 /**
  * Creates a min words validation action.
  *
@@ -20461,18 +20929,19 @@ declare function minWords<
  * @returns A min words action.
  */
 declare function minWords<
-  TInput extends string,
+  TInput$1 extends string,
   TLocales extends Intl.LocalesArgument,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MinWordsIssue<TInput, TRequirement>>
+    | ErrorMessage<MinWordsIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   locales: TLocales,
   requirement: TRequirement,
   message: TMessage,
-): MinWordsAction<TInput, TLocales, TRequirement, TMessage>;
-
+): MinWordsAction<TInput$1, TLocales, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/multipleOf/multipleOf.d.ts
 /**
  * Input type
  */
@@ -20480,8 +20949,8 @@ type Input = number | bigint;
 /**
  * Multiple of issue interface.
  */
-interface MultipleOfIssue<TInput extends Input, TRequirement extends Input>
-  extends BaseIssue<TInput> {
+interface MultipleOfIssue<TInput$1 extends Input, TRequirement extends Input>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -20497,7 +20966,7 @@ interface MultipleOfIssue<TInput extends Input, TRequirement extends Input>
   /**
    * The received property.
    */
-  readonly received: `${TInput}`;
+  readonly received: `${TInput$1}`;
   /**
    * The divisor.
    */
@@ -20507,13 +20976,13 @@ interface MultipleOfIssue<TInput extends Input, TRequirement extends Input>
  * Multiple of action interface.
  */
 interface MultipleOfAction<
-  TInput extends Input,
+  TInput$1 extends Input,
   TRequirement extends Input,
   TMessage extends
-    | ErrorMessage<MultipleOfIssue<TInput, TRequirement>>
+    | ErrorMessage<MultipleOfIssue<TInput$1, TRequirement>>
     | undefined,
 > extends
-  BaseValidation<TInput, TInput, MultipleOfIssue<TInput, TRequirement>> {
+  BaseValidation<TInput$1, TInput$1, MultipleOfIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -20543,9 +21012,11 @@ interface MultipleOfAction<
  * @returns A multiple of action.
  */
 declare function multipleOf<
-  TInput extends number,
+  TInput$1 extends number,
   const TRequirement extends number,
->(requirement: TRequirement): MultipleOfAction<TInput, TRequirement, undefined>;
+>(
+  requirement: TRequirement,
+): MultipleOfAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a [multiple](https://en.wikipedia.org/wiki/Multiple_(mathematics)) of validation action.
  *
@@ -20554,9 +21025,11 @@ declare function multipleOf<
  * @returns A multiple of action.
  */
 declare function multipleOf<
-  TInput extends bigint,
+  TInput$1 extends bigint,
   const TRequirement extends bigint,
->(requirement: TRequirement): MultipleOfAction<TInput, TRequirement, undefined>;
+>(
+  requirement: TRequirement,
+): MultipleOfAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a [multiple](https://en.wikipedia.org/wiki/Multiple_(mathematics)) of validation action.
  *
@@ -20566,15 +21039,15 @@ declare function multipleOf<
  * @returns A multiple of action.
  */
 declare function multipleOf<
-  TInput extends number,
+  TInput$1 extends number,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<MultipleOfIssue<TInput, TRequirement>>
+    | ErrorMessage<MultipleOfIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MultipleOfAction<TInput, TRequirement, TMessage>;
+): MultipleOfAction<TInput$1, TRequirement, TMessage>;
 /**
  * Creates a [multiple](https://en.wikipedia.org/wiki/Multiple_(mathematics)) of validation action.
  *
@@ -20584,20 +21057,21 @@ declare function multipleOf<
  * @returns A multiple of action.
  */
 declare function multipleOf<
-  TInput extends bigint,
+  TInput$1 extends bigint,
   const TRequirement extends bigint,
   const TMessage extends
-    | ErrorMessage<MultipleOfIssue<TInput, TRequirement>>
+    | ErrorMessage<MultipleOfIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): MultipleOfAction<TInput, TRequirement, TMessage>;
-
+): MultipleOfAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/nanoid/nanoid.d.ts
 /**
  * Nano ID issue interface.
  */
-interface NanoIdIssue<TInput extends string> extends BaseIssue<TInput> {
+interface NanoIdIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -20624,14 +21098,14 @@ interface NanoIdIssue<TInput extends string> extends BaseIssue<TInput> {
  *
  * @deprecated Use `NanoIdIssue` instead.
  */
-type NanoIDIssue<TInput extends string> = NanoIdIssue<TInput>;
+type NanoIDIssue<TInput$1 extends string> = NanoIdIssue<TInput$1>;
 /**
  * Nano ID action interface.
  */
 interface NanoIdAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<NanoIdIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, NanoIdIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<NanoIdIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, NanoIdIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -20659,16 +21133,16 @@ interface NanoIdAction<
  * @deprecated Use `NanoIdAction` instead.
  */
 type NanoIDAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<NanoIdIssue<TInput>> | undefined,
-> = NanoIdAction<TInput, TMessage>;
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<NanoIdIssue<TInput$1>> | undefined,
+> = NanoIdAction<TInput$1, TMessage>;
 /**
  * Creates a [Nano ID](https://github.com/ai/nanoid) validation action.
  *
  * @returns A Nano ID action.
  */
-declare function nanoid<TInput extends string>(): NanoIdAction<
-  TInput,
+declare function nanoid<TInput$1 extends string>(): NanoIdAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -20679,14 +21153,16 @@ declare function nanoid<TInput extends string>(): NanoIdAction<
  * @returns A Nano ID action.
  */
 declare function nanoid<
-  TInput extends string,
-  const TMessage extends ErrorMessage<NanoIdIssue<TInput>> | undefined,
->(message: TMessage): NanoIdAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<NanoIdIssue<TInput$1>> | undefined,
+>(message: TMessage): NanoIdAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/nonEmpty/nonEmpty.d.ts
 /**
  * Non empty issue interface.
  */
-interface NonEmptyIssue<TInput extends LengthInput> extends BaseIssue<TInput> {
+interface NonEmptyIssue<TInput$1 extends LengthInput>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -20708,9 +21184,9 @@ interface NonEmptyIssue<TInput extends LengthInput> extends BaseIssue<TInput> {
  * Non empty action interface.
  */
 interface NonEmptyAction<
-  TInput extends LengthInput,
-  TMessage extends ErrorMessage<NonEmptyIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, NonEmptyIssue<TInput>> {
+  TInput$1 extends LengthInput,
+  TMessage extends ErrorMessage<NonEmptyIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, NonEmptyIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -20733,8 +21209,8 @@ interface NonEmptyAction<
  *
  * @returns A non-empty action.
  */
-declare function nonEmpty<TInput extends LengthInput>(): NonEmptyAction<
-  TInput,
+declare function nonEmpty<TInput$1 extends LengthInput>(): NonEmptyAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -20745,10 +21221,11 @@ declare function nonEmpty<TInput extends LengthInput>(): NonEmptyAction<
  * @returns A non-empty action.
  */
 declare function nonEmpty<
-  TInput extends LengthInput,
-  const TMessage extends ErrorMessage<NonEmptyIssue<TInput>> | undefined,
->(message: TMessage): NonEmptyAction<TInput, TMessage>;
-
+  TInput$1 extends LengthInput,
+  const TMessage extends ErrorMessage<NonEmptyIssue<TInput$1>> | undefined,
+>(message: TMessage): NonEmptyAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/normalize/normalize.d.ts
 /**
  * Normalize form type.
  */
@@ -20787,12 +21264,13 @@ declare function normalize(): NormalizeAction<undefined>;
 declare function normalize<TForm extends NormalizeForm | undefined>(
   form: TForm,
 ): NormalizeAction<TForm>;
-
+//#endregion
+//#region src/actions/notBytes/notBytes.d.ts
 /**
  * Not bytes issue interface.
  */
-interface NotBytesIssue<TInput extends string, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface NotBytesIssue<TInput$1 extends string, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -20818,12 +21296,13 @@ interface NotBytesIssue<TInput extends string, TRequirement extends number>
  * Not bytes action interface.
  */
 interface NotBytesAction<
-  TInput extends string,
+  TInput$1 extends string,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<NotBytesIssue<TInput, TRequirement>>
+    | ErrorMessage<NotBytesIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, NotBytesIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, NotBytesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -20853,9 +21332,9 @@ interface NotBytesAction<
  * @returns A not bytes action.
  */
 declare function notBytes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
->(requirement: TRequirement): NotBytesAction<TInput, TRequirement, undefined>;
+>(requirement: TRequirement): NotBytesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a not [bytes](https://en.wikipedia.org/wiki/Byte) validation action.
  *
@@ -20865,25 +21344,26 @@ declare function notBytes<
  * @returns A not bytes action.
  */
 declare function notBytes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<NotBytesIssue<TInput, TRequirement>>
+    | ErrorMessage<NotBytesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): NotBytesAction<TInput, TRequirement, TMessage>;
-
+): NotBytesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/notEntries/notEntries.d.ts
 /**
  * Not entries issue interface.
  *
  * @beta
  */
 interface NotEntriesIssue<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   TRequirement extends number,
-> extends BaseIssue<TInput> {
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -20911,13 +21391,13 @@ interface NotEntriesIssue<
  * @beta
  */
 interface NotEntriesAction<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<NotEntriesIssue<TInput, TRequirement>>
+    | ErrorMessage<NotEntriesIssue<TInput$1, TRequirement>>
     | undefined,
 > extends
-  BaseValidation<TInput, TInput, NotEntriesIssue<TInput, TRequirement>> {
+  BaseValidation<TInput$1, TInput$1, NotEntriesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -20949,9 +21429,11 @@ interface NotEntriesAction<
  * @beta
  */
 declare function notEntries<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   const TRequirement extends number,
->(requirement: TRequirement): NotEntriesAction<TInput, TRequirement, undefined>;
+>(
+  requirement: TRequirement,
+): NotEntriesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a not entries validation action.
  *
@@ -20963,21 +21445,24 @@ declare function notEntries<
  * @beta
  */
 declare function notEntries<
-  TInput extends EntriesInput,
+  TInput$1 extends EntriesInput,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<NotEntriesIssue<TInput, TRequirement>>
+    | ErrorMessage<NotEntriesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): NotEntriesAction<TInput, TRequirement, TMessage>;
-
+): NotEntriesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/notGraphemes/notGraphemes.d.ts
 /**
  * Not graphemes issue interface.
  */
-interface NotGraphemesIssue<TInput extends string, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface NotGraphemesIssue<
+  TInput$1 extends string,
+  TRequirement extends number,
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -21003,13 +21488,17 @@ interface NotGraphemesIssue<TInput extends string, TRequirement extends number>
  * Not graphemes action interface.
  */
 interface NotGraphemesAction<
-  TInput extends string,
+  TInput$1 extends string,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<NotGraphemesIssue<TInput, TRequirement>>
+    | ErrorMessage<NotGraphemesIssue<TInput$1, TRequirement>>
     | undefined,
 > extends
-  BaseValidation<TInput, TInput, NotGraphemesIssue<TInput, TRequirement>> {
+  BaseValidation<
+    TInput$1,
+    TInput$1,
+    NotGraphemesIssue<TInput$1, TRequirement>
+  > {
   /**
    * The action type.
    */
@@ -21039,11 +21528,11 @@ interface NotGraphemesAction<
  * @returns A not graphemes action.
  */
 declare function notGraphemes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
 >(
   requirement: TRequirement,
-): NotGraphemesAction<TInput, TRequirement, undefined>;
+): NotGraphemesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a not graphemes validation action.
  *
@@ -21053,23 +21542,24 @@ declare function notGraphemes<
  * @returns A not graphemes action.
  */
 declare function notGraphemes<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<NotGraphemesIssue<TInput, TRequirement>>
+    | ErrorMessage<NotGraphemesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): NotGraphemesAction<TInput, TRequirement, TMessage>;
-
+): NotGraphemesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/notLength/notLength.d.ts
 /**
  * Not length issue interface.
  */
 interface NotLengthIssue<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   TRequirement extends number,
-> extends BaseIssue<TInput> {
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -21095,12 +21585,13 @@ interface NotLengthIssue<
  * Not length action interface.
  */
 interface NotLengthAction<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<NotLengthIssue<TInput, TRequirement>>
+    | ErrorMessage<NotLengthIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, NotLengthIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, NotLengthIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -21130,9 +21621,11 @@ interface NotLengthAction<
  * @returns A not length action.
  */
 declare function notLength<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   const TRequirement extends number,
->(requirement: TRequirement): NotLengthAction<TInput, TRequirement, undefined>;
+>(
+  requirement: TRequirement,
+): NotLengthAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a not length validation action.
  *
@@ -21142,21 +21635,22 @@ declare function notLength<
  * @returns A not length action.
  */
 declare function notLength<
-  TInput extends LengthInput,
+  TInput$1 extends LengthInput,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<NotLengthIssue<TInput, TRequirement>>
+    | ErrorMessage<NotLengthIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): NotLengthAction<TInput, TRequirement, TMessage>;
-
+): NotLengthAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/notSize/notSize.d.ts
 /**
  * Not size issue interface.
  */
-interface NotSizeIssue<TInput extends SizeInput, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface NotSizeIssue<TInput$1 extends SizeInput, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -21182,10 +21676,13 @@ interface NotSizeIssue<TInput extends SizeInput, TRequirement extends number>
  * Not size action interface.
  */
 interface NotSizeAction<
-  TInput extends SizeInput,
+  TInput$1 extends SizeInput,
   TRequirement extends number,
-  TMessage extends ErrorMessage<NotSizeIssue<TInput, TRequirement>> | undefined,
-> extends BaseValidation<TInput, TInput, NotSizeIssue<TInput, TRequirement>> {
+  TMessage extends
+    | ErrorMessage<NotSizeIssue<TInput$1, TRequirement>>
+    | undefined,
+> extends
+  BaseValidation<TInput$1, TInput$1, NotSizeIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -21215,9 +21712,9 @@ interface NotSizeAction<
  * @returns A not size action.
  */
 declare function notSize<
-  TInput extends SizeInput,
+  TInput$1 extends SizeInput,
   const TRequirement extends number,
->(requirement: TRequirement): NotSizeAction<TInput, TRequirement, undefined>;
+>(requirement: TRequirement): NotSizeAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a not size validation action.
  *
@@ -21227,21 +21724,24 @@ declare function notSize<
  * @returns A not size action.
  */
 declare function notSize<
-  TInput extends SizeInput,
+  TInput$1 extends SizeInput,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<NotSizeIssue<TInput, TRequirement>>
+    | ErrorMessage<NotSizeIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): NotSizeAction<TInput, TRequirement, TMessage>;
-
+): NotSizeAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/notValue/notValue.d.ts
 /**
  * Not value issue interface.
  */
-interface NotValueIssue<TInput extends ValueInput, TRequirement extends TInput>
-  extends BaseIssue<TInput> {
+interface NotValueIssue<
+  TInput$1 extends ValueInput,
+  TRequirement extends TInput$1,
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -21263,12 +21763,13 @@ interface NotValueIssue<TInput extends ValueInput, TRequirement extends TInput>
  * Not value action interface.
  */
 interface NotValueAction<
-  TInput extends ValueInput,
-  TRequirement extends TInput,
+  TInput$1 extends ValueInput,
+  TRequirement extends TInput$1,
   TMessage extends
-    | ErrorMessage<NotValueIssue<TInput, TRequirement>>
+    | ErrorMessage<NotValueIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, NotValueIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, NotValueIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -21298,9 +21799,9 @@ interface NotValueAction<
  * @returns A not value action.
  */
 declare function notValue<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
->(requirement: TRequirement): NotValueAction<TInput, TRequirement, undefined>;
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
+>(requirement: TRequirement): NotValueAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a not value validation action.
  *
@@ -21310,23 +21811,24 @@ declare function notValue<
  * @returns A not value action.
  */
 declare function notValue<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
   const TMessage extends
-    | ErrorMessage<NotValueIssue<TInput, TRequirement>>
+    | ErrorMessage<NotValueIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): NotValueAction<TInput, TRequirement, TMessage>;
-
+): NotValueAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/notValues/notValues.d.ts
 /**
  * Not values issue type.
  */
 interface NotValuesIssue<
-  TInput extends ValueInput,
-  TRequirement extends readonly TInput[],
-> extends BaseIssue<TInput> {
+  TInput$1 extends ValueInput,
+  TRequirement extends readonly TInput$1[],
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -21348,12 +21850,13 @@ interface NotValuesIssue<
  * Not values action type.
  */
 interface NotValuesAction<
-  TInput extends ValueInput,
-  TRequirement extends readonly TInput[],
+  TInput$1 extends ValueInput,
+  TRequirement extends readonly TInput$1[],
   TMessage extends
-    | ErrorMessage<NotValuesIssue<TInput, TRequirement>>
+    | ErrorMessage<NotValuesIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, NotValuesIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, NotValuesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -21383,9 +21886,11 @@ interface NotValuesAction<
  * @returns A not values action.
  */
 declare function notValues<
-  TInput extends ValueInput,
-  const TRequirement extends readonly TInput[],
->(requirement: TRequirement): NotValuesAction<TInput, TRequirement, undefined>;
+  TInput$1 extends ValueInput,
+  const TRequirement extends readonly TInput$1[],
+>(
+  requirement: TRequirement,
+): NotValuesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a not values validation action.
  *
@@ -21395,21 +21900,22 @@ declare function notValues<
  * @returns A not values action.
  */
 declare function notValues<
-  TInput extends ValueInput,
-  const TRequirement extends readonly TInput[],
+  TInput$1 extends ValueInput,
+  const TRequirement extends readonly TInput$1[],
   const TMessage extends
-    | ErrorMessage<NotValuesIssue<TInput, TRequirement>>
+    | ErrorMessage<NotValuesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): NotValuesAction<TInput, TRequirement, TMessage>;
-
+): NotValuesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/notWords/notWords.d.ts
 /**
  * Not words issue interface.
  */
-interface NotWordsIssue<TInput extends string, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface NotWordsIssue<TInput$1 extends string, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -21435,13 +21941,14 @@ interface NotWordsIssue<TInput extends string, TRequirement extends number>
  * Not words action interface.
  */
 interface NotWordsAction<
-  TInput extends string,
+  TInput$1 extends string,
   TLocales extends Intl.LocalesArgument,
   TRequirement extends number,
   TMessage extends
-    | ErrorMessage<NotWordsIssue<TInput, TRequirement>>
+    | ErrorMessage<NotWordsIssue<TInput$1, TRequirement>>
     | undefined,
-> extends BaseValidation<TInput, TInput, NotWordsIssue<TInput, TRequirement>> {
+> extends
+  BaseValidation<TInput$1, TInput$1, NotWordsIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -21476,13 +21983,13 @@ interface NotWordsAction<
  * @returns A not words action.
  */
 declare function notWords<
-  TInput extends string,
+  TInput$1 extends string,
   TLocales extends Intl.LocalesArgument,
   const TRequirement extends number,
 >(
   locales: TLocales,
   requirement: TRequirement,
-): NotWordsAction<TInput, TLocales, TRequirement, undefined>;
+): NotWordsAction<TInput$1, TLocales, TRequirement, undefined>;
 /**
  * Creates a not words validation action.
  *
@@ -21493,22 +22000,23 @@ declare function notWords<
  * @returns A not words action.
  */
 declare function notWords<
-  TInput extends string,
+  TInput$1 extends string,
   TLocales extends Intl.LocalesArgument,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<NotWordsIssue<TInput, TRequirement>>
+    | ErrorMessage<NotWordsIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   locales: TLocales,
   requirement: TRequirement,
   message: TMessage,
-): NotWordsAction<TInput, TLocales, TRequirement, TMessage>;
-
+): NotWordsAction<TInput$1, TLocales, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/octal/octal.d.ts
 /**
  * Octal issue interface.
  */
-interface OctalIssue<TInput extends string> extends BaseIssue<TInput> {
+interface OctalIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -21534,9 +22042,9 @@ interface OctalIssue<TInput extends string> extends BaseIssue<TInput> {
  * Octal action interface.
  */
 interface OctalAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<OctalIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, OctalIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<OctalIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, OctalIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -21563,7 +22071,10 @@ interface OctalAction<
  *
  * @returns An octal action.
  */
-declare function octal<TInput extends string>(): OctalAction<TInput, undefined>;
+declare function octal<TInput$1 extends string>(): OctalAction<
+  TInput$1,
+  undefined
+>;
 /**
  * Creates an [octal](https://en.wikipedia.org/wiki/Octal) validation action.
  *
@@ -21572,10 +22083,11 @@ declare function octal<TInput extends string>(): OctalAction<TInput, undefined>;
  * @returns An octal action.
  */
 declare function octal<
-  TInput extends string,
-  const TMessage extends ErrorMessage<OctalIssue<TInput>> | undefined,
->(message: TMessage): OctalAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<OctalIssue<TInput$1>> | undefined,
+>(message: TMessage): OctalAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/parseJson/parseJson.d.ts
 /**
  * Parse JSON config interface.
  *
@@ -21592,7 +22104,7 @@ interface ParseJsonConfig {
  *
  * @beta
  */
-interface ParseJsonIssue<TInput extends string> extends BaseIssue<TInput> {
+interface ParseJsonIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -21616,10 +22128,10 @@ interface ParseJsonIssue<TInput extends string> extends BaseIssue<TInput> {
  * @beta
  */
 interface ParseJsonAction<
-  TInput extends string,
+  TInput$1 extends string,
   TConfig extends ParseJsonConfig | undefined,
-  TMessage extends ErrorMessage<ParseJsonIssue<TInput>> | undefined,
-> extends BaseTransformation<TInput, unknown, ParseJsonIssue<TInput>> {
+  TMessage extends ErrorMessage<ParseJsonIssue<TInput$1>> | undefined,
+> extends BaseTransformation<TInput$1, unknown, ParseJsonIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -21644,8 +22156,8 @@ interface ParseJsonAction<
  *
  * @beta
  */
-declare function parseJson<TInput extends string>(): ParseJsonAction<
-  TInput,
+declare function parseJson<TInput$1 extends string>(): ParseJsonAction<
+  TInput$1,
   undefined,
   undefined
 >;
@@ -21659,9 +22171,9 @@ declare function parseJson<TInput extends string>(): ParseJsonAction<
  * @beta
  */
 declare function parseJson<
-  TInput extends string,
+  TInput$1 extends string,
   const TConfig extends ParseJsonConfig | undefined,
->(config: TConfig): ParseJsonAction<TInput, TConfig, undefined>;
+>(config: TConfig): ParseJsonAction<TInput$1, TConfig, undefined>;
 /**
  * Creates a parse JSON transformation action.
  *
@@ -21673,14 +22185,15 @@ declare function parseJson<
  * @beta
  */
 declare function parseJson<
-  TInput extends string,
+  TInput$1 extends string,
   const TConfig extends ParseJsonConfig | undefined,
-  const TMessage extends ErrorMessage<ParseJsonIssue<TInput>> | undefined,
+  const TMessage extends ErrorMessage<ParseJsonIssue<TInput$1>> | undefined,
 >(
   config: TConfig,
   message: TMessage,
-): ParseJsonAction<TInput, TConfig, TMessage>;
-
+): ParseJsonAction<TInput$1, TConfig, TMessage>;
+//#endregion
+//#region src/actions/partialCheck/types.d.ts
 /**
  * Partial input type.
  */
@@ -21688,8 +22201,8 @@ type PartialInput = Record<string, unknown> | ArrayLike<unknown>;
 /**
  * Partial check issue interface.
  */
-interface PartialCheckIssue<TInput extends PartialInput>
-  extends BaseIssue<TInput> {
+interface PartialCheckIssue<TInput$1 extends PartialInput>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -21705,19 +22218,21 @@ interface PartialCheckIssue<TInput extends PartialInput>
   /**
    * The validation function.
    */
-  readonly requirement: (input: TInput) => MaybePromise<boolean>;
+  readonly requirement: (input: TInput$1) => MaybePromise<boolean>;
 }
 /**
  * Extracts the exact keys of a tuple, array or object.
  */
-type KeyOf<TValue> = IsAny<TValue> extends true ? never
-  : TValue extends readonly unknown[]
-    ? number extends TValue["length"] ? "$" : {
-      [TKey in keyof TValue]: TKey extends `${infer TIndex extends number}`
+type KeyOf<TValue$1> = IsAny<TValue$1> extends true ? never
+  : TValue$1 extends readonly unknown[]
+    ? number extends TValue$1["length"] ? "$"
+    : {
+      [TKey in keyof TValue$1]: TKey extends `${infer TIndex extends number}`
         ? TIndex
         : never;
     }[number]
-  : TValue extends Record<string, unknown> ? keyof TValue & (string | number)
+  : TValue$1 extends Record<string, unknown>
+    ? keyof TValue$1 & (string | number)
   : never;
 /**
  * Path type.
@@ -21736,38 +22251,38 @@ type Paths = readonly RequiredPath[];
  */
 type RequiredPaths = readonly [RequiredPath, ...RequiredPath[]];
 /**
- * Lazily evaluate only the last valid path segment based on the given value.
+ * Lazily evaluate only the first valid path segment based on the given value.
  */
 type LazyPath<
-  TValue,
+  TValue$1,
   TPathToCheck extends Path,
   TValidPath extends Path = readonly [],
 > = TPathToCheck extends readonly [] ? TValidPath
   : TPathToCheck extends readonly [
-    infer TFirstKey extends KeyOf<TValue>,
+    infer TFirstKey extends KeyOf<TValue$1>,
     ...infer TPathRest extends Path,
   ] ? LazyPath<
-      TFirstKey extends keyof TValue ? TValue[TFirstKey]
+      TFirstKey extends keyof TValue$1 ? TValue$1[TFirstKey]
         : TFirstKey extends "$"
-          ? TValue extends readonly unknown[] ? TValue[number] : never
+          ? TValue$1 extends readonly unknown[] ? TValue$1[number] : never
         : never,
       TPathRest,
       readonly [...TValidPath, TFirstKey]
     >
-  : IsNever<KeyOf<TValue>> extends false
-    ? readonly [...TValidPath, KeyOf<TValue>]
+  : IsNever<KeyOf<TValue$1>> extends false
+    ? readonly [...TValidPath, KeyOf<TValue$1>]
   : TValidPath;
 /**
- * Returns the path if valid, otherwise the last possible valid path based on
+ * Returns the path if valid, otherwise the first possible valid path based on
  * the given value.
  */
-type ValidPath<TValue, TPath extends RequiredPath> = TPath extends
-  LazyPath<TValue, TPath> ? TPath : LazyPath<TValue, TPath>;
+type ValidPath<TValue$1, TPath extends RequiredPath> = TPath extends
+  LazyPath<TValue$1, TPath> ? TPath : LazyPath<TValue$1, TPath>;
 /**
  * Returns a valid path for any given path based on the given value.
  */
-type ValidPaths<TValue, TPaths extends RequiredPaths> = {
-  [TKey in keyof TPaths]: ValidPath<TValue, TPaths[TKey]>;
+type ValidPaths<TValue$1, TPaths extends RequiredPaths> = {
+  [TKey in keyof TPaths]: ValidPath<TValue$1, TPaths[TKey]>;
 };
 /**
  * Deeply picks specific keys.
@@ -21775,23 +22290,24 @@ type ValidPaths<TValue, TPaths extends RequiredPaths> = {
  * Hint: If this type is ever exported and accessible from the outside, it must
  * be wrapped in `UnionToIntersect` to avoid invalid results.
  */
-type DeepPick<TValue, TPath extends Path> = TPath extends readonly [
+type DeepPick<TValue$1, TPath extends Path> = TPath extends readonly [
   infer TFirstKey extends string | number,
   ...infer TPathRest extends Path,
 ]
-  ? TValue extends readonly unknown[]
-    ? number extends TValue["length"] ? TPathRest extends readonly [] ? TValue
-      : DeepPick<TValue[number], TPathRest>[]
+  ? TValue$1 extends readonly unknown[]
+    ? number extends TValue$1["length"]
+      ? TPathRest extends readonly [] ? TValue$1
+      : DeepPick<TValue$1[number], TPathRest>[]
     : {
-      [TKey in keyof TValue]: TKey extends `${TFirstKey}`
-        ? TPathRest extends readonly [] ? TValue[TKey]
-        : DeepPick<TValue[TKey], TPathRest>
+      [TKey in keyof TValue$1]: TKey extends `${TFirstKey}`
+        ? TPathRest extends readonly [] ? TValue$1[TKey]
+        : DeepPick<TValue$1[TKey], TPathRest>
         : unknown;
     }
   : {
-    [TKey in keyof TValue as TKey extends TFirstKey ? TKey : never]:
-      TPathRest extends readonly [] ? TValue[TKey]
-        : DeepPick<TValue[TKey], TPathRest>;
+    [TKey in keyof TValue$1 as TKey extends TFirstKey ? TKey : never]:
+      TPathRest extends readonly [] ? TValue$1[TKey]
+        : DeepPick<TValue$1[TKey], TPathRest>;
   }
   : never;
 /**
@@ -21820,22 +22336,22 @@ type DeepMerge<TValue1, TValue2> = TValue1 extends readonly unknown[]
 /**
  * Deeply picks N specific keys.
  */
-type DeepPickN<TInput, TPaths extends Paths> = TPaths extends readonly [
-  infer TFirstPath extends Path,
-  ...infer TRestPaths extends Paths,
-] ? TRestPaths extends readonly [] ? DeepPick<TInput, TFirstPath>
-  : DeepMerge<DeepPick<TInput, TFirstPath>, DeepPickN<TInput, TRestPaths>>
-  : TInput;
-
+type DeepPickN<TInput$1, TPaths extends Paths> = TPaths extends
+  readonly [infer TFirstPath extends Path, ...infer TRestPaths extends Paths]
+  ? TRestPaths extends readonly [] ? DeepPick<TInput$1, TFirstPath>
+  : DeepMerge<DeepPick<TInput$1, TFirstPath>, DeepPickN<TInput$1, TRestPaths>>
+  : TInput$1;
+//#endregion
+//#region src/actions/partialCheck/partialCheck.d.ts
 /**
  * Partial check action interface.
  */
 interface PartialCheckAction<
-  TInput extends PartialInput,
+  TInput$1 extends PartialInput,
   TPaths extends Paths,
-  TSelection extends DeepPickN<TInput, TPaths>,
+  TSelection extends DeepPickN<TInput$1, TPaths>,
   TMessage extends ErrorMessage<PartialCheckIssue<TSelection>> | undefined,
-> extends BaseValidation<TInput, TInput, PartialCheckIssue<TSelection>> {
+> extends BaseValidation<TInput$1, TInput$1, PartialCheckIssue<TSelection>> {
   /**
    * The action type.
    */
@@ -21870,13 +22386,13 @@ interface PartialCheckAction<
  * @returns A partial check action.
  */
 declare function partialCheck<
-  TInput extends PartialInput,
+  TInput$1 extends PartialInput,
   const TPaths extends RequiredPaths,
-  const TSelection extends DeepPickN<TInput, TPaths>,
+  const TSelection extends DeepPickN<TInput$1, TPaths>,
 >(
-  paths: ValidPaths<TInput, TPaths>,
+  paths: ValidPaths<TInput$1, TPaths>,
   requirement: (input: TSelection) => boolean,
-): PartialCheckAction<TInput, TPaths, TSelection, undefined>;
+): PartialCheckAction<TInput$1, TPaths, TSelection, undefined>;
 /**
  * Creates a partial check validation action.
  *
@@ -21887,27 +22403,29 @@ declare function partialCheck<
  * @returns A partial check action.
  */
 declare function partialCheck<
-  TInput extends PartialInput,
+  TInput$1 extends PartialInput,
   const TPaths extends RequiredPaths,
-  const TSelection extends DeepPickN<TInput, TPaths>,
+  const TSelection extends DeepPickN<TInput$1, TPaths>,
   const TMessage extends
     | ErrorMessage<PartialCheckIssue<TSelection>>
     | undefined,
 >(
-  paths: ValidPaths<TInput, TPaths>,
+  paths: ValidPaths<TInput$1, TPaths>,
   requirement: (input: TSelection) => boolean,
   message: TMessage,
-): PartialCheckAction<TInput, TPaths, TSelection, TMessage>;
-
+): PartialCheckAction<TInput$1, TPaths, TSelection, TMessage>;
+//#endregion
+//#region src/actions/partialCheck/partialCheckAsync.d.ts
 /**
  * Partial check action async interface.
  */
 interface PartialCheckActionAsync<
-  TInput extends PartialInput,
+  TInput$1 extends PartialInput,
   TPaths extends Paths,
-  TSelection extends DeepPickN<TInput, TPaths>,
+  TSelection extends DeepPickN<TInput$1, TPaths>,
   TMessage extends ErrorMessage<PartialCheckIssue<TSelection>> | undefined,
-> extends BaseValidationAsync<TInput, TInput, PartialCheckIssue<TSelection>> {
+> extends
+  BaseValidationAsync<TInput$1, TInput$1, PartialCheckIssue<TSelection>> {
   /**
    * The action type.
    */
@@ -21942,13 +22460,13 @@ interface PartialCheckActionAsync<
  * @returns A partial check action.
  */
 declare function partialCheckAsync<
-  TInput extends PartialInput,
+  TInput$1 extends PartialInput,
   const TPaths extends RequiredPaths,
-  const TSelection extends DeepPickN<TInput, TPaths>,
+  const TSelection extends DeepPickN<TInput$1, TPaths>,
 >(
-  paths: ValidPaths<TInput, TPaths>,
+  paths: ValidPaths<TInput$1, TPaths>,
   requirement: (input: TSelection) => MaybePromise<boolean>,
-): PartialCheckActionAsync<TInput, TPaths, TSelection, undefined>;
+): PartialCheckActionAsync<TInput$1, TPaths, TSelection, undefined>;
 /**
  * Creates a partial check validation action.
  *
@@ -21959,22 +22477,23 @@ declare function partialCheckAsync<
  * @returns A partial check action.
  */
 declare function partialCheckAsync<
-  TInput extends PartialInput,
+  TInput$1 extends PartialInput,
   const TPaths extends RequiredPaths,
-  const TSelection extends DeepPickN<TInput, TPaths>,
+  const TSelection extends DeepPickN<TInput$1, TPaths>,
   const TMessage extends
     | ErrorMessage<PartialCheckIssue<TSelection>>
     | undefined,
 >(
-  paths: ValidPaths<TInput, TPaths>,
+  paths: ValidPaths<TInput$1, TPaths>,
   requirement: (input: TSelection) => MaybePromise<boolean>,
   message: TMessage,
-): PartialCheckActionAsync<TInput, TPaths, TSelection, TMessage>;
-
+): PartialCheckActionAsync<TInput$1, TPaths, TSelection, TMessage>;
+//#endregion
+//#region src/actions/rawCheck/types.d.ts
 /**
  * Raw check issue interface.
  */
-interface RawCheckIssue<TInput> extends BaseIssue<TInput> {
+interface RawCheckIssue<TInput$1> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -21985,34 +22504,35 @@ interface RawCheckIssue<TInput> extends BaseIssue<TInput> {
   readonly type: "raw_check";
 }
 /**
- * Issue info interface.
+ * Raw check issue info interface.
  */
-interface IssueInfo$1<TInput> {
+interface RawCheckIssueInfo<TInput$1> {
   label?: string | undefined;
   input?: unknown | undefined;
   expected?: string | undefined;
   received?: string | undefined;
-  message?: ErrorMessage<RawCheckIssue<TInput>> | undefined;
+  message?: ErrorMessage<RawCheckIssue<TInput$1>> | undefined;
   path?: [IssuePathItem, ...IssuePathItem[]] | undefined;
 }
 /**
- * Add issue type.
+ * Raw check add issue type.
  */
-type AddIssue$1<TInput> = (info?: IssueInfo$1<TInput>) => void;
+type RawCheckAddIssue<TInput$1> = (info?: RawCheckIssueInfo<TInput$1>) => void;
 /**
- * Context interface.
+ * Raw check context interface.
  */
-interface Context$2<TInput> {
-  readonly dataset: OutputDataset<TInput, BaseIssue<unknown>>;
-  readonly config: Config<RawCheckIssue<TInput>>;
-  readonly addIssue: AddIssue$1<TInput>;
+interface RawCheckContext<TInput$1> {
+  readonly dataset: OutputDataset<TInput$1, BaseIssue<unknown>>;
+  readonly config: Config<RawCheckIssue<TInput$1>>;
+  readonly addIssue: RawCheckAddIssue<TInput$1>;
 }
-
+//#endregion
+//#region src/actions/rawCheck/rawCheck.d.ts
 /**
  * Raw check action interface.
  */
-interface RawCheckAction<TInput>
-  extends BaseValidation<TInput, TInput, RawCheckIssue<TInput>> {
+interface RawCheckAction<TInput$1>
+  extends BaseValidation<TInput$1, TInput$1, RawCheckIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -22033,15 +22553,16 @@ interface RawCheckAction<TInput>
  *
  * @returns A raw check action.
  */
-declare function rawCheck<TInput>(
-  action: (context: Context$2<TInput>) => void,
-): RawCheckAction<TInput>;
-
+declare function rawCheck<TInput$1>(
+  action: (context: RawCheckContext<TInput$1>) => void,
+): RawCheckAction<TInput$1>;
+//#endregion
+//#region src/actions/rawCheck/rawCheckAsync.d.ts
 /**
  * Raw check action async interface.
  */
-interface RawCheckActionAsync<TInput>
-  extends BaseValidationAsync<TInput, TInput, RawCheckIssue<TInput>> {
+interface RawCheckActionAsync<TInput$1>
+  extends BaseValidationAsync<TInput$1, TInput$1, RawCheckIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -22062,14 +22583,15 @@ interface RawCheckActionAsync<TInput>
  *
  * @returns A raw check action.
  */
-declare function rawCheckAsync<TInput>(
-  action: (context: Context$2<TInput>) => MaybePromise<void>,
-): RawCheckActionAsync<TInput>;
-
+declare function rawCheckAsync<TInput$1>(
+  action: (context: RawCheckContext<TInput$1>) => MaybePromise<void>,
+): RawCheckActionAsync<TInput$1>;
+//#endregion
+//#region src/actions/rawTransform/types.d.ts
 /**
  * Raw transform issue interface.
  */
-interface RawTransformIssue<TInput> extends BaseIssue<TInput> {
+interface RawTransformIssue<TInput$1> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -22080,35 +22602,38 @@ interface RawTransformIssue<TInput> extends BaseIssue<TInput> {
   readonly type: "raw_transform";
 }
 /**
- * Issue info interface.
+ * Raw transform issue info interface.
  */
-interface IssueInfo<TInput> {
+interface RawTransformIssueInfo<TInput$1> {
   label?: string | undefined;
   input?: unknown | undefined;
   expected?: string | undefined;
   received?: string | undefined;
-  message?: ErrorMessage<RawTransformIssue<TInput>> | undefined;
+  message?: ErrorMessage<RawTransformIssue<TInput$1>> | undefined;
   path?: [IssuePathItem, ...IssuePathItem[]] | undefined;
 }
 /**
- * Add issue type.
+ * Raw transform add issue type.
  */
-type AddIssue<TInput> = (info?: IssueInfo<TInput>) => void;
+type RawTransformAddIssue<TInput$1> = (
+  info?: RawTransformIssueInfo<TInput$1>,
+) => void;
 /**
- * Context interface.
+ * Raw transform context interface.
  */
-interface Context$1<TInput> {
-  readonly dataset: SuccessDataset<TInput>;
-  readonly config: Config<RawTransformIssue<TInput>>;
-  readonly addIssue: AddIssue<TInput>;
+interface RawTransformContext<TInput$1> {
+  readonly dataset: SuccessDataset<TInput$1>;
+  readonly config: Config<RawTransformIssue<TInput$1>>;
+  readonly addIssue: RawTransformAddIssue<TInput$1>;
   readonly NEVER: never;
 }
-
+//#endregion
+//#region src/actions/rawTransform/rawTransform.d.ts
 /**
  * Raw transform action interface.
  */
-interface RawTransformAction<TInput, TOutput>
-  extends BaseTransformation<TInput, TOutput, RawTransformIssue<TInput>> {
+interface RawTransformAction<TInput$1, TOutput$1>
+  extends BaseTransformation<TInput$1, TOutput$1, RawTransformIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -22125,15 +22650,17 @@ interface RawTransformAction<TInput, TOutput>
  *
  * @returns A raw transform action.
  */
-declare function rawTransform<TInput, TOutput>(
-  action: (context: Context$1<TInput>) => TOutput,
-): RawTransformAction<TInput, TOutput>;
-
+declare function rawTransform<TInput$1, TOutput$1>(
+  action: (context: RawTransformContext<TInput$1>) => TOutput$1,
+): RawTransformAction<TInput$1, TOutput$1>;
+//#endregion
+//#region src/actions/rawTransform/rawTransformAsync.d.ts
 /**
  * Raw transform action async interface.
  */
-interface RawTransformActionAsync<TInput, TOutput>
-  extends BaseTransformationAsync<TInput, TOutput, RawTransformIssue<TInput>> {
+interface RawTransformActionAsync<TInput$1, TOutput$1>
+  extends
+    BaseTransformationAsync<TInput$1, TOutput$1, RawTransformIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -22150,22 +22677,23 @@ interface RawTransformActionAsync<TInput, TOutput>
  *
  * @returns A raw transform action.
  */
-declare function rawTransformAsync<TInput, TOutput>(
-  action: (context: Context$1<TInput>) => MaybePromise<TOutput>,
-): RawTransformActionAsync<TInput, TOutput>;
-
+declare function rawTransformAsync<TInput$1, TOutput$1>(
+  action: (context: RawTransformContext<TInput$1>) => MaybePromise<TOutput$1>,
+): RawTransformActionAsync<TInput$1, TOutput$1>;
+//#endregion
+//#region src/actions/readonly/readonly.d.ts
 /**
  * Readonly output type.
  */
-type ReadonlyOutput<TInput> = TInput extends Map<infer TKey, infer TValue>
+type ReadonlyOutput<TInput$1> = TInput$1 extends Map<infer TKey, infer TValue>
   ? ReadonlyMap<TKey, TValue>
-  : TInput extends Set<infer TValue> ? ReadonlySet<TValue>
-  : Readonly<TInput>;
+  : TInput$1 extends Set<infer TValue> ? ReadonlySet<TValue>
+  : Readonly<TInput$1>;
 /**
  * Readonly action interface.
  */
-interface ReadonlyAction<TInput>
-  extends BaseTransformation<TInput, ReadonlyOutput<TInput>, never> {
+interface ReadonlyAction<TInput$1>
+  extends BaseTransformation<TInput$1, ReadonlyOutput<TInput$1>, never> {
   /**
    * The action type.
    */
@@ -22180,22 +22708,23 @@ interface ReadonlyAction<TInput>
  *
  * @returns A readonly action.
  */
-declare function readonly<TInput>(): ReadonlyAction<TInput>;
-
+declare function readonly<TInput$1>(): ReadonlyAction<TInput$1>;
+//#endregion
+//#region src/actions/reduceItems/reduceItems.d.ts
 /**
  * Array action type.
  */
-type ArrayAction$1<TInput extends ArrayInput, TOutput> = (
-  output: TOutput,
-  item: TInput[number],
+type ArrayAction$1<TInput$1 extends ArrayInput, TOutput$1> = (
+  output: TOutput$1,
+  item: TInput$1[number],
   index: number,
-  array: TInput,
-) => TOutput;
+  array: TInput$1,
+) => TOutput$1;
 /**
  * Reduce items action interface.
  */
-interface ReduceItemsAction<TInput extends ArrayInput, TOutput>
-  extends BaseTransformation<TInput, TOutput, never> {
+interface ReduceItemsAction<TInput$1 extends ArrayInput, TOutput$1>
+  extends BaseTransformation<TInput$1, TOutput$1, never> {
   /**
    * The action type.
    */
@@ -22207,11 +22736,11 @@ interface ReduceItemsAction<TInput extends ArrayInput, TOutput>
   /**
    * The reduce items operation.
    */
-  readonly operation: ArrayAction$1<TInput, TOutput>;
+  readonly operation: ArrayAction$1<TInput$1, TOutput$1>;
   /**
    * The initial value.
    */
-  readonly initial: TOutput;
+  readonly initial: TOutput$1;
 }
 /**
  * Creates a reduce items transformation action.
@@ -22221,15 +22750,16 @@ interface ReduceItemsAction<TInput extends ArrayInput, TOutput>
  *
  * @returns A reduce items action.
  */
-declare function reduceItems<TInput extends ArrayInput, TOutput>(
-  operation: ArrayAction$1<TInput, TOutput>,
-  initial: TOutput,
-): ReduceItemsAction<TInput, TOutput>;
-
+declare function reduceItems<TInput$1 extends ArrayInput, TOutput$1>(
+  operation: ArrayAction$1<TInput$1, TOutput$1>,
+  initial: TOutput$1,
+): ReduceItemsAction<TInput$1, TOutput$1>;
+//#endregion
+//#region src/actions/regex/regex.d.ts
 /**
  * Regex issue interface.
  */
-interface RegexIssue<TInput extends string> extends BaseIssue<TInput> {
+interface RegexIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -22255,9 +22785,9 @@ interface RegexIssue<TInput extends string> extends BaseIssue<TInput> {
  * Regex action interface.
  */
 interface RegexAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<RegexIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, RegexIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<RegexIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, RegexIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -22288,9 +22818,9 @@ interface RegexAction<
  *
  * @returns A regex action.
  */
-declare function regex<TInput extends string>(
+declare function regex<TInput$1 extends string>(
   requirement: RegExp,
-): RegexAction<TInput, undefined>;
+): RegexAction<TInput$1, undefined>;
 /**
  * Creates a [regex](https://en.wikipedia.org/wiki/Regular_expression) validation action.
  *
@@ -22302,20 +22832,21 @@ declare function regex<TInput extends string>(
  * @returns A regex action.
  */
 declare function regex<
-  TInput extends string,
-  const TMessage extends ErrorMessage<RegexIssue<TInput>> | undefined,
->(requirement: RegExp, message: TMessage): RegexAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<RegexIssue<TInput$1>> | undefined,
+>(requirement: RegExp, message: TMessage): RegexAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/returns/returns.d.ts
 /**
  * Returns action type.
  */
 interface ReturnsAction<
-  TInput extends (...args: any[]) => unknown,
+  TInput$1 extends (...args: any[]) => unknown,
   TSchema extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
 > extends
   BaseTransformation<
-    TInput,
-    (...args: Parameters<TInput>) => InferOutput<TSchema>,
+    TInput$1,
+    (...args: Parameters<TInput$1>) => InferOutput<TSchema>,
     never
   > {
   /**
@@ -22339,22 +22870,23 @@ interface ReturnsAction<
  * @returns An returns action.
  */
 declare function returns<
-  TInput extends (...args: any[]) => unknown,
+  TInput$1 extends (...args: any[]) => unknown,
   TSchema extends BaseSchema<unknown, unknown, BaseIssue<unknown>>,
->(schema: TSchema): ReturnsAction<TInput, TSchema>;
-
+>(schema: TSchema): ReturnsAction<TInput$1, TSchema>;
+//#endregion
+//#region src/actions/returns/returnsAsync.d.ts
 /**
  * Returns action async type.
  */
 interface ReturnsActionAsync<
-  TInput extends (...args: any[]) => unknown,
+  TInput$1 extends (...args: any[]) => unknown,
   TSchema extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 > extends
   BaseTransformation<
-    TInput,
-    (...args: Parameters<TInput>) => Promise<Awaited<InferOutput<TSchema>>>,
+    TInput$1,
+    (...args: Parameters<TInput$1>) => Promise<Awaited<InferOutput<TSchema>>>,
     never
   > {
   /**
@@ -22378,16 +22910,17 @@ interface ReturnsActionAsync<
  * @returns An returns action.
  */
 declare function returnsAsync<
-  TInput extends (...args: any[]) => unknown,
+  TInput$1 extends (...args: any[]) => unknown,
   TSchema extends
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
->(schema: TSchema): ReturnsActionAsync<TInput, TSchema>;
-
+>(schema: TSchema): ReturnsActionAsync<TInput$1, TSchema>;
+//#endregion
+//#region src/actions/rfcEmail/rfcEmail.d.ts
 /**
  * RFC email issue interface.
  */
-interface RfcEmailIssue<TInput extends string> extends BaseIssue<TInput> {
+interface RfcEmailIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -22413,9 +22946,9 @@ interface RfcEmailIssue<TInput extends string> extends BaseIssue<TInput> {
  * RFC email action interface.
  */
 interface RfcEmailAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<RfcEmailIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, RfcEmailIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<RfcEmailIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, RfcEmailIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -22447,8 +22980,8 @@ interface RfcEmailAction<
  *
  * @returns A RFC email action.
  */
-declare function rfcEmail<TInput extends string>(): RfcEmailAction<
-  TInput,
+declare function rfcEmail<TInput$1 extends string>(): RfcEmailAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -22464,14 +22997,16 @@ declare function rfcEmail<TInput extends string>(): RfcEmailAction<
  * @returns A RFC email action.
  */
 declare function rfcEmail<
-  TInput extends string,
-  const TMessage extends ErrorMessage<RfcEmailIssue<TInput>> | undefined,
->(message: TMessage): RfcEmailAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<RfcEmailIssue<TInput$1>> | undefined,
+>(message: TMessage): RfcEmailAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/safeInteger/safeInteger.d.ts
 /**
  * Safe integer issue interface.
  */
-interface SafeIntegerIssue<TInput extends number> extends BaseIssue<TInput> {
+interface SafeIntegerIssue<TInput$1 extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -22497,9 +23032,9 @@ interface SafeIntegerIssue<TInput extends number> extends BaseIssue<TInput> {
  * Safe integer action interface.
  */
 interface SafeIntegerAction<
-  TInput extends number,
-  TMessage extends ErrorMessage<SafeIntegerIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, SafeIntegerIssue<TInput>> {
+  TInput$1 extends number,
+  TMessage extends ErrorMessage<SafeIntegerIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, SafeIntegerIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -22526,8 +23061,8 @@ interface SafeIntegerAction<
  *
  * @returns A safe integer action.
  */
-declare function safeInteger<TInput extends number>(): SafeIntegerAction<
-  TInput,
+declare function safeInteger<TInput$1 extends number>(): SafeIntegerAction<
+  TInput$1,
   undefined
 >;
 /**
@@ -22538,15 +23073,16 @@ declare function safeInteger<TInput extends number>(): SafeIntegerAction<
  * @returns A safe integer action.
  */
 declare function safeInteger<
-  TInput extends number,
-  const TMessage extends ErrorMessage<SafeIntegerIssue<TInput>> | undefined,
->(message: TMessage): SafeIntegerAction<TInput, TMessage>;
-
+  TInput$1 extends number,
+  const TMessage extends ErrorMessage<SafeIntegerIssue<TInput$1>> | undefined,
+>(message: TMessage): SafeIntegerAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/size/size.d.ts
 /**
  * Size issue interface.
  */
-interface SizeIssue<TInput extends SizeInput, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface SizeIssue<TInput$1 extends SizeInput, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -22572,10 +23108,11 @@ interface SizeIssue<TInput extends SizeInput, TRequirement extends number>
  * Size action interface.
  */
 interface SizeAction<
-  TInput extends SizeInput,
+  TInput$1 extends SizeInput,
   TRequirement extends number,
-  TMessage extends ErrorMessage<SizeIssue<TInput, TRequirement>> | undefined,
-> extends BaseValidation<TInput, TInput, SizeIssue<TInput, TRequirement>> {
+  TMessage extends ErrorMessage<SizeIssue<TInput$1, TRequirement>> | undefined,
+> extends
+  BaseValidation<TInput$1, TInput$1, SizeIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -22605,9 +23142,9 @@ interface SizeAction<
  * @returns A size action.
  */
 declare function size<
-  TInput extends SizeInput,
+  TInput$1 extends SizeInput,
   const TRequirement extends number,
->(requirement: TRequirement): SizeAction<TInput, TRequirement, undefined>;
+>(requirement: TRequirement): SizeAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a size validation action.
  *
@@ -22617,20 +23154,21 @@ declare function size<
  * @returns A size action.
  */
 declare function size<
-  TInput extends SizeInput,
+  TInput$1 extends SizeInput,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<SizeIssue<TInput, TRequirement>>
+    | ErrorMessage<SizeIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): SizeAction<TInput, TRequirement, TMessage>;
-
+): SizeAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/slug/slug.d.ts
 /**
  * Slug issue type.
  */
-interface SlugIssue<TInput extends string> extends BaseIssue<TInput> {
+interface SlugIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -22656,9 +23194,9 @@ interface SlugIssue<TInput extends string> extends BaseIssue<TInput> {
  * Slug action type.
  */
 interface SlugAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<SlugIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, SlugIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<SlugIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, SlugIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -22685,7 +23223,10 @@ interface SlugAction<
  *
  * @returns A slug action.
  */
-declare function slug<TInput extends string>(): SlugAction<TInput, undefined>;
+declare function slug<TInput$1 extends string>(): SlugAction<
+  TInput$1,
+  undefined
+>;
 /**
  * Creates a [slug](https://en.wikipedia.org/wiki/Clean_URL#Slug) validation action.
  *
@@ -22694,14 +23235,16 @@ declare function slug<TInput extends string>(): SlugAction<TInput, undefined>;
  * @returns A slug action.
  */
 declare function slug<
-  TInput extends string,
-  const TMessage extends ErrorMessage<SlugIssue<TInput>> | undefined,
->(message: TMessage): SlugAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<SlugIssue<TInput$1>> | undefined,
+>(message: TMessage): SlugAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/someItem/someItem.d.ts
 /**
  * Some item issue interface.
  */
-interface SomeItemIssue<TInput extends ArrayInput> extends BaseIssue<TInput> {
+interface SomeItemIssue<TInput$1 extends ArrayInput>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -22717,15 +23260,15 @@ interface SomeItemIssue<TInput extends ArrayInput> extends BaseIssue<TInput> {
   /**
    * The validation function.
    */
-  readonly requirement: ArrayRequirement$1<TInput>;
+  readonly requirement: ArrayRequirement<TInput$1>;
 }
 /**
  * Some item action interface.
  */
 interface SomeItemAction<
-  TInput extends ArrayInput,
-  TMessage extends ErrorMessage<SomeItemIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, SomeItemIssue<TInput>> {
+  TInput$1 extends ArrayInput,
+  TMessage extends ErrorMessage<SomeItemIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, SomeItemIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -22741,7 +23284,7 @@ interface SomeItemAction<
   /**
    * The validation function.
    */
-  readonly requirement: ArrayRequirement$1<TInput>;
+  readonly requirement: ArrayRequirement<TInput$1>;
   /**
    * The error message.
    */
@@ -22754,9 +23297,9 @@ interface SomeItemAction<
  *
  * @returns A some item action.
  */
-declare function someItem<TInput extends ArrayInput>(
-  requirement: ArrayRequirement$1<TInput>,
-): SomeItemAction<TInput, undefined>;
+declare function someItem<TInput$1 extends ArrayInput>(
+  requirement: ArrayRequirement<TInput$1>,
+): SomeItemAction<TInput$1, undefined>;
 /**
  * Creates a some item validation action.
  *
@@ -22766,25 +23309,26 @@ declare function someItem<TInput extends ArrayInput>(
  * @returns A some item action.
  */
 declare function someItem<
-  TInput extends ArrayInput,
-  const TMessage extends ErrorMessage<SomeItemIssue<TInput>> | undefined,
+  TInput$1 extends ArrayInput,
+  const TMessage extends ErrorMessage<SomeItemIssue<TInput$1>> | undefined,
 >(
-  requirement: ArrayRequirement$1<TInput>,
+  requirement: ArrayRequirement<TInput$1>,
   message: TMessage,
-): SomeItemAction<TInput, TMessage>;
-
+): SomeItemAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/sortItems/sortItems.d.ts
 /**
  * Array action type.
  */
-type ArrayAction<TInput extends ArrayInput> = (
-  itemA: TInput[number],
-  itemB: TInput[number],
+type ArrayAction<TInput$1 extends ArrayInput> = (
+  itemA: TInput$1[number],
+  itemB: TInput$1[number],
 ) => number;
 /**
  * Sort items action interface.
  */
-interface SortItemsAction<TInput extends ArrayInput>
-  extends BaseTransformation<TInput, TInput, never> {
+interface SortItemsAction<TInput$1 extends ArrayInput>
+  extends BaseTransformation<TInput$1, TInput$1, never> {
   /**
    * The action type.
    */
@@ -22796,7 +23340,7 @@ interface SortItemsAction<TInput extends ArrayInput>
   /**
    * The sort items operation.
    */
-  readonly operation: ArrayAction<TInput> | undefined;
+  readonly operation: ArrayAction<TInput$1> | undefined;
 }
 /**
  * Creates a sort items transformation action.
@@ -22805,15 +23349,16 @@ interface SortItemsAction<TInput extends ArrayInput>
  *
  * @returns A sort items action.
  */
-declare function sortItems<TInput extends ArrayInput>(
-  operation?: ArrayAction<TInput>,
-): SortItemsAction<TInput>;
-
+declare function sortItems<TInput$1 extends ArrayInput>(
+  operation?: ArrayAction<TInput$1>,
+): SortItemsAction<TInput$1>;
+//#endregion
+//#region src/actions/startsWith/startsWith.d.ts
 /**
  * Starts with issue interface.
  */
-interface StartsWithIssue<TInput extends string, TRequirement extends string>
-  extends BaseIssue<TInput> {
+interface StartsWithIssue<TInput$1 extends string, TRequirement extends string>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -22839,13 +23384,13 @@ interface StartsWithIssue<TInput extends string, TRequirement extends string>
  * Starts with action interface.
  */
 interface StartsWithAction<
-  TInput extends string,
+  TInput$1 extends string,
   TRequirement extends string,
   TMessage extends
-    | ErrorMessage<StartsWithIssue<TInput, TRequirement>>
+    | ErrorMessage<StartsWithIssue<TInput$1, TRequirement>>
     | undefined,
 > extends
-  BaseValidation<TInput, TInput, StartsWithIssue<TInput, TRequirement>> {
+  BaseValidation<TInput$1, TInput$1, StartsWithIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -22875,9 +23420,11 @@ interface StartsWithAction<
  * @returns A starts with action.
  */
 declare function startsWith<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends string,
->(requirement: TRequirement): StartsWithAction<TInput, TRequirement, undefined>;
+>(
+  requirement: TRequirement,
+): StartsWithAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a starts with validation action.
  *
@@ -22887,16 +23434,17 @@ declare function startsWith<
  * @returns A starts with action.
  */
 declare function startsWith<
-  TInput extends string,
+  TInput$1 extends string,
   const TRequirement extends string,
   const TMessage extends
-    | ErrorMessage<StartsWithIssue<TInput, TRequirement>>
+    | ErrorMessage<StartsWithIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): StartsWithAction<TInput, TRequirement, TMessage>;
-
+): StartsWithAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/stringifyJson/stringifyJson.d.ts
 /**
  * Stringify JSON config interface.
  *
@@ -22906,8 +23454,9 @@ interface StringifyJsonConfig {
   /**
    * The JSON replacer function or array.
    */
-  replacer?: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ((this: any, key: string, value: any) => any) | (number | string)[];
+  replacer?:
+    | ((this: any, key: string, value: any) => any)
+    | (number | string)[];
   /**
    * The JSON space option.
    */
@@ -22918,7 +23467,7 @@ interface StringifyJsonConfig {
  *
  * @beta
  */
-interface StringifyJsonIssue<TInput> extends BaseIssue<TInput> {
+interface StringifyJsonIssue<TInput$1> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -22942,10 +23491,10 @@ interface StringifyJsonIssue<TInput> extends BaseIssue<TInput> {
  * @beta
  */
 interface StringifyJsonAction<
-  TInput,
+  TInput$1,
   TConfig extends StringifyJsonConfig | undefined,
-  TMessage extends ErrorMessage<StringifyJsonIssue<TInput>> | undefined,
-> extends BaseTransformation<TInput, string, StringifyJsonIssue<TInput>> {
+  TMessage extends ErrorMessage<StringifyJsonIssue<TInput$1>> | undefined,
+> extends BaseTransformation<TInput$1, string, StringifyJsonIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -22970,8 +23519,8 @@ interface StringifyJsonAction<
  *
  * @beta
  */
-declare function stringifyJson<TInput>(): StringifyJsonAction<
-  TInput,
+declare function stringifyJson<TInput$1>(): StringifyJsonAction<
+  TInput$1,
   undefined,
   undefined
 >;
@@ -22985,9 +23534,9 @@ declare function stringifyJson<TInput>(): StringifyJsonAction<
  * @beta
  */
 declare function stringifyJson<
-  TInput,
+  TInput$1,
   const TConfig extends StringifyJsonConfig | undefined,
->(config: TConfig): StringifyJsonAction<TInput, TConfig, undefined>;
+>(config: TConfig): StringifyJsonAction<TInput$1, TConfig, undefined>;
 /**
  * Creates a stringify JSON transformation action.
  *
@@ -22999,14 +23548,159 @@ declare function stringifyJson<
  * @beta
  */
 declare function stringifyJson<
-  TInput,
+  TInput$1,
   const TConfig extends StringifyJsonConfig | undefined,
-  const TMessage extends ErrorMessage<StringifyJsonIssue<TInput>> | undefined,
+  const TMessage extends ErrorMessage<StringifyJsonIssue<TInput$1>> | undefined,
 >(
   config: TConfig,
   message: TMessage,
-): StringifyJsonAction<TInput, TConfig, TMessage>;
-
+): StringifyJsonAction<TInput$1, TConfig, TMessage>;
+//#endregion
+//#region src/actions/toBigint/toBigint.d.ts
+/**
+ * To bigint issue interface.
+ */
+interface ToBigintIssue<TInput$1> extends BaseIssue<TInput$1> {
+  /**
+   * The issue kind.
+   */
+  readonly kind: "transformation";
+  /**
+   * The issue type.
+   */
+  readonly type: "to_bigint";
+  /**
+   * The expected property.
+   */
+  readonly expected: null;
+}
+/**
+ * To bigint action interface.
+ */
+interface ToBigintAction<
+  TInput$1,
+  TMessage extends ErrorMessage<ToBigintIssue<TInput$1>> | undefined,
+> extends BaseTransformation<TInput$1, bigint, ToBigintIssue<TInput$1>> {
+  /**
+   * The action type.
+   */
+  readonly type: "to_bigint";
+  /**
+   * The action reference.
+   */
+  readonly reference: typeof toBigint;
+  /**
+   * The error message.
+   */
+  readonly message: TMessage;
+}
+/**
+ * Creates a to bigint transformation action.
+ *
+ * @returns A to bigint action.
+ *
+ * @beta
+ */
+declare function toBigint<TInput$1>(): ToBigintAction<TInput$1, undefined>;
+/**
+ * Creates a to bigint transformation action.
+ *
+ * @param message The error message.
+ *
+ * @returns A to bigint action.
+ *
+ * @beta
+ */
+declare function toBigint<
+  TInput$1,
+  const TMessage extends ErrorMessage<ToBigintIssue<TInput$1>> | undefined,
+>(message: TMessage): ToBigintAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/toBoolean/toBoolean.d.ts
+/**
+ * To boolean action interface.
+ */
+interface ToBooleanAction<TInput$1>
+  extends BaseTransformation<TInput$1, boolean, never> {
+  /**
+   * The action type.
+   */
+  readonly type: "to_boolean";
+  /**
+   * The action reference.
+   */
+  readonly reference: typeof toBoolean;
+}
+/**
+ * Creates a to boolean transformation action.
+ *
+ * @returns A to boolean action.
+ *
+ * @beta
+ */
+declare function toBoolean<TInput$1>(): ToBooleanAction<TInput$1>;
+//#endregion
+//#region src/actions/toDate/toDate.d.ts
+/**
+ * To date issue interface.
+ */
+interface ToDateIssue<TInput$1> extends BaseIssue<TInput$1 | Date> {
+  /**
+   * The issue kind.
+   */
+  readonly kind: "transformation";
+  /**
+   * The issue type.
+   */
+  readonly type: "to_date";
+  /**
+   * The expected property.
+   */
+  readonly expected: null;
+}
+/**
+ * To date action interface.
+ */
+interface ToDateAction<
+  TInput$1,
+  TMessage extends ErrorMessage<ToDateIssue<TInput$1>> | undefined,
+> extends BaseTransformation<TInput$1, Date, ToDateIssue<TInput$1>> {
+  /**
+   * The action type.
+   */
+  readonly type: "to_date";
+  /**
+   * The action reference.
+   */
+  readonly reference: typeof toDate;
+  /**
+   * The error message.
+   */
+  readonly message: TMessage;
+}
+/**
+ * Creates a to date transformation action.
+ *
+ * @returns A to date action.
+ *
+ * @beta
+ */
+declare function toDate<TInput$1>(): ToDateAction<TInput$1, undefined>;
+/**
+ * Creates a to date transformation action.
+ *
+ * @param message The error message.
+ *
+ * @returns A to date action.
+ *
+ * @beta
+ */
+declare function toDate<
+  TInput$1,
+  const TMessage extends ErrorMessage<ToDateIssue<TInput$1>> | undefined,
+>(message: TMessage): ToDateAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/toLowerCase/toLowerCase.d.ts
 /**
  * To lower case action interface.
  */
@@ -23026,14 +23720,15 @@ interface ToLowerCaseAction extends BaseTransformation<string, string, never> {
  * @returns A to lower case action.
  */
 declare function toLowerCase(): ToLowerCaseAction;
-
+//#endregion
+//#region src/actions/toMaxValue/toMaxValue.d.ts
 /**
  * To max value action interface.
  */
 interface ToMaxValueAction<
-  TInput extends ValueInput,
-  TRequirement extends TInput,
-> extends BaseTransformation<TInput, TInput, never> {
+  TInput$1 extends ValueInput,
+  TRequirement extends TInput$1,
+> extends BaseTransformation<TInput$1, TInput$1, never> {
   /**
    * The action type.
    */
@@ -23055,17 +23750,18 @@ interface ToMaxValueAction<
  * @returns A to max value action.
  */
 declare function toMaxValue<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
->(requirement: TRequirement): ToMaxValueAction<TInput, TRequirement>;
-
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
+>(requirement: TRequirement): ToMaxValueAction<TInput$1, TRequirement>;
+//#endregion
+//#region src/actions/toMinValue/toMinValue.d.ts
 /**
  * To min value action interface.
  */
 interface ToMinValueAction<
-  TInput extends ValueInput,
-  TRequirement extends TInput,
-> extends BaseTransformation<TInput, TInput, never> {
+  TInput$1 extends ValueInput,
+  TRequirement extends TInput$1,
+> extends BaseTransformation<TInput$1, TInput$1, never> {
   /**
    * The action type.
    */
@@ -23087,10 +23783,131 @@ interface ToMinValueAction<
  * @returns A to min value action.
  */
 declare function toMinValue<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
->(requirement: TRequirement): ToMinValueAction<TInput, TRequirement>;
-
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
+>(requirement: TRequirement): ToMinValueAction<TInput$1, TRequirement>;
+//#endregion
+//#region src/actions/toNumber/toNumber.d.ts
+/**
+ * To number issue interface.
+ */
+interface ToNumberIssue<TInput$1> extends BaseIssue<TInput$1 | number> {
+  /**
+   * The issue kind.
+   */
+  readonly kind: "transformation";
+  /**
+   * The issue type.
+   */
+  readonly type: "to_number";
+  /**
+   * The expected property.
+   */
+  readonly expected: null;
+}
+/**
+ * To number action interface.
+ */
+interface ToNumberAction<
+  TInput$1,
+  TMessage extends ErrorMessage<ToNumberIssue<TInput$1>> | undefined,
+> extends BaseTransformation<TInput$1, number, ToNumberIssue<TInput$1>> {
+  /**
+   * The action type.
+   */
+  readonly type: "to_number";
+  /**
+   * The action reference.
+   */
+  readonly reference: typeof toNumber;
+  /**
+   * The error message.
+   */
+  readonly message: TMessage;
+}
+/**
+ * Creates a to number transformation action.
+ *
+ * @returns A to number action.
+ *
+ * @beta
+ */
+declare function toNumber<TInput$1>(): ToNumberAction<TInput$1, undefined>;
+/**
+ * Creates a to number transformation action.
+ *
+ * @param message The error message.
+ *
+ * @returns A to number action.
+ *
+ * @beta
+ */
+declare function toNumber<
+  TInput$1,
+  const TMessage extends ErrorMessage<ToNumberIssue<TInput$1>> | undefined,
+>(message: TMessage): ToNumberAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/toString/toString.d.ts
+/**
+ * To string issue interface.
+ */
+interface ToStringIssue<TInput$1> extends BaseIssue<TInput$1> {
+  /**
+   * The issue kind.
+   */
+  readonly kind: "transformation";
+  /**
+   * The issue type.
+   */
+  readonly type: "to_string";
+  /**
+   * The expected property.
+   */
+  readonly expected: null;
+}
+/**
+ * To string action interface.
+ */
+interface ToStringAction<
+  TInput$1,
+  TMessage extends ErrorMessage<ToStringIssue<TInput$1>> | undefined,
+> extends BaseTransformation<TInput$1, string, ToStringIssue<TInput$1>> {
+  /**
+   * The action type.
+   */
+  readonly type: "to_string";
+  /**
+   * The action reference.
+   */
+  readonly reference: typeof toString;
+  /**
+   * The error message.
+   */
+  readonly message: TMessage;
+}
+/**
+ * Creates a to string transformation action.
+ *
+ * @returns A to string action.
+ *
+ * @beta
+ */
+declare function toString<TInput$1>(): ToStringAction<TInput$1, undefined>;
+/**
+ * Creates a to string transformation action.
+ *
+ * @param message The error message.
+ *
+ * @returns A to string action.
+ *
+ * @beta
+ */
+declare function toString<
+  TInput$1,
+  const TMessage extends ErrorMessage<ToStringIssue<TInput$1>> | undefined,
+>(message: TMessage): ToStringAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/toUpperCase/toUpperCase.d.ts
 /**
  * To upper case action interface.
  */
@@ -23110,12 +23927,13 @@ interface ToUpperCaseAction extends BaseTransformation<string, string, never> {
  * @returns A to upper case action.
  */
 declare function toUpperCase(): ToUpperCaseAction;
-
+//#endregion
+//#region src/actions/transform/transform.d.ts
 /**
  * Transform action interface.
  */
-interface TransformAction<TInput, TOutput>
-  extends BaseTransformation<TInput, TOutput, never> {
+interface TransformAction<TInput$1, TOutput$1>
+  extends BaseTransformation<TInput$1, TOutput$1, never> {
   /**
    * The action type.
    */
@@ -23127,7 +23945,7 @@ interface TransformAction<TInput, TOutput>
   /**
    * The transformation operation.
    */
-  readonly operation: (input: TInput) => TOutput;
+  readonly operation: (input: TInput$1) => TOutput$1;
 }
 /**
  * Creates a custom transformation action.
@@ -23136,15 +23954,16 @@ interface TransformAction<TInput, TOutput>
  *
  * @returns A transform action.
  */
-declare function transform<TInput, TOutput>(
-  operation: (input: TInput) => TOutput,
-): TransformAction<TInput, TOutput>;
-
+declare function transform<TInput$1, TOutput$1>(
+  operation: (input: TInput$1) => TOutput$1,
+): TransformAction<TInput$1, TOutput$1>;
+//#endregion
+//#region src/actions/transform/transformAsync.d.ts
 /**
  * Transform action async interface.
  */
-interface TransformActionAsync<TInput, TOutput>
-  extends BaseTransformationAsync<TInput, TOutput, never> {
+interface TransformActionAsync<TInput$1, TOutput$1>
+  extends BaseTransformationAsync<TInput$1, TOutput$1, never> {
   /**
    * The action type.
    */
@@ -23156,7 +23975,7 @@ interface TransformActionAsync<TInput, TOutput>
   /**
    * The transformation operation.
    */
-  readonly operation: (input: TInput) => Promise<TOutput>;
+  readonly operation: (input: TInput$1) => Promise<TOutput$1>;
 }
 /**
  * Creates a custom transformation action.
@@ -23165,10 +23984,11 @@ interface TransformActionAsync<TInput, TOutput>
  *
  * @returns A transform action.
  */
-declare function transformAsync<TInput, TOutput>(
-  operation: (input: TInput) => Promise<TOutput>,
-): TransformActionAsync<TInput, TOutput>;
-
+declare function transformAsync<TInput$1, TOutput$1>(
+  operation: (input: TInput$1) => Promise<TOutput$1>,
+): TransformActionAsync<TInput$1, TOutput$1>;
+//#endregion
+//#region src/actions/trim/trim.d.ts
 /**
  * Trim action interface.
  */
@@ -23188,7 +24008,8 @@ interface TrimAction extends BaseTransformation<string, string, never> {
  * @returns A trim action.
  */
 declare function trim(): TrimAction;
-
+//#endregion
+//#region src/actions/trimEnd/trimEnd.d.ts
 /**
  * Trim end action interface.
  */
@@ -23208,7 +24029,8 @@ interface TrimEndAction extends BaseTransformation<string, string, never> {
  * @returns A trim end action.
  */
 declare function trimEnd(): TrimEndAction;
-
+//#endregion
+//#region src/actions/trimStart/trimStart.d.ts
 /**
  * Trim start action interface.
  */
@@ -23228,11 +24050,12 @@ interface TrimStartAction extends BaseTransformation<string, string, never> {
  * @returns A trim start action.
  */
 declare function trimStart(): TrimStartAction;
-
+//#endregion
+//#region src/actions/ulid/ulid.d.ts
 /**
  * ULID issue interface.
  */
-interface UlidIssue<TInput extends string> extends BaseIssue<TInput> {
+interface UlidIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -23258,9 +24081,9 @@ interface UlidIssue<TInput extends string> extends BaseIssue<TInput> {
  * ULID action interface.
  */
 interface UlidAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<UlidIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, UlidIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<UlidIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, UlidIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -23287,7 +24110,10 @@ interface UlidAction<
  *
  * @returns An ULID action.
  */
-declare function ulid<TInput extends string>(): UlidAction<TInput, undefined>;
+declare function ulid<TInput$1 extends string>(): UlidAction<
+  TInput$1,
+  undefined
+>;
 /**
  * Creates an [ULID](https://github.com/ulid/spec) validation action.
  *
@@ -23296,14 +24122,15 @@ declare function ulid<TInput extends string>(): UlidAction<TInput, undefined>;
  * @returns An ULID action.
  */
 declare function ulid<
-  TInput extends string,
-  const TMessage extends ErrorMessage<UlidIssue<TInput>> | undefined,
->(message: TMessage): UlidAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<UlidIssue<TInput$1>> | undefined,
+>(message: TMessage): UlidAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/url/url.d.ts
 /**
  * URL issue interface.
  */
-interface UrlIssue<TInput extends string> extends BaseIssue<TInput> {
+interface UrlIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -23329,9 +24156,9 @@ interface UrlIssue<TInput extends string> extends BaseIssue<TInput> {
  * URL action interface.
  */
 interface UrlAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<UrlIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, UrlIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<UrlIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, UrlIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -23361,7 +24188,7 @@ interface UrlAction<
  *
  * @returns An URL action.
  */
-declare function url<TInput extends string>(): UrlAction<TInput, undefined>;
+declare function url<TInput$1 extends string>(): UrlAction<TInput$1, undefined>;
 /**
  * Creates an [URL](https://en.wikipedia.org/wiki/URL) validation action.
  *
@@ -23373,14 +24200,15 @@ declare function url<TInput extends string>(): UrlAction<TInput, undefined>;
  * @returns An URL action.
  */
 declare function url<
-  TInput extends string,
-  const TMessage extends ErrorMessage<UrlIssue<TInput>> | undefined,
->(message: TMessage): UrlAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<UrlIssue<TInput$1>> | undefined,
+>(message: TMessage): UrlAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/uuid/uuid.d.ts
 /**
  * UUID issue interface.
  */
-interface UuidIssue<TInput extends string> extends BaseIssue<TInput> {
+interface UuidIssue<TInput$1 extends string> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -23406,9 +24234,9 @@ interface UuidIssue<TInput extends string> extends BaseIssue<TInput> {
  * UUID action interface.
  */
 interface UuidAction<
-  TInput extends string,
-  TMessage extends ErrorMessage<UuidIssue<TInput>> | undefined,
-> extends BaseValidation<TInput, TInput, UuidIssue<TInput>> {
+  TInput$1 extends string,
+  TMessage extends ErrorMessage<UuidIssue<TInput$1>> | undefined,
+> extends BaseValidation<TInput$1, TInput$1, UuidIssue<TInput$1>> {
   /**
    * The action type.
    */
@@ -23435,7 +24263,10 @@ interface UuidAction<
  *
  * @returns An UUID action.
  */
-declare function uuid<TInput extends string>(): UuidAction<TInput, undefined>;
+declare function uuid<TInput$1 extends string>(): UuidAction<
+  TInput$1,
+  undefined
+>;
 /**
  * Creates an [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) validation action.
  *
@@ -23444,15 +24275,16 @@ declare function uuid<TInput extends string>(): UuidAction<TInput, undefined>;
  * @returns An UUID action.
  */
 declare function uuid<
-  TInput extends string,
-  const TMessage extends ErrorMessage<UuidIssue<TInput>> | undefined,
->(message: TMessage): UuidAction<TInput, TMessage>;
-
+  TInput$1 extends string,
+  const TMessage extends ErrorMessage<UuidIssue<TInput$1>> | undefined,
+>(message: TMessage): UuidAction<TInput$1, TMessage>;
+//#endregion
+//#region src/actions/value/value.d.ts
 /**
  * Value issue interface.
  */
-interface ValueIssue<TInput extends ValueInput, TRequirement extends TInput>
-  extends BaseIssue<TInput> {
+interface ValueIssue<TInput$1 extends ValueInput, TRequirement extends TInput$1>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -23474,10 +24306,11 @@ interface ValueIssue<TInput extends ValueInput, TRequirement extends TInput>
  * Value action interface.
  */
 interface ValueAction<
-  TInput extends ValueInput,
-  TRequirement extends TInput,
-  TMessage extends ErrorMessage<ValueIssue<TInput, TRequirement>> | undefined,
-> extends BaseValidation<TInput, TInput, ValueIssue<TInput, TRequirement>> {
+  TInput$1 extends ValueInput,
+  TRequirement extends TInput$1,
+  TMessage extends ErrorMessage<ValueIssue<TInput$1, TRequirement>> | undefined,
+> extends
+  BaseValidation<TInput$1, TInput$1, ValueIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -23507,9 +24340,9 @@ interface ValueAction<
  * @returns A value action.
  */
 declare function value<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
->(requirement: TRequirement): ValueAction<TInput, TRequirement, undefined>;
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
+>(requirement: TRequirement): ValueAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a value validation action.
  *
@@ -23519,23 +24352,24 @@ declare function value<
  * @returns A value action.
  */
 declare function value<
-  TInput extends ValueInput,
-  const TRequirement extends TInput,
+  TInput$1 extends ValueInput,
+  const TRequirement extends TInput$1,
   const TMessage extends
-    | ErrorMessage<ValueIssue<TInput, TRequirement>>
+    | ErrorMessage<ValueIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): ValueAction<TInput, TRequirement, TMessage>;
-
+): ValueAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/values/values.d.ts
 /**
  * Values issue type.
  */
 interface ValuesIssue<
-  TInput extends ValueInput,
-  TRequirement extends readonly TInput[],
-> extends BaseIssue<TInput> {
+  TInput$1 extends ValueInput,
+  TRequirement extends readonly TInput$1[],
+> extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -23557,10 +24391,13 @@ interface ValuesIssue<
  * Values action type.
  */
 interface ValuesAction<
-  TInput extends ValueInput,
-  TRequirement extends readonly TInput[],
-  TMessage extends ErrorMessage<ValuesIssue<TInput, TRequirement>> | undefined,
-> extends BaseValidation<TInput, TInput, ValuesIssue<TInput, TRequirement>> {
+  TInput$1 extends ValueInput,
+  TRequirement extends readonly TInput$1[],
+  TMessage extends
+    | ErrorMessage<ValuesIssue<TInput$1, TRequirement>>
+    | undefined,
+> extends
+  BaseValidation<TInput$1, TInput$1, ValuesIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -23590,9 +24427,9 @@ interface ValuesAction<
  * @returns A values action.
  */
 declare function values<
-  TInput extends ValueInput,
-  const TRequirement extends readonly TInput[],
->(requirement: TRequirement): ValuesAction<TInput, TRequirement, undefined>;
+  TInput$1 extends ValueInput,
+  const TRequirement extends readonly TInput$1[],
+>(requirement: TRequirement): ValuesAction<TInput$1, TRequirement, undefined>;
 /**
  * Creates a values validation action.
  *
@@ -23602,21 +24439,22 @@ declare function values<
  * @returns A values action.
  */
 declare function values<
-  TInput extends ValueInput,
-  const TRequirement extends readonly TInput[],
+  TInput$1 extends ValueInput,
+  const TRequirement extends readonly TInput$1[],
   const TMessage extends
-    | ErrorMessage<ValuesIssue<TInput, TRequirement>>
+    | ErrorMessage<ValuesIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   requirement: TRequirement,
   message: TMessage,
-): ValuesAction<TInput, TRequirement, TMessage>;
-
+): ValuesAction<TInput$1, TRequirement, TMessage>;
+//#endregion
+//#region src/actions/words/words.d.ts
 /**
  * Words issue interface.
  */
-interface WordsIssue<TInput extends string, TRequirement extends number>
-  extends BaseIssue<TInput> {
+interface WordsIssue<TInput$1 extends string, TRequirement extends number>
+  extends BaseIssue<TInput$1> {
   /**
    * The issue kind.
    */
@@ -23642,11 +24480,12 @@ interface WordsIssue<TInput extends string, TRequirement extends number>
  * Words action interface.
  */
 interface WordsAction<
-  TInput extends string,
+  TInput$1 extends string,
   TLocales extends Intl.LocalesArgument,
   TRequirement extends number,
-  TMessage extends ErrorMessage<WordsIssue<TInput, TRequirement>> | undefined,
-> extends BaseValidation<TInput, TInput, WordsIssue<TInput, TRequirement>> {
+  TMessage extends ErrorMessage<WordsIssue<TInput$1, TRequirement>> | undefined,
+> extends
+  BaseValidation<TInput$1, TInput$1, WordsIssue<TInput$1, TRequirement>> {
   /**
    * The action type.
    */
@@ -23681,13 +24520,13 @@ interface WordsAction<
  * @returns A words action.
  */
 declare function words<
-  TInput extends string,
+  TInput$1 extends string,
   const TLocales extends Intl.LocalesArgument,
   const TRequirement extends number,
 >(
   locales: TLocales,
   requirement: TRequirement,
-): WordsAction<TInput, TLocales, TRequirement, undefined>;
+): WordsAction<TInput$1, TLocales, TRequirement, undefined>;
 /**
  * Creates a words validation action.
  *
@@ -23698,18 +24537,19 @@ declare function words<
  * @returns A words action.
  */
 declare function words<
-  TInput extends string,
+  TInput$1 extends string,
   const TLocales extends Intl.LocalesArgument,
   const TRequirement extends number,
   const TMessage extends
-    | ErrorMessage<WordsIssue<TInput, TRequirement>>
+    | ErrorMessage<WordsIssue<TInput$1, TRequirement>>
     | undefined,
 >(
   locales: TLocales,
   requirement: TRequirement,
   message: TMessage,
-): WordsAction<TInput, TLocales, TRequirement, TMessage>;
-
+): WordsAction<TInput$1, TLocales, TRequirement, TMessage>;
+//#endregion
+//#region src/regex.d.ts
 /**
  * [Base64](https://en.wikipedia.org/wiki/Base64) regex.
  */
@@ -23833,7 +24673,8 @@ declare const ULID_REGEX: RegExp;
  * [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) regex.
  */
 declare const UUID_REGEX: RegExp;
-
+//#endregion
+//#region src/storages/globalConfig/globalConfig.d.ts
 /**
  * The global config type.
  */
@@ -23858,7 +24699,8 @@ declare function getGlobalConfig<const TIssue extends BaseIssue<unknown>>(
  * Deletes the global configuration.
  */
 declare function deleteGlobalConfig(): void;
-
+//#endregion
+//#region src/storages/globalMessage/globalMessage.d.ts
 /**
  * Sets a global error message.
  *
@@ -23885,7 +24727,8 @@ declare function getGlobalMessage(
  * @param lang The language of the message.
  */
 declare function deleteGlobalMessage(lang?: string): void;
-
+//#endregion
+//#region src/storages/schemaMessage/schemaMessage.d.ts
 /**
  * Sets a schema error message.
  *
@@ -23912,7 +24755,8 @@ declare function getSchemaMessage(
  * @param lang The language of the message.
  */
 declare function deleteSchemaMessage(lang?: string): void;
-
+//#endregion
+//#region src/storages/specificMessage/specificMessage.d.ts
 /**
  * Reference type.
  */
@@ -23959,7 +24803,8 @@ declare function deleteSpecificMessage(
   reference: Reference,
   lang?: string,
 ): void;
-
+//#endregion
+//#region src/utils/_addIssue/_addIssue.d.ts
 /**
  * Context type.
  */
@@ -24012,7 +24857,8 @@ declare function _addIssue<const TContext extends Context>(
   config: Config<InferIssue<TContext>>,
   other?: Other<TContext>,
 ): void;
-
+//#endregion
+//#region src/utils/_getByteCount/_getByteCount.d.ts
 /**
  * Returns the byte count of the input.
  *
@@ -24023,7 +24869,8 @@ declare function _addIssue<const TContext extends Context>(
  * @internal
  */
 declare function _getByteCount(input: string): number;
-
+//#endregion
+//#region src/utils/_getGraphemeCount/_getGraphemeCount.d.ts
 /**
  * Returns the grapheme count of the input.
  *
@@ -24034,11 +24881,12 @@ declare function _getByteCount(input: string): number;
  * @internal
  */
 declare function _getGraphemeCount(input: string): number;
-
+//#endregion
+//#region src/utils/_getLastMetadata/_getLastMetadata.d.ts
 /**
  * Metadata action type.
  */
-type MetadataAction =
+type MetadataAction$1 =
   | TitleAction<unknown, string>
   | DescriptionAction<unknown, string>;
 /**
@@ -24050,7 +24898,7 @@ type Schema$1 =
   | SchemaWithPipe<
     readonly [
       BaseSchema<unknown, unknown, BaseIssue<unknown>>,
-      ...(PipeItem<any, unknown, BaseIssue<unknown>> | MetadataAction)[],
+      ...(PipeItem<any, unknown, BaseIssue<unknown>> | MetadataAction$1)[],
     ]
   >
   | SchemaWithPipeAsync<
@@ -24062,7 +24910,7 @@ type Schema$1 =
       ...(
         | PipeItem<any, unknown, BaseIssue<unknown>>
         | PipeItemAsync<any, unknown, BaseIssue<unknown>>
-        | MetadataAction
+        | MetadataAction$1
       )[],
     ]
   >;
@@ -24081,7 +24929,8 @@ declare function _getLastMetadata(
   schema: Schema$1,
   type: "title" | "description",
 ): string | undefined;
-
+//#endregion
+//#region src/utils/_getStandardProps/_getStandardProps.d.ts
 /**
  * Returns the Standard Schema properties.
  *
@@ -24094,7 +24943,8 @@ declare function _getStandardProps<
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 >(context: TSchema): StandardProps<InferInput<TSchema>, InferOutput<TSchema>>;
-
+//#endregion
+//#region src/utils/_getWordCount/_getWordCount.d.ts
 /**
  * Returns the word count of the input.
  *
@@ -24109,7 +24959,8 @@ declare function _getWordCount(
   locales: Intl.LocalesArgument,
   input: string,
 ): number;
-
+//#endregion
+//#region src/utils/_isLuhnAlgo/_isLuhnAlgo.d.ts
 /**
  * Checks whether a string with numbers corresponds to the luhn algorithm.
  *
@@ -24120,7 +24971,8 @@ declare function _getWordCount(
  * @internal
  */
 declare function _isLuhnAlgo(input: string): boolean;
-
+//#endregion
+//#region src/utils/_isValidObjectKey/_isValidObjectKey.d.ts
 /**
  * Disallows inherited object properties and prevents object prototype
  * pollution by disallowing certain keys.
@@ -24133,7 +24985,8 @@ declare function _isLuhnAlgo(input: string): boolean;
  * @internal
  */
 declare function _isValidObjectKey(object: object, key: string): boolean;
-
+//#endregion
+//#region src/utils/_joinExpects/_joinExpects.d.ts
 /**
  * Joins multiple `expects` values with the given separator.
  *
@@ -24145,7 +24998,8 @@ declare function _isValidObjectKey(object: object, key: string): boolean;
  * @internal
  */
 declare function _joinExpects(values: string[], separator: "&" | "|"): string;
-
+//#endregion
+//#region src/utils/_stringify/_stringify.d.ts
 /**
  * Stringifies an unknown input to a literal or type string.
  *
@@ -24156,7 +25010,8 @@ declare function _joinExpects(values: string[], separator: "&" | "|"): string;
  * @internal
  */
 declare function _stringify(input: unknown): string;
-
+//#endregion
+//#region src/utils/entriesFromList/entriesFromList.d.ts
 /**
  * Creates an object entries definition from a list of keys and a schema.
  *
@@ -24171,7 +25026,8 @@ declare function entriesFromList<
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 >(list: TList, schema: TSchema): Record<TList[number], TSchema>;
-
+//#endregion
+//#region src/utils/entriesFromObjects/entriesFromObjects.d.ts
 /**
  * Schema type.
  */
@@ -24229,7 +25085,8 @@ type MergedEntries<TSchemas extends readonly [Schema, ...Schema[]]> = Prettify<
 declare function entriesFromObjects<
   const TSchemas extends readonly [Schema, ...Schema[]],
 >(schemas: TSchemas): MergedEntries<TSchemas>;
-
+//#endregion
+//#region src/utils/getDotPath/getDotPath.d.ts
 /**
  * Creates and returns the dot path of an issue if possible.
  *
@@ -24250,7 +25107,8 @@ declare function getDotPath<
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 >(issue: InferIssue<TSchema>): IssueDotPath<TSchema> | null;
-
+//#endregion
+//#region src/utils/isOfKind/isOfKind.d.ts
 /**
  * A generic type guard to check the kind of an object.
  *
@@ -24267,7 +25125,8 @@ declare function isOfKind<
 >(kind: TKind, object: TObject): object is Extract<TObject, {
   kind: TKind;
 }>;
-
+//#endregion
+//#region src/utils/isOfType/isOfType.d.ts
 /**
  * A generic type guard to check the type of an object.
  *
@@ -24284,7 +25143,8 @@ declare function isOfType<
 >(type: TType, object: TObject): object is Extract<TObject, {
   type: TType;
 }>;
-
+//#endregion
+//#region src/utils/isValiError/isValiError.d.ts
 /**
  * A type guard to check if an error is a ValiError.
  *
@@ -24297,7 +25157,8 @@ declare function isValiError<
     | BaseSchema<unknown, unknown, BaseIssue<unknown>>
     | BaseSchemaAsync<unknown, unknown, BaseIssue<unknown>>,
 >(error: unknown): error is ValiError<TSchema>;
-
+//#endregion
+//#region src/utils/ValiError/ValiError.d.ts
 /**
  * A Valibot error with useful information.
  */
@@ -24317,7 +25178,7 @@ declare class ValiError<
    */
   constructor(issues: [InferIssue<TSchema>, ...InferIssue<TSchema>[]]);
 }
-
+//#endregion
 export {
   _addIssue,
   _getByteCount,
@@ -24330,27 +25191,27 @@ export {
   _joinExpects,
   _stringify,
   any,
-  type AnySchema,
+  AnySchema,
   args,
-  type ArgsAction,
-  type ArgsActionAsync,
+  ArgsAction,
+  ArgsActionAsync,
   argsAsync,
   array,
   arrayAsync,
-  type ArrayInput,
-  type ArrayIssue,
+  ArrayInput,
+  ArrayIssue,
   type ArrayPathItem,
-  type ArrayRequirement$1 as ArrayRequirement,
-  type ArrayRequirementAsync,
-  type ArraySchema,
-  type ArraySchemaAsync,
+  ArrayRequirement,
+  ArrayRequirementAsync,
+  ArraySchema,
+  ArraySchemaAsync,
   assert,
-  type AwaitActionAsync,
+  AwaitActionAsync,
   awaitAsync,
   base64,
   BASE64_REGEX,
-  type Base64Action,
-  type Base64Issue,
+  Base64Action,
+  Base64Issue,
   type BaseIssue,
   type BaseMetadata,
   type BaseSchema,
@@ -24361,59 +25222,59 @@ export {
   type BaseValidationAsync,
   bic,
   BIC_REGEX,
-  type BicAction,
-  type BicIssue,
+  BicAction,
+  BicIssue,
   bigint,
-  type BigintIssue,
-  type BigintSchema,
+  BigintIssue,
+  BigintSchema,
   blob,
-  type BlobIssue,
-  type BlobSchema,
+  BlobIssue,
+  BlobSchema,
   boolean,
-  type BooleanIssue,
-  type BooleanSchema,
-  type Brand,
+  BooleanIssue,
+  BooleanSchema,
+  Brand,
   brand,
-  type BrandAction,
-  type BrandName,
+  BrandAction,
+  BrandName,
   BrandSymbol,
   bytes,
-  type BytesAction,
-  type BytesIssue,
+  BytesAction,
+  BytesIssue,
   check,
-  type CheckAction,
-  type CheckActionAsync,
+  CheckAction,
+  CheckActionAsync,
   checkAsync,
-  type CheckIssue,
+  CheckIssue,
   checkItems,
-  type CheckItemsAction,
-  type CheckItemsActionAsync,
+  CheckItemsAction,
+  CheckItemsActionAsync,
   checkItemsAsync,
-  type CheckItemsIssue,
-  type Class,
+  CheckItemsIssue,
+  Class,
   type Config,
   config,
-  type ContentInput,
-  type ContentRequirement,
+  ContentInput,
+  ContentRequirement,
   creditCard,
-  type CreditCardAction,
-  type CreditCardIssue,
+  CreditCardAction,
+  CreditCardIssue,
   cuid2,
   CUID2_REGEX,
-  type Cuid2Action,
-  type Cuid2Issue,
+  Cuid2Action,
+  Cuid2Issue,
   custom,
   customAsync,
-  type CustomIssue,
-  type CustomSchema,
-  type CustomSchemaAsync,
+  CustomIssue,
+  CustomSchema,
+  CustomSchemaAsync,
   date,
-  type DateIssue,
-  type DateSchema,
+  DateIssue,
+  DateSchema,
   decimal,
   DECIMAL_REGEX,
-  type DecimalAction,
-  type DecimalIssue,
+  DecimalAction,
+  DecimalIssue,
   type Default,
   type DefaultAsync,
   type DefaultValue,
@@ -24422,76 +25283,78 @@ export {
   deleteSchemaMessage,
   deleteSpecificMessage,
   description,
-  type DescriptionAction,
+  DescriptionAction,
   digits,
   DIGITS_REGEX,
-  type DigitsAction,
-  type DigitsIssue,
+  DigitsAction,
+  DigitsIssue,
   email,
   EMAIL_REGEX,
-  type EmailAction,
-  type EmailIssue,
+  EmailAction,
+  EmailIssue,
   emoji,
   EMOJI_REGEX,
-  type EmojiAction,
-  type EmojiIssue,
+  EmojiAction,
+  EmojiIssue,
   empty,
-  type EmptyAction,
-  type EmptyIssue,
+  EmptyAction,
+  EmptyIssue,
   endsWith,
-  type EndsWithAction,
-  type EndsWithIssue,
+  EndsWithAction,
+  EndsWithIssue,
   entries,
-  type EntriesAction,
+  EntriesAction,
   entriesFromList,
   entriesFromObjects,
-  type EntriesInput,
-  type EntriesIssue,
-  type Enum,
+  EntriesInput,
+  EntriesIssue,
+  Enum,
   enum_,
   enum_ as enum,
-  type EnumIssue,
-  type EnumSchema,
-  type EnumValues,
+  EnumIssue,
+  EnumSchema,
+  EnumValues,
   type ErrorMessage,
   everyItem,
-  type EveryItemAction,
-  type EveryItemIssue,
+  EveryItemAction,
+  EveryItemIssue,
   exactOptional,
   exactOptionalAsync,
-  type ExactOptionalSchema,
-  type ExactOptionalSchemaAsync,
+  ExactOptionalSchema,
+  ExactOptionalSchemaAsync,
+  examples,
+  ExamplesAction,
   excludes,
-  type ExcludesAction,
-  type ExcludesIssue,
+  ExcludesAction,
+  ExcludesIssue,
   type FailureDataset,
-  type Fallback,
+  Fallback,
   fallback,
-  type FallbackAsync,
+  FallbackAsync,
   fallbackAsync,
   file,
-  type FileIssue,
-  type FileSchema,
+  FileIssue,
+  FileSchema,
   filterItems,
-  type FilterItemsAction,
+  FilterItemsAction,
   findItem,
-  type FindItemAction,
+  FindItemAction,
   finite,
-  type FiniteAction,
-  type FiniteIssue,
-  type FlatErrors,
+  FiniteAction,
+  FiniteIssue,
+  FlatErrors,
   flatten,
-  type Flavor,
+  Flavor,
   flavor,
-  type FlavorAction,
-  type FlavorName,
+  FlavorAction,
+  FlavorName,
   FlavorSymbol,
   forward,
   forwardAsync,
   function_,
   function_ as function,
-  type FunctionIssue,
-  type FunctionSchema,
+  FunctionIssue,
+  FunctionSchema,
   type GenericIssue,
   type GenericMetadata,
   type GenericPipeAction,
@@ -24509,6 +25372,7 @@ export {
   getDefaultsAsync,
   getDescription,
   getDotPath,
+  getExamples,
   getFallback,
   getFallbacks,
   getFallbacksAsync,
@@ -24518,65 +25382,66 @@ export {
   getSchemaMessage,
   getSpecificMessage,
   getTitle,
-  type GlobalConfig,
+  GlobalConfig,
   graphemes,
-  type GraphemesAction,
-  type GraphemesIssue,
+  GraphemesAction,
+  GraphemesIssue,
   gtValue,
-  type GtValueAction,
-  type GtValueIssue,
+  GtValueAction,
+  GtValueIssue,
   hash,
-  type HashAction,
-  type HashIssue,
-  type HashType,
+  HashAction,
+  HashIssue,
+  HashType,
   HEX_COLOR_REGEX,
   hexadecimal,
   HEXADECIMAL_REGEX,
-  type HexadecimalAction,
-  type HexadecimalIssue,
+  HexadecimalAction,
+  HexadecimalIssue,
   hexColor,
-  type HexColorAction,
-  type HexColorIssue,
+  HexColorAction,
+  HexColorIssue,
   imei,
   IMEI_REGEX,
-  type ImeiAction,
-  type ImeiIssue,
+  ImeiAction,
+  ImeiIssue,
   includes,
-  type IncludesAction,
-  type IncludesIssue,
-  type InferDefault,
-  type InferDefaults,
-  type InferFallback,
-  type InferFallbacks,
+  IncludesAction,
+  IncludesIssue,
+  InferDefault,
+  InferDefaults,
+  InferExamples,
+  InferFallback,
+  InferFallbacks,
   type InferInput,
   type InferIssue,
-  type InferMetadata,
+  InferMetadata,
   type InferOutput,
   instance,
-  type InstanceIssue,
-  type InstanceSchema,
+  InstanceIssue,
+  InstanceSchema,
   integer,
-  type IntegerAction,
-  type IntegerIssue,
+  IntegerAction,
+  IntegerIssue,
   intersect,
   intersectAsync,
-  type IntersectIssue,
-  type IntersectOptions,
-  type IntersectOptionsAsync,
-  type IntersectSchema,
-  type IntersectSchemaAsync,
+  IntersectIssue,
+  IntersectOptions,
+  IntersectOptionsAsync,
+  IntersectSchema,
+  IntersectSchemaAsync,
   ip,
   IP_REGEX,
-  type IpAction,
-  type IpIssue,
+  IpAction,
+  IpIssue,
   ipv4,
   IPV4_REGEX,
-  type Ipv4Action,
-  type Ipv4Issue,
+  Ipv4Action,
+  Ipv4Issue,
   ipv6,
   IPV6_REGEX,
-  type Ipv6Action,
-  type Ipv6Issue,
+  Ipv6Action,
+  Ipv6Issue,
   is,
   ISO_DATE_REGEX,
   ISO_DATE_TIME_REGEX,
@@ -24585,244 +25450,244 @@ export {
   ISO_TIMESTAMP_REGEX,
   ISO_WEEK_REGEX,
   isoDate,
-  type IsoDateAction,
-  type IsoDateIssue,
+  IsoDateAction,
+  IsoDateIssue,
   isoDateTime,
-  type IsoDateTimeAction,
-  type IsoDateTimeIssue,
+  IsoDateTimeAction,
+  IsoDateTimeIssue,
   isOfKind,
   isOfType,
   isoTime,
-  type IsoTimeAction,
-  type IsoTimeIssue,
+  IsoTimeAction,
+  IsoTimeIssue,
   isoTimeSecond,
-  type IsoTimeSecondAction,
-  type IsoTimeSecondIssue,
+  IsoTimeSecondAction,
+  IsoTimeSecondIssue,
   isoTimestamp,
-  type IsoTimestampAction,
-  type IsoTimestampIssue,
+  IsoTimestampAction,
+  IsoTimestampIssue,
   isoWeek,
-  type IsoWeekAction,
-  type IsoWeekIssue,
+  IsoWeekAction,
+  IsoWeekIssue,
   type IssueDotPath,
   type IssuePathItem,
   isValiError,
   keyof,
   lazy,
   lazyAsync,
-  type LazySchema,
-  type LazySchemaAsync,
+  LazySchema,
+  LazySchemaAsync,
   length,
-  type LengthAction,
-  type LengthInput,
-  type LengthIssue,
-  type Literal,
+  LengthAction,
+  LengthInput,
+  LengthIssue,
+  Literal,
   literal,
-  type LiteralIssue,
-  type LiteralSchema,
+  LiteralIssue,
+  LiteralSchema,
   looseObject,
   looseObjectAsync,
-  type LooseObjectIssue,
-  type LooseObjectSchema,
-  type LooseObjectSchemaAsync,
+  LooseObjectIssue,
+  LooseObjectSchema,
+  LooseObjectSchemaAsync,
   looseTuple,
   looseTupleAsync,
-  type LooseTupleIssue,
-  type LooseTupleSchema,
-  type LooseTupleSchemaAsync,
+  LooseTupleIssue,
+  LooseTupleSchema,
+  LooseTupleSchemaAsync,
   ltValue,
-  type LtValueAction,
-  type LtValueIssue,
+  LtValueAction,
+  LtValueIssue,
   mac,
   mac48,
   MAC48_REGEX,
-  type Mac48Action,
-  type Mac48Issue,
+  Mac48Action,
+  Mac48Issue,
   mac64,
   MAC64_REGEX,
-  type Mac64Action,
-  type Mac64Issue,
+  Mac64Action,
+  Mac64Issue,
   MAC_REGEX,
-  type MacAction,
-  type MacIssue,
+  MacAction,
+  MacIssue,
   map,
   mapAsync,
-  type MapIssue,
+  MapIssue,
   mapItems,
-  type MapItemsAction,
+  MapItemsAction,
   type MapPathItem,
-  type MapSchema,
-  type MapSchemaAsync,
+  MapSchema,
+  MapSchemaAsync,
   maxBytes,
-  type MaxBytesAction,
-  type MaxBytesIssue,
+  MaxBytesAction,
+  MaxBytesIssue,
   maxEntries,
-  type MaxEntriesAction,
-  type MaxEntriesIssue,
+  MaxEntriesAction,
+  MaxEntriesIssue,
   maxGraphemes,
-  type MaxGraphemesAction,
-  type MaxGraphemesIssue,
+  MaxGraphemesAction,
+  MaxGraphemesIssue,
   maxLength,
-  type MaxLengthAction,
-  type MaxLengthIssue,
+  MaxLengthAction,
+  MaxLengthIssue,
   maxSize,
-  type MaxSizeAction,
-  type MaxSizeIssue,
+  MaxSizeAction,
+  MaxSizeIssue,
   maxValue,
-  type MaxValueAction,
-  type MaxValueIssue,
+  MaxValueAction,
+  MaxValueIssue,
   maxWords,
-  type MaxWordsAction,
-  type MaxWordsIssue,
+  MaxWordsAction,
+  MaxWordsIssue,
   message,
   metadata,
-  type MetadataAction$1 as MetadataAction,
+  MetadataAction,
   mimeType,
-  type MimeTypeAction,
-  type MimeTypeIssue,
+  MimeTypeAction,
+  MimeTypeIssue,
   minBytes,
-  type MinBytesAction,
-  type MinBytesIssue,
+  MinBytesAction,
+  MinBytesIssue,
   minEntries,
-  type MinEntriesAction,
-  type MinEntriesIssue,
+  MinEntriesAction,
+  MinEntriesIssue,
   minGraphemes,
-  type MinGraphemesAction,
-  type MinGraphemesIssue,
+  MinGraphemesAction,
+  MinGraphemesIssue,
   minLength,
-  type MinLengthAction,
-  type MinLengthIssue,
+  MinLengthAction,
+  MinLengthIssue,
   minSize,
-  type MinSizeAction,
-  type MinSizeIssue,
+  MinSizeAction,
+  MinSizeIssue,
   minValue,
-  type MinValueAction,
-  type MinValueIssue,
+  MinValueAction,
+  MinValueIssue,
   minWords,
-  type MinWordsAction,
-  type MinWordsIssue,
+  MinWordsAction,
+  MinWordsIssue,
   multipleOf,
-  type MultipleOfAction,
-  type MultipleOfIssue,
+  MultipleOfAction,
+  MultipleOfIssue,
   nan,
-  type NanIssue,
+  NanIssue,
   NANO_ID_REGEX,
   nanoid,
-  type NanoIDAction,
-  type NanoIdAction,
-  type NanoIDIssue,
-  type NanoIdIssue,
-  type NanSchema,
+  NanoIDAction,
+  NanoIdAction,
+  NanoIDIssue,
+  NanoIdIssue,
+  NanSchema,
   never,
-  type NeverIssue,
-  type NeverSchema,
+  NeverIssue,
+  NeverSchema,
   nonEmpty,
-  type NonEmptyAction,
-  type NonEmptyIssue,
+  NonEmptyAction,
+  NonEmptyIssue,
   nonNullable,
   nonNullableAsync,
-  type NonNullableIssue,
-  type NonNullableSchema,
-  type NonNullableSchemaAsync,
+  NonNullableIssue,
+  NonNullableSchema,
+  NonNullableSchemaAsync,
   nonNullish,
   nonNullishAsync,
-  type NonNullishIssue,
-  type NonNullishSchema,
-  type NonNullishSchemaAsync,
+  NonNullishIssue,
+  NonNullishSchema,
+  NonNullishSchemaAsync,
   nonOptional,
   nonOptionalAsync,
-  type NonOptionalIssue,
-  type NonOptionalSchema,
-  type NonOptionalSchemaAsync,
+  NonOptionalIssue,
+  NonOptionalSchema,
+  NonOptionalSchemaAsync,
   normalize,
-  type NormalizeAction,
-  type NormalizeForm,
+  NormalizeAction,
+  NormalizeForm,
   notBytes,
-  type NotBytesAction,
-  type NotBytesIssue,
+  NotBytesAction,
+  NotBytesIssue,
   notEntries,
-  type NotEntriesAction,
-  type NotEntriesIssue,
+  NotEntriesAction,
+  NotEntriesIssue,
   notGraphemes,
-  type NotGraphemesAction,
-  type NotGraphemesIssue,
+  NotGraphemesAction,
+  NotGraphemesIssue,
   notLength,
-  type NotLengthAction,
-  type NotLengthIssue,
+  NotLengthAction,
+  NotLengthIssue,
   notSize,
-  type NotSizeAction,
-  type NotSizeIssue,
+  NotSizeAction,
+  NotSizeIssue,
   notValue,
-  type NotValueAction,
-  type NotValueIssue,
+  NotValueAction,
+  NotValueIssue,
   notValues,
-  type NotValuesAction,
-  type NotValuesIssue,
+  NotValuesAction,
+  NotValuesIssue,
   notWords,
-  type NotWordsAction,
-  type NotWordsIssue,
+  NotWordsAction,
+  NotWordsIssue,
   null_,
   null_ as null,
   nullable,
   nullableAsync,
-  type NullableSchema,
-  type NullableSchemaAsync,
+  NullableSchema,
+  NullableSchemaAsync,
   nullish,
   nullishAsync,
-  type NullishSchema,
-  type NullishSchemaAsync,
-  type NullIssue,
-  type NullSchema,
+  NullishSchema,
+  NullishSchemaAsync,
+  NullIssue,
+  NullSchema,
   number,
-  type NumberIssue,
-  type NumberSchema,
+  NumberIssue,
+  NumberSchema,
   object,
   objectAsync,
   type ObjectEntries,
   type ObjectEntriesAsync,
-  type ObjectIssue,
+  ObjectIssue,
   type ObjectKeys,
   type ObjectPathItem,
-  type ObjectSchema,
-  type ObjectSchemaAsync,
+  ObjectSchema,
+  ObjectSchemaAsync,
   objectWithRest,
   objectWithRestAsync,
-  type ObjectWithRestIssue,
-  type ObjectWithRestSchema,
-  type ObjectWithRestSchemaAsync,
+  ObjectWithRestIssue,
+  ObjectWithRestSchema,
+  ObjectWithRestSchemaAsync,
   octal,
   OCTAL_REGEX,
-  type OctalAction,
-  type OctalIssue,
+  OctalAction,
+  OctalIssue,
   omit,
   optional,
   optionalAsync,
-  type OptionalSchema,
-  type OptionalSchemaAsync,
+  OptionalSchema,
+  OptionalSchemaAsync,
   type OutputDataset,
   parse,
   parseAsync,
   parseJson,
-  type ParseJsonAction,
-  type ParseJsonConfig,
-  type ParseJsonIssue,
-  type Parser,
+  ParseJsonAction,
+  ParseJsonConfig,
+  ParseJsonIssue,
+  Parser,
   parser,
-  type ParserAsync,
+  ParserAsync,
   parserAsync,
   partial,
   partialAsync,
   partialCheck,
-  type PartialCheckAction,
-  type PartialCheckActionAsync,
+  PartialCheckAction,
+  PartialCheckActionAsync,
   partialCheckAsync,
-  type PartialCheckIssue,
+  PartialCheckIssue,
   type PartialDataset,
   pick,
   picklist,
-  type PicklistIssue,
-  type PicklistOptions,
-  type PicklistSchema,
+  PicklistIssue,
+  PicklistOptions,
+  PicklistSchema,
   pipe,
   type PipeAction,
   type PipeActionAsync,
@@ -24830,193 +25695,213 @@ export {
   type PipeItem,
   type PipeItemAsync,
   promise,
-  type PromiseIssue,
-  type PromiseSchema,
+  PromiseIssue,
+  PromiseSchema,
   rawCheck,
-  type RawCheckAction,
-  type RawCheckActionAsync,
+  RawCheckAction,
+  RawCheckActionAsync,
+  RawCheckAddIssue,
   rawCheckAsync,
-  type RawCheckIssue,
+  RawCheckContext,
+  RawCheckIssue,
+  RawCheckIssueInfo,
   rawTransform,
-  type RawTransformAction,
-  type RawTransformActionAsync,
+  RawTransformAction,
+  RawTransformActionAsync,
+  RawTransformAddIssue,
   rawTransformAsync,
-  type RawTransformIssue,
+  RawTransformContext,
+  RawTransformIssue,
+  RawTransformIssueInfo,
   readonly,
-  type ReadonlyAction,
+  ReadonlyAction,
   record,
   recordAsync,
-  type RecordIssue,
-  type RecordSchema,
-  type RecordSchemaAsync,
+  RecordIssue,
+  RecordSchema,
+  RecordSchemaAsync,
   reduceItems,
-  type ReduceItemsAction,
+  ReduceItemsAction,
   regex,
-  type RegexAction,
-  type RegexIssue,
+  RegexAction,
+  RegexIssue,
   required,
   requiredAsync,
   returns,
-  type ReturnsAction,
-  type ReturnsActionAsync,
+  ReturnsAction,
+  ReturnsActionAsync,
   returnsAsync,
   RFC_EMAIL_REGEX,
   rfcEmail,
-  type RfcEmailAction,
-  type RfcEmailIssue,
+  RfcEmailAction,
+  RfcEmailIssue,
   safeInteger,
-  type SafeIntegerAction,
-  type SafeIntegerIssue,
+  SafeIntegerAction,
+  SafeIntegerIssue,
   safeParse,
   safeParseAsync,
-  type SafeParser,
+  SafeParser,
   safeParser,
-  type SafeParserAsync,
+  SafeParserAsync,
   safeParserAsync,
-  type SafeParseResult,
-  type SchemaWithFallback,
-  type SchemaWithFallbackAsync,
-  type SchemaWithOmit,
+  SafeParseResult,
+  SchemaWithFallback,
+  SchemaWithFallbackAsync,
+  SchemaWithOmit,
   type SchemaWithoutPipe,
-  type SchemaWithPartial,
-  type SchemaWithPartialAsync,
-  type SchemaWithPick,
-  type SchemaWithPipe,
-  type SchemaWithPipeAsync,
-  type SchemaWithRequired,
-  type SchemaWithRequiredAsync,
+  SchemaWithPartial,
+  SchemaWithPartialAsync,
+  SchemaWithPick,
+  SchemaWithPipe,
+  SchemaWithPipeAsync,
+  SchemaWithRequired,
+  SchemaWithRequiredAsync,
   set,
   setAsync,
   setGlobalConfig,
   setGlobalMessage,
-  type SetIssue,
+  SetIssue,
   type SetPathItem,
-  type SetSchema,
-  type SetSchemaAsync,
+  SetSchema,
+  SetSchemaAsync,
   setSchemaMessage,
   setSpecificMessage,
   size,
-  type SizeAction,
-  type SizeInput,
-  type SizeIssue,
+  SizeAction,
+  SizeInput,
+  SizeIssue,
   slug,
   SLUG_REGEX,
-  type SlugAction,
-  type SlugIssue,
+  SlugAction,
+  SlugIssue,
   someItem,
-  type SomeItemAction,
-  type SomeItemIssue,
+  SomeItemAction,
+  SomeItemIssue,
   sortItems,
-  type SortItemsAction,
+  SortItemsAction,
   type StandardProps,
   startsWith,
-  type StartsWithAction,
-  type StartsWithIssue,
+  StartsWithAction,
+  StartsWithIssue,
   strictObject,
   strictObjectAsync,
-  type StrictObjectIssue,
-  type StrictObjectSchema,
-  type StrictObjectSchemaAsync,
+  StrictObjectIssue,
+  StrictObjectSchema,
+  StrictObjectSchemaAsync,
   strictTuple,
   strictTupleAsync,
-  type StrictTupleIssue,
-  type StrictTupleSchema,
-  type StrictTupleSchemaAsync,
+  StrictTupleIssue,
+  StrictTupleSchema,
+  StrictTupleSchemaAsync,
   string,
   stringifyJson,
-  type StringifyJsonAction,
-  type StringifyJsonConfig,
-  type StringifyJsonIssue,
-  type StringIssue,
-  type StringSchema,
+  StringifyJsonAction,
+  StringifyJsonConfig,
+  StringifyJsonIssue,
+  StringIssue,
+  StringSchema,
   type SuccessDataset,
   summarize,
   symbol,
-  type SymbolIssue,
-  type SymbolSchema,
+  SymbolIssue,
+  SymbolSchema,
   title,
-  type TitleAction,
+  TitleAction,
+  toBigint,
+  ToBigintAction,
+  ToBigintIssue,
+  toBoolean,
+  ToBooleanAction,
+  toDate,
+  ToDateAction,
+  ToDateIssue,
   toLowerCase,
-  type ToLowerCaseAction,
+  ToLowerCaseAction,
   toMaxValue,
-  type ToMaxValueAction,
+  ToMaxValueAction,
   toMinValue,
-  type ToMinValueAction,
+  ToMinValueAction,
+  toNumber,
+  ToNumberAction,
+  ToNumberIssue,
+  toString,
+  ToStringAction,
+  ToStringIssue,
   toUpperCase,
-  type ToUpperCaseAction,
+  ToUpperCaseAction,
   transform,
-  type TransformAction,
-  type TransformActionAsync,
+  TransformAction,
+  TransformActionAsync,
   transformAsync,
   trim,
-  type TrimAction,
+  TrimAction,
   trimEnd,
-  type TrimEndAction,
+  TrimEndAction,
   trimStart,
-  type TrimStartAction,
+  TrimStartAction,
   tuple,
   tupleAsync,
-  type TupleIssue,
+  TupleIssue,
   type TupleItems,
   type TupleItemsAsync,
-  type TupleSchema,
-  type TupleSchemaAsync,
+  TupleSchema,
+  TupleSchemaAsync,
   tupleWithRest,
   tupleWithRestAsync,
-  type TupleWithRestIssue,
-  type TupleWithRestSchema,
-  type TupleWithRestSchemaAsync,
+  TupleWithRestIssue,
+  TupleWithRestSchema,
+  TupleWithRestSchemaAsync,
   ulid,
   ULID_REGEX,
-  type UlidAction,
-  type UlidIssue,
+  UlidAction,
+  UlidIssue,
   undefined_,
   undefined_ as undefined,
   undefinedable,
   undefinedableAsync,
-  type UndefinedableSchema,
-  type UndefinedableSchemaAsync,
-  type UndefinedIssue,
-  type UndefinedSchema,
+  UndefinedableSchema,
+  UndefinedableSchemaAsync,
+  UndefinedIssue,
+  UndefinedSchema,
   union,
   unionAsync,
-  type UnionIssue,
-  type UnionOptions,
-  type UnionOptionsAsync,
-  type UnionSchema,
-  type UnionSchemaAsync,
+  UnionIssue,
+  UnionOptions,
+  UnionOptionsAsync,
+  UnionSchema,
+  UnionSchemaAsync,
   unknown,
   type UnknownDataset,
   type UnknownPathItem,
-  type UnknownSchema,
+  UnknownSchema,
   unwrap,
   url,
-  type UrlAction,
-  type UrlIssue,
+  UrlAction,
+  UrlIssue,
   uuid,
   UUID_REGEX,
-  type UuidAction,
-  type UuidIssue,
+  UuidAction,
+  UuidIssue,
   ValiError,
   value,
-  type ValueAction,
-  type ValueInput,
-  type ValueIssue,
+  ValueAction,
+  ValueInput,
+  ValueIssue,
   values,
-  type ValuesAction,
-  type ValuesIssue,
+  ValuesAction,
+  ValuesIssue,
   variant,
   variantAsync,
-  type VariantIssue,
-  type VariantOptions,
-  type VariantOptionsAsync,
-  type VariantSchema,
-  type VariantSchemaAsync,
+  VariantIssue,
+  VariantOptions,
+  VariantOptionsAsync,
+  VariantSchema,
+  VariantSchemaAsync,
   void_,
   void_ as void,
-  type VoidIssue,
-  type VoidSchema,
+  VoidIssue,
+  VoidSchema,
   words,
-  type WordsAction,
-  type WordsIssue,
+  WordsAction,
+  WordsIssue,
 };

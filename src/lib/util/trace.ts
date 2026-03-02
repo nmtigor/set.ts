@@ -153,13 +153,13 @@ export const reportError = <E extends Error>(err_x: E) => {
 
 /**
  * Ref. https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#decorators
- * @const @param _x
+ * @const @param preN_x
  */
-export const traceOut = (_x: boolean) => {
+export const traceOut = (preN_x: boolean) => {
   return <This, Return, Args extends any[]>(
     tgt_x: (this: This, ...args: Args) => Return,
   ) => {
-    return _x
+    return preN_x
       ? function (this: This, ...args: Args): Return {
         const ret = tgt_x.call(this, ...args);
         trace.outdent;

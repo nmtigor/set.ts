@@ -3,8 +3,7 @@
  * @license MIT
  ******************************************************************************/
 
-import type { lnum_t } from "../alias_v.ts";
-import type { BufrDir } from "../alias.ts";
+import type { BufrDir, lnum_t } from "../alias.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import { Bufr } from "./Bufr.ts";
 import type { Ranval } from "./Ranval.ts";
@@ -50,17 +49,17 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
     //jjjj TOCLEANUP
     // this.dir_mo.registHandler((n_y) => {
     //   // const rv_a = this.edtr_sa.map((edtr_y) =>
-    //   //   (edtr_y as EdtrScrolr).proactiveCaret.ranval
+    //   //   (edtr_y as EdtrScrolr).mainCaret.ranval
     //   // );
     //   // console.log(rv_a);
     //   this.refresh();
     //   /* Notice, `invalidate_bcr()` should be called firstly for all `edtr_sa`,
-    //   because setting `mc_.caretrvm![1]` in one `eds` will impact other `eds`s
+    //   because setting `mc_.caretrvm![1]` in one `edslr` will impact other `edslr`s
     //   immediately. */
-    //   this.edtr_sa.forEach((eds) => (eds as EdtrScrolr).invalidate_bcr());
+    //   this.edtr_sa.forEach((edslr) => (edslr as EdtrScrolr).invalidate_bcr());
     //   for (let i = this.edtr_sa.length; i--;) {
-    //     const eds = this.edtr_sa.at(i) as EdtrScrolr;
-    //     const mc_ = eds.proactiveCaret;
+    //     const edslr = this.edtr_sa.at(i) as EdtrScrolr;
+    //     const mc_ = edslr.mainCaret;
     //     if (mc_.shown) {
     //       // mc_.caretrvm![1].force().val = rv_a[i];
     //       mc_.caretrvm![1].force().val = mc_.ranval;
@@ -117,38 +116,55 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
   }
 
   #focusLoc: TokLoc<T> | undefined;
-  /**
-   * @out @param rv_x `focusLidx`, `focusLoff` will be corrected
-   * @return `#focusLoc`,
-   *    so suggest to `.usingDup()` it to prevent being affected by further
-   *    calls of `getFocusLoc()`.
-   */
-  getFocusLoc(rv_x: Ranval): TokLoc<T> {
+  override correctRvFocus(retRv_x: Ranval): Ranval {
     if (this.#focusLoc) {
-      this.#focusLoc.set_Loc_O(rv_x.focusLidx, rv_x.focusLoff, this);
+      this.#focusLoc.set_Loc_O(retRv_x.focusLidx, retRv_x.focusLoff, this);
     } else {
-      this.#focusLoc = TokLoc.create(this, rv_x.focusLidx, rv_x.focusLoff);
+      this.#focusLoc = TokLoc.create(
+        this,
+        retRv_x.focusLidx,
+        retRv_x.focusLoff,
+      );
     }
-    rv_x.focusLidx = this.#focusLoc.line.lidx_1;
-    rv_x.focusLoff = this.#focusLoc.correctLoff();
-    return this.#focusLoc;
+    retRv_x.setFocus(this.#focusLoc.line.lidx_1, this.#focusLoc.correctLoff());
+    return retRv_x;
   }
-  #anchrLoc: TokLoc<T> | undefined;
   /**
-   * @out @param rv_x `anchrLidx`, `anchrLoff` will be corrected
-   * @return `#anchrLoc`,
+   * Set or assign `#focusLoc`
+   * @out @param rv_x `focusLidx`, `focusLoff` will be corrected
+   * @borrow @return `#focusLoc`,
    *    so suggest to `.usingDup()` it to prevent being affected by further
-   *    calls of `getAnchrLoc()`.
+   *    calls of `focusLoc()`.
    */
-  getAnchrLoc(rv_x: Ranval): TokLoc<T> {
+  focusLoc(rv_x: Ranval): TokLoc<T> {
+    this.correctRvFocus(rv_x);
+    return this.#focusLoc!;
+  }
+
+  #anchrLoc: TokLoc<T> | undefined;
+  override correctRvAnchr(retRv_x: Ranval): Ranval {
     if (this.#anchrLoc) {
-      this.#anchrLoc.set_Loc_O(rv_x.anchrLidx, rv_x.anchrLoff, this);
+      this.#anchrLoc.set_Loc_O(retRv_x.anchrLidx, retRv_x.anchrLoff, this);
     } else {
-      this.#anchrLoc = TokLoc.create(this, rv_x.anchrLidx, rv_x.anchrLoff);
+      this.#anchrLoc = TokLoc.create(
+        this,
+        retRv_x.anchrLidx,
+        retRv_x.anchrLoff,
+      );
     }
-    rv_x.anchrLidx = this.#anchrLoc.line.lidx_1;
-    rv_x.anchrLoff = this.#anchrLoc.correctLoff();
-    return this.#anchrLoc;
+    retRv_x.setAnchr(this.#anchrLoc.line.lidx_1, this.#anchrLoc.correctLoff());
+    return retRv_x;
+  }
+  /**
+   * Set or assign `#anchrLoc`
+   * @out @param rv_x `anchrLidx`, `anchrLoff` will be corrected
+   * @borrow @return `#anchrLoc`,
+   *    so suggest to `.usingDup()` it to prevent being affected by further
+   *    calls of `anchrLoc()`.
+   */
+  anchrLoc(rv_x: Ranval): TokLoc<T> {
+    this.correctRvAnchr(rv_x);
+    return this.#anchrLoc!;
   }
 
   //jjjj TOCLEANUP
@@ -180,7 +196,7 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
   //  * Set strtloc_, stoplocOld_ of this.lexer_
   //  * @param { TokRan } ran @const
   //  */
-  // prelex$_( ran )
+  // preLex$_( ran )
   // {
   //   this.lexer_.markLexRegion( ran );
 
@@ -192,7 +208,7 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
   //  * Set stoplocNew_ of this.lexer_
   //  * @param { TokLoc } loc @const
   //  */
-  // suflex$_( loc )
+  // sufLex$_( loc )
   // {
   //   this.lexer_.strtLoff( loc );
 
@@ -217,7 +233,7 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
 //   const ln_0 = loc_0.line;
 //   let ln_ = ln_0;
 //   let tk_0 = ln_.frstTokenBy(lexr_x);
-//   const VALVE = lnum_MAX * 10;
+//   const VALVE = LnumMAX * 10;
 //   let valve = VALVE;
 //   while (!tk_0 && ln_.nextLine && --valve) {
 //     ln_ = ln_.nextLine;

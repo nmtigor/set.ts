@@ -3,9 +3,10 @@
  * @license MIT
  ******************************************************************************/
 
-import type { Chr, lnum_t } from "../alias_v.ts";
-import type { Dulstr, loff_t, uint32 } from "../alias.ts";
+import type { Dulstr, lnum_t, loff_t, uint32 } from "../alias.ts";
+import type { Chr } from "../alias_v.ts";
 import type { BaseTok } from "./BaseTok.ts";
+import type { HTMLTok } from "./html/HTMLTok.ts";
 import type { JSLangTok } from "./jslang/JSLangTok.ts";
 import type { MdextTok } from "./mdext/MdextTok.ts";
 import type { PDFTok } from "./pdf/PDFTok.ts";
@@ -13,21 +14,7 @@ import type { PlainTok } from "./plain/PlainTok.ts";
 import type { RMLTok } from "./rml/RMLTok.ts";
 import type { SetTok } from "./set/SetTok.ts";
 import type { URITok } from "./uri/URITok.ts";
-import type { HTMLTok } from "./html/HTMLTok.ts";
 /*80--------------------------------------------------------------------------*/
-
-export type Locval = [lnum_t, loff_t];
-
-/**
- * ! If change `BufrReplState` names, check "ReplActr.ts" first where names are
- * literally used (in order to show xstate graph correctly).
- */
-export enum BufrReplState {
-  idle = 1,
-  prerepl,
-  sufrepl,
-  sufrepl_edtr,
-}
 
 export const enum BufrDoState {
   idle = 1,
@@ -36,7 +23,21 @@ export const enum BufrDoState {
   redoing,
 }
 
+/**
+ * ! If change `BufrReplState` names, check "ReplActr.ts" first where names are
+ *  literally used (in order to show xstate graph correctly).
+ */
+export enum BufrReplState {
+  idle = 1,
+  preRepl,
+  sufRepl,
+  sufRepl_edtr,
+}
+
 export type sig_t = uint32;
+/*64----------------------------------------------------------*/
+
+export type Locval = [lnum_t, loff_t];
 
 /**
  * BaseTok: [0,100) \

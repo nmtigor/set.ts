@@ -82,10 +82,6 @@ export type Brand_id<TBrand extends v.BrandName> = Id_t & v.Brand<TBrand>;
 /** Count one "\t" as 1 */
 export type ldt_t = Brand_Int32<"ldt_t">;
 
-export type lnum_t = Brand<uint32, "lnum_t">;
-// export const lnum_UNDEFINED:lnum_t = -256n;
-export const lnum_MAX = 1_000_000 as lnum_t;
-
 export const vts_t = v.pipe(vint);
 /** Type of unix timestamp */
 export type Ts_t = Brand_Int64<"Ts_t">;

@@ -17,15 +17,15 @@ import { BufrReplState } from "./alias.ts";
 /** @final */
 export class ReplActr {
   readonly #bufr;
-  #lexr!: Lexr<any>;
+  #lexr!: Lexr<any> | undefined;
   #pazr: Pazr<any> | undefined;
   #tfmr: Tfmr | undefined;
 
-  /* "states" use literal names "idle", "prerepl", ... rather then
+  /* "states" use literal names "idle", "preRepl", ... rather then
   `BufrReplState[BufrReplState.idle]`, ..., because otherwise xstate graph can
   not show correctly.
   Need to manually keep these literal names consistent with `BufrReplState`! */
-  #actr = createActor(
+  readonly #actr = createActor(
     /** @xstate-layout N4IgpgJg5mDOIC5QCUwAcA2BBAxgFwCcA6ASwgzAGIAVAeQAI0CxnMBtABgF1FQ0B7WCTwl+AO14gAHogCMHAExEAHLIUBWAMwLZANg4c9WgDQgAnnIAssorPXLlW2QE5L6gOyaOmgL4-TqJi4hERMLOgYNAywAK4AZqwYnDxIIAJCIuKSMgialhxEmmrqskUKuuXusqYWuRzOhequHLraypaWzhyWfgERwcSxCRFR9EOJAPqQhMmS6cKiEqk57USW7pV5lgqeero1iJ3KRArbssru3mp5O70ggdj4g-GT0wSjZBSzqfOZS6A5AC08l0RHcHXc7n0rU69gOuW0RA4yg47g8TWRmhRuj8-hAYn4EDgkgeAzmggWWWWiGB6ksYIhUJaeWccPMiC0Kk0TU0zl0fI49iqd1JT1I5DA5Iyi2yiA48I0ChF-TFYUSUsp-2kiB0Sna6m6umUXXszmq7IQiuVQTF4wiGr+sstahUbkNxsFHv2FusmhUht0rTsXjNvjxopCdswUwghAdMupCGBNmsO10dhayiK629tV9-ssgaDWnqpVxPiAA */
     setup({
       types: {} as {
@@ -39,47 +39,46 @@ export class ReplActr {
       states: {
         "idle": {
           on: {
-            "TO prerepl": {
+            "TO preRepl": {
               actions: () => {
                 /*#static*/ if (INOUT) {
                   assert(this.#bufr.oldRan_a_$.at(0));
                 }
-                this.#lexr
-                  .lexmrk_$(this.#bufr.oldRan_a_$ as TokRan<any>[]);
+                this.#lexr?.lexmrk_$(this.#bufr.oldRan_a_$ as TokRan<any>[]);
                 this.#pazr?.pazmrk_$();
                 this.#tfmr?.tfmmrk_$(this.#bufr.oldRan_a_$);
               },
-              target: "prerepl",
+              target: "preRepl",
             },
           },
         },
-        "prerepl": {
+        "preRepl": {
           on: {
-            ["TO sufrepl"]: {
+            ["TO sufRepl"]: {
               actions: () => {
                 /*#static*/ if (INOUT) {
                   assert(this.#bufr.newRan_a_$.at(0));
                 }
                 this.#lexr
-                  .lexadj_$(this.#bufr.newRan_a_$ as TokRan<any>[])
+                  ?.lexadj_$(this.#bufr.newRan_a_$ as TokRan<any>[])
                   .lex();
                 this.#pazr?.paz();
                 this.#tfmr
                   ?.tfmadj_$(this.#bufr.newRan_a_$)
                   .tfm();
               },
-              target: "sufrepl",
+              target: "sufRepl",
             },
           },
         },
-        "sufrepl": {
+        "sufRepl": {
           on: {
-            ["TO sufrepl_edtr"]: {
-              target: "sufrepl_edtr",
+            ["TO sufRepl_edtr"]: {
+              target: "sufRepl_edtr",
             },
           },
         },
-        "sufrepl_edtr": {
+        "sufRepl_edtr": {
           on: {
             ["TO idle"]: {
               target: "idle",
@@ -96,11 +95,11 @@ export class ReplActr {
     this.#bufr = bufr_x;
   }
 
-  init(lexr_x: Lexr<any>, pazr_x?: Pazr<any>, tfmr_x?: Tfmr) {
+  init(lexr_x?: Lexr<any>, pazr_x?: Pazr<any>, tfmr_x?: Tfmr) {
     /*#static*/ if (INOUT) {
       assert(!this.#inited_ReplActr);
-      assert(lexr_x.bufr === this.#bufr);
-      assert(!pazr_x || pazr_x.lexr === lexr_x);
+      assert(!lexr_x || lexr_x.bufr === this.#bufr);
+      assert(!pazr_x || lexr_x && pazr_x.lexr === lexr_x);
       assert(!tfmr_x || tfmr_x.bufr === this.#bufr);
     }
     this.#lexr = lexr_x;
@@ -113,7 +112,7 @@ export class ReplActr {
   }
 
   fina() {
-    this.#lexr = undefined as any;
+    this.#lexr = undefined;
     this.#pazr = undefined;
     this.#tfmr = undefined;
 

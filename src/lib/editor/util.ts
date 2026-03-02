@@ -3,12 +3,16 @@
  * @license MIT
  ******************************************************************************/
 
-import { WritingDir, type WritingMode } from "../alias.ts";
+import { Key } from "../../alias.ts";
+import type { WritingMode } from "../alias.ts";
+import { WritingDir } from "../alias.ts";
 import "../jslang.ts";
+import * as Is from "../util/is.ts";
+import type { Keycnt } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
 
 export const samerow_top = (
-  rec_x: DOMRect,
+  rec_x: DOMRectReadOnly,
   top_0_x: number,
   strict_x?: "strict",
 ) => {
@@ -17,7 +21,7 @@ export const samerow_top = (
 };
 
 export const samerow_bot = (
-  rec_x: DOMRect,
+  rec_x: DOMRectReadOnly,
   bot_0_x: number,
   strict_x?: "strict",
 ) => {
@@ -26,7 +30,7 @@ export const samerow_bot = (
 };
 
 export const samerow_left = (
-  rec_x: DOMRect,
+  rec_x: DOMRectReadOnly,
   left_0_x: number,
   strict_x?: "strict",
 ) => {
@@ -35,7 +39,7 @@ export const samerow_left = (
 };
 
 export const samerow_rigt = (
-  rec_x: DOMRect,
+  rec_x: DOMRectReadOnly,
   rigt_0_x: number,
   strict_x?: "strict",
 ) => {
@@ -43,17 +47,20 @@ export const samerow_rigt = (
     (!strict_x || Number.apxGE(rec_x.right, rigt_0_x));
 };
 
-export type InlineOf = (rec_x: DOMRect) => number;
-export type BlockOf = (rec_x: DOMRect) => number;
+export type InlineOf = (rec_x: DOMRectReadOnly) => number;
+export type BlockOf = (rec_x: DOMRectReadOnly) => number;
 export type SameRow = (
-  rec_x: DOMRect,
+  rec_x: DOMRectReadOnly,
   _0_x: number,
   strict_x?: "strict",
 ) => boolean;
 
 export const genInlineMidOf = (wm_x: WritingMode) => {
-  return wm_x & WritingDir.h
-    ? (rec_y: DOMRect) => (rec_y.left + rec_y.right) / 2
-    : (rec_y: DOMRect) => (rec_y.top + rec_y.bottom) / 2;
+  return wm_x & WritingDir.v
+    ? (rec_y: DOMRectReadOnly) => (rec_y.top + rec_y.bottom) / 2
+    : (rec_y: DOMRectReadOnly) => (rec_y.left + rec_y.right) / 2;
 };
+/*80--------------------------------------------------------------------------*/
+
+export const stringFrom = (_x: Keycnt) => Is.string(_x) ? _x : Key[_x];
 /*80--------------------------------------------------------------------------*/

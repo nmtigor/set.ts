@@ -5,8 +5,8 @@
 
 import * as v from "@valibot/valibot";
 import { INOUT } from "../../preNs.ts";
-import type { Id_t, lnum_t } from "../alias_v.ts";
-import type { loff_t, uint } from "../alias.ts";
+import type { lnum_t, loff_t, uint } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
 import { vuint } from "../alias_v.ts";
 import { assert, out } from "../util.ts";
 import { Factory } from "../util/Factory.ts";
@@ -44,6 +44,13 @@ export class TSeg {
     return this.tfmr_$.tbufr;
   }
 
+  isFrstOn_$(ln_x: Line) {
+    return !ln_x.removed && ln_x.frstTSegBy_$(this.tfmr_$) === this;
+  }
+  isLastOn_$(ln_x: Line) {
+    return !ln_x.removed && ln_x.lastTSegBy_$(this.tfmr_$) === this;
+  }
+
   /* _ran */
   private readonly _ran;
 
@@ -72,7 +79,7 @@ export class TSeg {
   /** `linkPrev()`, `linkNext()` could invalidate `this`. */
   get valid() {
     const ln_ = this.line;
-    return ln_.bufr === this.#bufr && ln_.hasTSeg(this);
+    return !ln_.removed && ln_.bufr === this.#bufr && ln_.hasTSeg(this);
   }
 
   #length: loff_t | -1 = -1;
@@ -133,8 +140,8 @@ export class TSeg {
 
   resetTSeg_$() {
     const ln_ = this.line;
-    if (ln_.isFrstByTSeg_$(this)) ln_.delFrstTSeg_$(this.tfmr_$);
-    if (ln_.isLastByTSeg_$(this)) ln_.delLastTSeg_$(this.tfmr_$);
+    if (this.isFrstOn_$(ln_)) ln_.delFrstTSegBy_$(this.tfmr_$);
+    if (this.isLastOn_$(ln_)) ln_.delLastTSegBy_$(this.tfmr_$);
 
     this.#length = -1; //!
     if (ln_.bufr !== this.#bufr) {
@@ -198,8 +205,8 @@ export class TSeg {
 
   #correct_line_tseg() {
     const ln_ = this.line;
-    let frstTSeg_old = ln_.frstTSeg_$(this.tfmr_$);
-    let lastTSeg_old = ln_.lastTSeg_$(this.tfmr_$);
+    let frstTSeg_old = ln_.frstTSegBy_$(this.tfmr_$);
+    let lastTSeg_old = ln_.lastTSegBy_$(this.tfmr_$);
 
     const VALVE = 1_000;
     let valve = VALVE;
@@ -211,7 +218,7 @@ export class TSeg {
       tseg = tseg.prevTSeg_$;
     } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
-    ln_.frstByTSeg_$(tseg);
+    ln_.setFrstTSeg_$(tseg);
 
     tseg = this;
     do {
@@ -221,7 +228,7 @@ export class TSeg {
       tseg = tseg.nextTSeg_$;
     } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
-    ln_.lastByTSeg_$(tseg);
+    ln_.setLastTSeg_$(tseg);
 
     frstTSeg_old?.revokeSelf_$();
     lastTSeg_old?.revokeSelf_$();

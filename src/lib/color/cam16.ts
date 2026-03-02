@@ -40,7 +40,6 @@ export class Cam16 {
    * This constructor is intended for those methods to use to return all
    * possible dimensions.
    *
-   * @param hue
    * @param chroma informally, colorfulness / color intensity. like saturation
    *     in HSL, except perceptually accurate.
    * @param j lightness

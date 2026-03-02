@@ -4,7 +4,9 @@
  ******************************************************************************/
 
 import { _TRACE, INOUT } from "../../preNs.ts";
-import type { Id_t, lnum_t } from "../alias_v.ts";
+import type { lnum_t } from "../alias.ts";
+import { LnumMAX } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
 import { assert, fail } from "../util.ts";
 import * as Is from "../util/is.ts";
 import { type Less, SortedArray } from "../util/SortedArray.ts";
@@ -35,7 +37,7 @@ export class Repl {
   static #ID = 0 as Id_t;
   readonly id = ++Repl.#ID as Id_t;
   /** @final */
-  get _type_id_() {
+  get _class_id_() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -94,8 +96,8 @@ export class Repl {
    * after `undo()` / `redo()`.
    * @headconst @param bufr_x
    * @move @headconst @param replin_x if `this` will not be abandoned
-   *  immediately after `replFRun()` (e.g. queued in `Bufr.#doq`).\
-   *  If `Replin[]`, `.rv`s MUST be disjoint!.
+   *    immediately after `replFRun()` (e.g. queued in `Bufr.#doq`).\
+   *    If `Replin[]`, `.rv`s MUST be disjoint!.
    */
   constructor(bufr_x: Bufr, replin_x: Replin | Replin[]) {
     this.#bufr = bufr_x;
@@ -108,10 +110,7 @@ export class Repl {
         this.#ranval_a![i_y] = e_y.rv;
         this.#text_a2![i_y] = Is.array(e_y.txt) ? e_y.txt : linesOf(e_y.txt);
       });
-      this.#ranval_rev_a = Array.from(
-        { length: LEN },
-        () => new Ranval(0 as lnum_t, 0),
-      );
+      this.#ranval_rev_a = Array.from({ length: LEN }, () => new Ranval(0, 0));
       this.#replText_a2 = Array.from({ length: LEN }, () => []);
     } else {
       this.aoa = false;
@@ -119,7 +118,7 @@ export class Repl {
       this.#text_a = Is.array(replin_x.txt)
         ? replin_x.txt as string[]
         : linesOf(replin_x.txt);
-      this.#ranval_rev = new Ranval(0 as lnum_t, 0);
+      this.#ranval_rev = new Ranval(0, 0);
       this.#replText_a = [];
     }
     this.#tmpRan = Ran.create(this.#bufr);
@@ -139,124 +138,124 @@ export class Repl {
     outRan_x: Ran,
     outTxt_a_x: string[],
   ) {
-    let lnSrc: Line | undefined = inRan_x.frstLine;
-    const lnSrc_1 = inRan_x.lastLine;
+    // console.log(this.#bufr.lineTree._treRepr_);
+    let srcLn: Line | undefined = inRan_x.frstLine;
+    const srcLastLn = inRan_x.lastLine;
     /*#static*/ if (INOUT) {
-      assert(!lnSrc_1.removed);
+      assert(!srcLastLn.removed);
     }
-    const loffSrc_0 = inRan_x.strtLoff;
-    const loffSrc_1 = inRan_x.stopLoff;
+    const srcStrtLoff = inRan_x.strtLoff;
+    const srcStopLoff = inRan_x.stopLoff;
     let i_ = 0;
     if (inTxt_a_x.length === 0) inTxt_a_x.push("");
     const tgtN = inTxt_a_x.length;
     outTxt_a_x.length = inRan_x.lineN_1;
-    const oneLnSrc = outTxt_a_x.length === 1;
+    const srcOneLn = outTxt_a_x.length === 1;
 
-    const VALVE = 1_000;
+    const VALVE = LnumMAX;
     let valve = VALVE;
-    while (lnSrc && lnSrc !== lnSrc_1 && --valve) {
+    while (srcLn && srcLn !== srcLastLn && --valve) {
       if (i_ === 0) {
-        outTxt_a_x[0] = lnSrc.text.slice(loffSrc_0);
-        lnSrc.splice_$(loffSrc_0, lnSrc.uchrLen, inTxt_a_x[0]);
+        outTxt_a_x[0] = srcLn.text.slice(srcStrtLoff);
+        srcLn.splice_$(srcStrtLoff, srcLn.uchrLen, inTxt_a_x[0]);
       } else if (i_ < tgtN) {
-        outTxt_a_x[i_] = lnSrc.text;
-        lnSrc.resetText_$(inTxt_a_x[i_]);
+        outTxt_a_x[i_] = srcLn.text;
+        srcLn.resetText_$(inTxt_a_x[i_]);
       } else break;
 
-      lnSrc = lnSrc.nextLine;
-      ++i_;
+      srcLn = srcLn.nextLine;
+      i_++;
     }
     assert(valve, `Loop ${VALVE}±1 times`);
     /*#static*/ if (INOUT) {
-      assert(lnSrc);
+      assert(srcLn);
     }
 
-    const txtSrc_1 = lnSrc_1.text;
-    let lnSrc_0 = inRan_x.frstLine;
+    const srcTxt_1 = srcLastLn.text;
+    let srcFrstLn = inRan_x.frstLine;
     if (i_ === tgtN) {
-      while (lnSrc && lnSrc !== lnSrc_1 && --valve) {
-        outTxt_a_x[i_++] = lnSrc.text;
+      while (srcLn && srcLn !== srcLastLn && --valve) {
+        outTxt_a_x[i_++] = srcLn.text;
 
-        const ln = lnSrc.nextLine;
-        lnSrc.removeSelf_$();
-        lnSrc = ln;
+        const ln_ = srcLn.nextLine;
+        srcLn.rmvSelf_$();
+        srcLn = ln_;
       }
       assert(valve, `Loop ${VALVE}±1 times`);
       /*#static*/ if (INOUT) {
-        assert(lnSrc);
+        assert(srcLn);
       }
 
       /*#static*/ if (INOUT) {
         assert(i_ === outTxt_a_x.length - 1);
       }
-      outTxt_a_x[i_] = txtSrc_1.slice(0, loffSrc_1);
+      outTxt_a_x[i_] = srcTxt_1.slice(0, srcStopLoff);
 
       /*#static*/ if (INOUT) {
-        assert(lnSrc_1.prevLine);
+        assert(srcLastLn.prevLine);
       }
-      // outRan_x.stopLoc.set( lnSrc_1.prevLine, lnSrc_1.prevLine.uchrLen );
-      // lnSrc_1.prevLine.append_$( txtSrc_1.slice(loffSrc_1) );
-      // lnSrc_1.removeSelf_$();
-      lnSrc_1.splice_$(0, loffSrc_1, lnSrc_1.prevLine!.text);
-      outRan_x.stopLoc.set_Loc(lnSrc_1, lnSrc_1.prevLine!.uchrLen);
-      if (lnSrc_1.prevLine === lnSrc_0) lnSrc_0 = lnSrc_1; //!
-      lnSrc_1.prevLine!.removeSelf_$();
-    } else if (lnSrc === lnSrc_1) {
+      // outRan_x.stopLoc.set( srcLastLn.prevLine, srcLastLn.prevLine.uchrLen );
+      // srcLastLn.prevLine.append_$( srcTxt_1.slice(srcStopLoff) );
+      // srcLastLn.rmvSelf_$();
+      srcLastLn.splice_$(0, srcStopLoff, srcLastLn.prevLine!.text);
+      outRan_x.stopLoc.set_Loc(srcLastLn, srcLastLn.prevLine!.uchrLen);
+      if (srcLastLn.prevLine === srcFrstLn) srcFrstLn = srcLastLn; //!
+      srcLastLn.prevLine!.rmvSelf_$();
+    } else if (srcLn === srcLastLn) {
       /*#static*/ if (INOUT) {
         assert(i_ === outTxt_a_x.length - 1);
       }
-      outTxt_a_x[i_] = txtSrc_1.slice(oneLnSrc ? loffSrc_0 : 0, loffSrc_1);
+      outTxt_a_x[i_] = srcTxt_1.slice(srcOneLn ? srcStrtLoff : 0, srcStopLoff);
 
       if (tgtN === 1) {
         /*#static*/ if (INOUT) {
-          assert(oneLnSrc && i_ === 0);
+          assert(srcOneLn && i_ === 0);
         }
-        lnSrc_1.splice_$(loffSrc_0, loffSrc_1, inTxt_a_x[0]);
+        srcLastLn.splice_$(srcStrtLoff, srcStopLoff, inTxt_a_x[0]);
 
-        // lnSrc_0 = lnSrc_1;
-        outRan_x.stopLoc.set_Loc(lnSrc_1, loffSrc_0 + inTxt_a_x[0].length);
+        // srcFrstLn = srcLastLn;
+        outRan_x.stopLoc.set_Loc(srcLastLn, srcStrtLoff + inTxt_a_x[0].length);
       } else {
         if (i_ < tgtN - 1) {
           const bufr = this.#bufr;
-          if (oneLnSrc) {
-            lnSrc_0 = lnSrc_1.insertPrev_$(
-              Line.create(
-                bufr,
-                `${txtSrc_1.slice(0, loffSrc_0)}${inTxt_a_x[i_]}`,
+          if (srcOneLn) {
+            srcFrstLn = srcLastLn.insertPrev_$(
+              bufr.createLine(
+                `${srcTxt_1.slice(0, srcStrtLoff)}${inTxt_a_x[i_]}`,
               ),
             );
           } else {
-            lnSrc_1.insertPrev_$(Line.create(bufr, inTxt_a_x[i_]));
+            srcLastLn.insertPrev_$(bufr.createLine(inTxt_a_x[i_]));
           }
           i_++;
           for (; i_ < tgtN - 1; i_++) {
-            lnSrc_1.insertPrev_$(Line.create(bufr, inTxt_a_x[i_]));
+            srcLastLn.insertPrev_$(bufr.createLine(inTxt_a_x[i_]));
           }
         }
         /*#static*/ if (INOUT) {
           assert(i_ === tgtN - 1);
         }
-        lnSrc_1.splice_$(0, loffSrc_1, inTxt_a_x[i_]);
+        srcLastLn.splice_$(0, srcStopLoff, inTxt_a_x[i_]);
 
-        outRan_x.stopLoc.set_Loc(lnSrc_1, inTxt_a_x[i_].length);
+        outRan_x.stopLoc.set_Loc(srcLastLn, inTxt_a_x[i_].length);
       }
     } else {
       /*#static*/ if (INOUT) {
         fail("Should not run here!");
       }
     }
-    outRan_x.strtLoc.set_Loc(lnSrc_0, loffSrc_0);
+    outRan_x.strtLoc.set_Loc(srcFrstLn, srcStrtLoff);
 
     /*#static*/ if (INOUT) {
-      assert(lnSrc_1 === outRan_x.lastLine);
+      assert(srcLastLn === outRan_x.lastLine);
     }
+    // console.log(this.#bufr.lineTree._treRepr_);
   }
 
   /** @const @param inRv_x */
   #pre(inRv_x: Ranval | Ranval[]): Ran[] {
     // console.log(`inRv_x = ${inRv_x.toString()}`);
     // console.log(inTxt_a_x);
-
     const inRan_a = this.#bufr.oldRan_a_$;
     for (const ran of inRan_a) ran[Symbol.dispose]();
 
@@ -278,6 +277,8 @@ export class Repl {
       inRan_a[0].syncRanval_$(); //!
       // const lnN_inRan = inRan.lineN_1;
     }
+
+    this.#bufr.resetOldLidxM_$();
     return inRan_a;
   }
 
@@ -372,7 +373,7 @@ export class Repl {
 
   /**
    * Trigger `repl_mo` callbacks, besides invoking `#repl_impl()`\
-   * Assign `#bufr.oldRan_$`, `#bufr.newRan_$`.
+   * Assign `#bufr.oldRan_a_$`, `#bufr.newRan_a_$`.
    * @const @param inRv_x
    * @const @param inTxt_a_x
    * @out @param outRv_x range of inTxt_a_x
@@ -386,23 +387,23 @@ export class Repl {
     outTxt_a_x: string[] | string[][],
   ) {
     /*#static*/ if (_TRACE) {
-      console.log(`${trace.indent}>>>>>>> ${this._type_id_}._impl() >>>>>>>`);
+      console.log(`${trace.indent}>>>>>>> ${this._class_id_}._impl() >>>>>>>`);
     }
     const inRan_a = this.#pre(inRv_x);
 
-    this.#bufr.repl_mo.val = BufrReplState.prerepl;
+    this.#bufr.repl_mo.val = BufrReplState.preRepl;
 
     this.#suf(inRan_a, inTxt_a_x, outRv_x, outTxt_a_x);
 
-    this.#bufr.repl_mo.val = BufrReplState.sufrepl;
-    this.#bufr.repl_mo.val = BufrReplState.sufrepl_edtr;
+    this.#bufr.repl_mo.val = BufrReplState.sufRepl;
+    this.#bufr.repl_mo.val = BufrReplState.sufRepl_edtr;
 
     this.#bufr.repl_mo.val = BufrReplState.idle;
     // console.log(`outRv_x = ${outRv_x.toString()}`);
     // console.log(outTxt_a_x);
   }
 
-  #replFRan = false;
+  #replFRund = false;
   /**
    * If `aoa`, assign `#ranval_rev_a`, `#replText_a2`,
    * else, assign `#ranval_rev`, `#replText_a`.
@@ -419,7 +420,7 @@ export class Repl {
    */
   replFRun(txt_x?: string[] | string | (string[] | string)[]) {
     /*#static*/ if (INOUT) {
-      assert(txt_x === undefined || !this.#replFRan);
+      assert(txt_x === undefined || !this.#replFRund);
     }
     // let replText_a_save: string[] | undefined;
     if (txt_x !== undefined) {
@@ -455,7 +456,7 @@ export class Repl {
     }
 
     if (txt_x === undefined) {
-      this.#replFRan = true;
+      this.#replFRund = true;
     } else {
       if (this.aoa) {
         this.#replText_a2_0 ??= this.#replText_a2!.slice();

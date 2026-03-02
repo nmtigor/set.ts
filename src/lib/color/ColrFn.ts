@@ -131,7 +131,7 @@ export class ColrFn extends Array<ColrStep> {
    * @const
    * @out @param ret_x
    */
-  get(ret_x: Colr): Colr {
+  run(ret_x: Colr): Colr {
     if (this.length === 0) return ret_x;
 
     for (let i = 0; i < this.length; ++i) {

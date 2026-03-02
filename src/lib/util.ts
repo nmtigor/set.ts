@@ -1,6 +1,8 @@
 /** 80**************************************************************************
  * This module is loaded with top priority!
  *
+ * lib/util: mass vs. lib/util/general: niche
+ *
  * @module lib/util
  * @license MIT
  ******************************************************************************/
@@ -82,9 +84,10 @@ export const bind = (_tgt_x: unknown, ctx_x: ClassMethodDecoratorContext) => {
 /** @headconst @param _x */
 export const out = <This, Return, Args extends any[]>(
   _x: (self_y: This, ret_y: Return, args_y: Args) => void,
+  preN_x = INOUT,
 ) => {
   return (tgt_x: (this: This, ...args: Args) => Return) => {
-    return /*#static*/ INOUT
+    return preN_x
       ? function (this: This, ...args: Args): Return {
         const ret = tgt_x.call(this, ...args);
         _x(this, ret, args);

@@ -26,7 +26,7 @@ export const getTypeName = (val_x: unknown): string => {
 
 /**
  * Ref. https://github.com/denoland/std/blob/e02e89fef3cd7f625e487f76e9d56b8b60137102/encoding/_validate_binary_like.ts#L16
- * @throw `TypeError`
+ * @throw {@linkcode TypeError}
  * @const @param src_x
  */
 export const validateBinaryLike = (src_x: unknown): Uint8Array => {

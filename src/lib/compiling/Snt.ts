@@ -3,8 +3,8 @@
  * @license MIT
  ******************************************************************************/
 
-import type { Id_t, lnum_t } from "../alias_v.ts";
-import type { loff_t } from "../alias.ts";
+import type { lnum_t, loff_t } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
 import { SortedIdo } from "../util/SortedArray.ts";
 import type { Locval } from "./alias.ts";
 import type { Line } from "./Line.ts";
@@ -39,7 +39,7 @@ export abstract class Snt {
   static #ID = 0 as Id_t;
   readonly id = ++Snt.#ID as Id_t;
   /** @final */
-  get _type_id_() {
+  get _class_id_() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -59,11 +59,11 @@ export abstract class Snt {
 
   /** For testing only */
   toString() {
-    return this._type_id_;
+    return this._class_id_;
   }
 
   get _oldInfo_(): _OldInfo_ {
-    return { sort: [0 as lnum_t, 0], info: "" };
+    return { sort: [0, 0], info: "" };
   }
 }
 /*80--------------------------------------------------------------------------*/

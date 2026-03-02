@@ -41,10 +41,32 @@ export type RRGGBB = string;
 export type RRGGBBAA = string;
 export type CsscHexNorm = RRGGBB | RRGGBBAA;
 
-/** "rgb(25,55,55)" */
+/** "#123" */
+type RGB_ = string;
+/** "#1234" */
+type RGBA_ = string;
+export type CsscHex = RGB_ | RGBA_ | CsscHexNorm;
+
+/**
+ * "rgb(25 55 55)" or "rgb(25,55,55)"
+ * @see {@linkcode Colr.setByCssc()}
+ */
 export type CsscRGB = string;
-/** "rgb(25,55,55,.3)" */
+/**
+ * "rgb(25 55 55/.3)" or "rgb(25,55,55,.3)"
+ * @see {@linkcode Colr.setByCssc()}
+ */
 export type CsscRGBA = string;
+/**
+ * "hsl(120 60% 80%)" or "hsl(120,60%,80%)"
+ * @see {@linkcode Colr.setByCssc()}
+ */
+type CsscHSL_ = string;
+/**
+ * "hsl(120 60% 80%/.7)" or "hsl(120,60%,80%,.7)"
+ * @see {@linkcode Colr.setByCssc()}
+ */
+type CsscHSLA_ = string;
 
 // deno-fmt-ignore
 /**
@@ -140,7 +162,13 @@ export type CsscName = ArrEl<typeof csscNameMapData>[0];
  * CSS color string excluding `currentcolor` \
  * Ref. https://www.w3schools.com/cssref/css_colors_legal.asp
  */
-export type Cssc = CsscHexNorm | CsscRGB | CsscRGBA | CsscName;
+export type Cssc =
+  | CsscHex
+  | CsscRGB
+  | CsscRGBA
+  | CsscHSL_
+  | CsscHSLA_
+  | CsscName;
 
 //jjjj TOCLEANUP
 // const style_ = globalThis.Option ? (new Option()).style : { color: "" };

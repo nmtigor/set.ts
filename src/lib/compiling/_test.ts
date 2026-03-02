@@ -3,8 +3,7 @@
  * @license MIT
  ******************************************************************************/
 
-import type { lnum_t } from "../alias_v.ts";
-import type { loff_t } from "../alias.ts";
+import type { lnum_t, loff_t } from "../alias.ts";
 import type { Bufr } from "./Bufr.ts";
 import type { Lexr } from "./Lexr.ts";
 import { Loc } from "./Loc.ts";
@@ -24,31 +23,24 @@ export type TestO = {
 export const test_o = Object.create(null) as TestO;
 /*64----------------------------------------------------------*/
 
-export const ln = (i_x: number) => test_o.bufr.line(i_x as lnum_t);
-export const loc = (i_x: number, j_x?: number) =>
-  new Loc(ln(i_x), j_x as loff_t | undefined);
+export const ln = (i_x: lnum_t) => test_o.bufr.line(i_x);
+export const loc = (i_x: lnum_t, j_x?: loff_t) => new Loc(ln(i_x), j_x);
 export const ran = (
-  i_0_x: number,
-  j_0_x?: number,
-  i_1_x?: number,
-  j_1_x?: number,
+  i_0_x: lnum_t,
+  j_0_x?: loff_t,
+  i_1_x?: lnum_t,
+  j_1_x?: loff_t,
 ) =>
   new Ran(
-    loc(i_0_x, j_0_x as loff_t | undefined),
-    i_1_x === undefined ? undefined : loc(i_1_x, j_1_x as loff_t | undefined),
+    loc(i_0_x, j_0_x),
+    i_1_x === undefined ? undefined : loc(i_1_x, j_1_x),
   );
 export const rv = (
-  anchrLidx_x: number,
-  anchrLoff_x: number,
-  focusLidx_x?: number,
-  focusLoff_x?: number,
-) =>
-  new Ranval(
-    anchrLidx_x as lnum_t,
-    anchrLoff_x as loff_t,
-    focusLidx_x as lnum_t | undefined,
-    focusLoff_x as loff_t | undefined,
-  );
+  anchrLidx_x: lnum_t,
+  anchrLoff_x: loff_t,
+  focusLidx_x?: lnum_t,
+  focusLoff_x?: loff_t,
+) => new Ranval(anchrLidx_x, anchrLoff_x, focusLidx_x, focusLoff_x);
 
 export const repl = (rv: Ranval, txt: string | string[]) =>
   test_o.bufr.Do({ rv, txt });

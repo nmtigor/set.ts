@@ -4,16 +4,17 @@
  ******************************************************************************/
 
 import { _TRACE, CYPRESS, DEBUG, INOUT } from "../../preNs.ts";
-import type { Id_t, lnum_t } from "../alias_v.ts";
-import type { loff_t } from "../alias.ts";
-import { WritingMode } from "../alias.ts";
-import { Bidi, type Bidir } from "../Bidi.ts";
-import type { Line } from "../compiling/Line.ts";
-import { g_ranval_fac } from "../compiling/Ranval.ts";
+import type { lnum_t, loff_t, unum } from "../alias.ts";
+import { WritingDir, WritingMode } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
+import { Bidi } from "../Bidi.ts";
+import type { Bidir } from "../Bidi.ts";
+import type { Line } from "@fe-cpl/Line.ts";
+import { g_ranval_fac } from "@fe-cpl/Ranval.ts";
 import { HTMLVuu, Vuu } from "../cv.ts";
 import { div, textnode } from "../dom.ts";
 import "../jslang.ts";
-import { $tail_ignored, $vuu } from "../symbols.ts";
+import { $tail_ignored } from "../symbols.ts";
 import { assert } from "../util.ts";
 import { trace, traceOut } from "../util/trace.ts";
 import type { EdtrBase, EdtrBaseCI } from "./EdtrBase.ts";
@@ -52,6 +53,15 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   override readonly id = ++ELineBase.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
+  /**
+   * @final
+   * @const @param coo_x
+   */
+  setCoo_$(coo_x: EdtrBase<CI>): this {
+    this.coo$ = coo_x;
+    return this;
+  }
+
   bline_$;
   get lidx_1(): lnum_t {
     return this.bline_$.lidx_1;
@@ -77,7 +87,7 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   get bidi(): Bidi {
     if (
       this.#bidi.bidiLastCont_ts <
-        Math.max(this.bline_$.lineLastCont_ts, this.coo$.lastSize_ts)
+        Math.max(this.bline_$.lineLastCont_ts, this.coo$.lastBcr_ts)
     ) {
       this.setBidi$();
     }
@@ -88,9 +98,17 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   /* ~ */
 
   // protected empty$ = true;
-  /** @final */
+  /** @final @const */
   get empty() {
-    return !this.bline_$.text.length;
+    return this.bline_$.text.length === 0;
+  }
+
+  get _fsrec_a_() {
+    const eslr = this.coo$._scrolr;
+    // /*#static*/ if (INOUT) {
+    //   assert(eslr.bufr === this.bline_$.bufr);
+    // }
+    return eslr.bufr.getLineFsrecA(this.lidx_1, eslr.id);
   }
 
   /**
@@ -102,12 +120,23 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     this.bline_$ = bln_x;
 
     /*#static*/ if (CYPRESS || DEBUG) {
-      this.el$.hint = this._type_id_;
+      this.el$.hint = this._class_id_;
     }
-    // this.assignStylo({});
+    this.assignStylo({
+      /*llll It works not well for, say, 5000 individual tiny divs.
+      Ref. [Optimize `contenteditable` Performance](https://gemini.google.com/share/94ef1d448397)
+       */
+      // contentVisibility: "auto",
+      // containIntrinsicSize: "1em",
+      /* ~ */
+    });
 
     //jjjj TOCLEANUP
-    // new ResizeObserver(this.#onResiz).observe(this.el$);
+    // /* For testing only */
+    // new ResizeObserver(this._onResiz).observe(this.el$);
+
+    // /* For testing only */
+    // this.on("contentvisibilityautostatechange", this._onCvasc);
   }
 
   /** @final */
@@ -122,7 +151,7 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   refreshPlain(): this {
     // /*#static*/ if (_TRACE) {
     //   console.log(
-    //     `${trace.indent}>>>>>>> ${this._type_id_}.refreshPlain() >>>>>>>`,
+    //     `${trace.indent}>>>>>>> ${this._class_id_}.refreshPlain() >>>>>>>`,
     //   );
     // }
     this.reset_ELineBase$();
@@ -159,6 +188,53 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     return this;
   }
 
+  /** @final */
+  get bsize(): unum {
+    return this.coo$._writingMode & WritingDir.v
+      ? this.el$.clientWidth
+      : this.el$.clientHeight;
+  }
+  /** @final */
+  syncBSize(): this {
+    const id_ = this.coo$._scrolr.id;
+    const bsize_0 = this.bline_$.getBSizeOn(id_);
+    const bsize_1 = this.bsize;
+    if (!Number.apxE(bsize_0, bsize_1)) {
+      this.bline_$.invTpBSizeOn(id_);
+      this.bline_$.setBSizeOn(id_, bsize_1);
+    }
+    return this;
+  }
+  //jjjj TOCLEANUP
+  // /** @final */
+  // get viewBSize(): unum {
+  //   return this.bline_$.getBSizeOn(this.coo$._scrolr.id);
+  // }
+
+  /** @final */
+  clearFsrecA(): this {
+    const id_ = this.coo$._scrolr.id;
+    this.bline_$.getFsrecA(id_).length = 0;
+    return this;
+  }
+
+  /**
+   * According to `bline_$`, which is updated in `EdtrScrolr._resetELine()`\
+   * `in( this.el$.isConnected)`
+   *
+   * @deprecated
+   * jjjj@return false if `newSn` is not used
+   */
+  abstract replace_$(...a_x: any[]): any;
+
+  /** `in( this.el$.isConnected)` */
+  refresh_$(): void {
+    this.refreshPlain()
+      .syncBSize()
+      .clearFsrecA();
+  }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
   /** Helper */
   #wrap_a: loff_t[] = [];
   /** @final */
@@ -166,7 +242,7 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   protected setBidi$(): void {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._type_id_}.setBidi$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._class_id_}.setBidi$() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -179,14 +255,15 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     this.#wrap_a.length = 0;
     const edtr = this.coo$;
     if (edtr._scrolr.wrap) {
-      using rv_u = g_ranval_fac.oneMore().setRanval(bln.lidx_1, 0);
-      let fsrec = edtr._scrolr.anchrRecOf_$(rv_u);
+      using rv_u = g_ranval_fac.oneMore().set_Ranval(bln.lidx_1, 0);
+      const elnBcr = this.bcr_1;
+      let fsrec = edtr._scrolr.anchrRecOf_$(rv_u, elnBcr);
       const impl_ = (blockOf_y: BlockOf, samerow_y: SameRow) => {
         let block_0 = blockOf_y(fsrec.fat);
         // const _a_ = [];
         for (let i = 1; i < LEN; ++i) {
           rv_u.anchrLoff = i;
-          fsrec = edtr._scrolr.anchrRecOf_$(rv_u);
+          fsrec = edtr._scrolr.anchrRecOf_$(rv_u, elnBcr);
           // _a_.push(fsrec.top.fixTo(1));
           if (samerow_y(fsrec.fat, block_0)) continue;
 
@@ -204,7 +281,7 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
         [WritingMode.vlr]: () => {
           impl_((rec_z) => rec_z.right, samerow_rigt);
         },
-      }[edtr._writingMode_])();
+      }[edtr._writingMode])();
     }
     this.#wrap_a.push(LEN);
     // console.log(this.#wrap_a);
@@ -212,7 +289,9 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
 
     this.#bidi.reset_Bidi(
       bln.text,
-      edtr._scrolr.bufrDir,
+      //jjjj TOCLEANUP
+      // edtr._scrolr.bufrDir,
+      bln.dir,
       this.#wrap_a,
       bln.bidi.embedLevels, //!
     );
@@ -220,32 +299,58 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     // if (!this.#wrap_a.eql(wrap_a_0)) this.#bidi.validate();
   }
 
-  //jjjj TOCLEANUP
-  // #onResiz = () => {
-  //   if (!this.el$.isConnected) return;
+  // /** For testing only */
+  // @bind
+  // @traceOut(_TRACE)
+  // private _onCvasc(evt_x: ContentVisibilityAutoStateChangeEvent) {
+  //   /*#static*/ if (_TRACE) {
+  //     console.log(
+  //       `%c${trace.indent}>>>>>>> ${this._class_id_}._onCvasc() (${this.bline_$._class_id_}) >>>>>>>`,
+  //       `color:${LOG_cssc.cvasc}`,
+  //     );
+  //     console.log(`${trace.dent}evt_x.skipped: ${evt_x.skipped}`);
+  //     console.log(`${trace.dent}bcr_1: ${this.bcr_1.toString()}`);
+  //   }
+  // }
 
+  //jjjj TOCLEANUP
+  // /** For testing only */
+  // @bind
+  // @traceOut(_TRACE && RESIZ)
+  // private _onResiz() {
   //   /*#static*/ if (_TRACE && RESIZ) {
   //     console.log(
-  //       `%c${trace.indent}>>>>>>> ${this._type_id_}.#onResiz() (${this.bline_$._type_id_}) >>>>>>>`,
+  //       `%c${trace.indent}>>>>>>> ${this._class_id_}._onResiz() (${this.bline_$._class_id_}) >>>>>>>`,
   //       `color:${LOG_cssc.resiz}`,
   //     );
-  //   }
-  //   //jjjj TOCLEANUP because width of `el$` is always same as size of `main_el`
-  //   // this.coo$.updateLastSizeTs(); //!
-  //   this.setBidi$();
-  //   /*#static*/ if (PRF) {
+  //     console.log(`${trace.dent}isConnected: ${this.el$.isConnected}`);
   //     console.log(
-  //       `%c${trace.dent}Have passed ${
-  //         ((performance.now() - g_count.hr_0) / 1000).toFixed(1)
-  //       } seconds`,
-  //       `color:${LOG_cssc.performance}`,
+  //       `${trace.dent}checkVisibility(): ${
+  //         this.el$.checkVisibility({ contentVisibilityAuto: true })
+  //       }`,
   //     );
   //   }
-  //   /*#static*/ if (_TRACE && RESIZ) trace.outdent;
-  //   return;
-  // };
+  //   if (!this.el$.isConnected) return;
 
-  /** @final */
+  //   //jjjj TOCLEANUP because width of `el$` is always same as size of `main_el$`
+  //   // this.coo$.updateLastBcrTs(); //!
+
+  //   // this.setBidi$();
+  //   // /*#static*/ if (PRF) {
+  //   //   console.log(
+  //   //     `%c${trace.dent}Have passed ${
+  //   //       ((performance.now() - g_count.hr_0) / 1000).toFixed(1)
+  //   //     } seconds`,
+  //   //     `color:${LOG_cssc.performance}`,
+  //   //   );
+  //   // }
+  // }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
+  /**
+   * @deprecated just use `Node.isConnected` directly
+   * @final
+   */
   get removed() {
     return !this.el$.parentNode;
   }
@@ -290,27 +395,19 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     return ret!;
   }
   /**
-   * `in( !this.empty$ )`
+   * `in( !this.empty)`
    * @final
    */
   get frstCaretNode(): HTMLElement | Text {
     return this.caretNodeAt(0);
   }
   /**
-   * `in( !this.empty$ )`
+   * `in( !this.empty)`
    * @final
    */
   get lastCaretNode(): HTMLElement | Text {
     return this.caretNodeAt(this.bline_$.uchrLen);
   }
-
-  /**
-   * According to `bline_$`, which is updated in `EdtrScrolr.resetELine_$()`\
-   * `in( this.el$.isConnected )`
-   *
-   * jjjj@return false if `newSn` is not used
-   */
-  abstract replace_$(...a_x: any[]): any;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /**

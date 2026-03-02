@@ -4,13 +4,16 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
+import type { lnum_t, loff_t, uint } from "../alias.ts";
+import { LnumMAX } from "../alias.ts";
 import type { Id_t } from "../alias_v.ts";
-import type { loff_t, uint } from "../alias.ts";
-import { Endpt } from "../alias.ts";
-import { $facil_node, $ovlap } from "../symbols.ts";
+import { $facil_node, $loff_0, $ovlap, $tail_ignored } from "../symbols.ts";
 import { assert, fail } from "../util.ts";
 import { Factory } from "../util/Factory.ts";
+import { ELineBase } from "./ELineBase.ts";
 import { ELoc } from "./ELoc.ts";
+import type { EdtrBaseScrolr } from "./EdtrBase.ts";
+import type { Pos } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
 
 declare global {
@@ -20,10 +23,14 @@ declare global {
   }
 }
 
+type ElnO_ = {
+  eline(_: lnum_t): ELineBase;
+};
+
 /**
- * Wrapper of two `Range`s: `#endpt`, `#range`\
- * Like `Range`, `ERan` has no visual effects. `Caret` has visual effects.
+ * Wrapper of one `Range`: `#range`
  *
+ * Like `Range`, `ERan` has no visual effects. `Caret` has visual effects.\
  * Should sync with `EdtrScrolr`s modification as soon as possible.
  *
  * @final
@@ -33,71 +40,71 @@ export class ERan {
   readonly id = ++ERan.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  /* #anchrELoc */
-  readonly #anchrELoc: ELoc;
-  get anchrELoc() {
-    return this.#anchrELoc;
+  /* #anchrEloc */
+  readonly #anchrEloc: ELoc;
+  get anchrEloc() {
+    return this.#anchrEloc;
   }
   get anchrCtnr(): Node {
-    return this.#anchrELoc.ctnr_$!;
+    return this.#anchrEloc.ctnr_$!;
   }
   get anchrOffs(): uint {
-    return this.#anchrELoc.offs_$;
+    return this.#anchrEloc.offs_$;
   }
   get anchrLoff(): loff_t {
-    return this.#anchrELoc.loff;
+    return this.#anchrEloc.loff;
   }
   /* ~ */
 
-  /* #focusELoc */
-  readonly #focusELoc: ELoc;
-  get focusELoc() {
-    return this.#focusELoc;
+  /* #focusEloc */
+  readonly #focusEloc: ELoc;
+  get focusEloc() {
+    return this.#focusEloc;
   }
   get focusCtnr(): Node {
-    return this.#focusELoc.ctnr_$;
+    return this.#focusEloc.ctnr_$;
   }
   get focusOffs(): uint {
-    return this.#focusELoc.offs_$;
+    return this.#focusEloc.offs_$;
   }
   get focusLoff(): loff_t {
-    return this.#focusELoc.loff;
+    return this.#focusEloc.loff;
   }
   /* ~ */
 
   /** @const */
   get collapsed() {
-    return this.#anchrELoc.posE(this.#focusELoc);
+    return this.#anchrEloc.posE(this.#focusEloc);
   }
 
-  readonly #endpt = new Range();
-  // get focusRect() { return this.#endpt.getBoundingClientRect(); }
-
   readonly #range = new Range();
+  //jjjj TOCLEANUP
   // get rangeRect() { return this.#range.getBoundingClientRect(); }
 
+  //jjjj TOCLEANUP
   // bran$_:TokRan|null = null;
 
+  //jjjj TOCLEANUP
   // dp_$ = Edran_DP.none; /** used by Caret.#drawFocus() */
 
   /**
-   * @headmovd @const @param focusELoc_x
-   * @headmovd @const @param anchrELoc_x
+   * @headmove @const @param focusELoc_x
+   * @headmove @const @param anchrELoc_x
    */
   constructor(focusELoc_x: ELoc, anchrELoc_x?: ELoc) {
-    this.#focusELoc = focusELoc_x;
-    this.#anchrELoc = anchrELoc_x ?? focusELoc_x.dupELoc();
+    this.#focusEloc = focusELoc_x;
+    this.#anchrEloc = anchrELoc_x ?? focusELoc_x.dup_ELoc();
     /*#static*/ if (INOUT) {
-      assert(this.#focusELoc !== this.#anchrELoc);
+      assert(this.#focusEloc !== this.#anchrEloc);
     }
   }
 
   /** @const */
   become_ERan(rhs_x: ERan): this {
-    this.#focusELoc.ctnr_$ = rhs_x.focusCtnr;
-    this.#focusELoc.offs_$ = rhs_x.focusOffs;
-    this.#anchrELoc.ctnr_$ = rhs_x.anchrCtnr;
-    this.#anchrELoc.offs_$ = rhs_x.anchrOffs;
+    this.#focusEloc.ctnr_$ = rhs_x.focusCtnr;
+    this.#focusEloc.offs_$ = rhs_x.focusOffs;
+    this.#anchrEloc.ctnr_$ = rhs_x.anchrCtnr;
+    this.#anchrEloc.offs_$ = rhs_x.anchrOffs;
     return this;
   }
 
@@ -108,12 +115,12 @@ export class ERan {
 
   // drop$_()
   // {
-  //   this.#anchrELoc = null;
+  //   this.#anchrEloc = null;
   // }
   // rise$_()
   // {
-  //   if( !this.#anchrELoc )
-  //     this.#anchrELoc = new ELoc(
+  //   if( !this.#anchrEloc )
+  //     this.#anchrEloc = new ELoc(
   //       this.focusCtnr, this.focusOffs );
   // }
 
@@ -122,16 +129,16 @@ export class ERan {
     if (this === rhs_x) return true;
     if (!rhs_x) return false;
 
-    // if (rhs_x.#focusELoc.posE(this.#focusELoc)) {
+    // if (rhs_x.#focusEloc.posE(this.#focusEloc)) {
     //   if (this.collapsed) {
     //     return rhs_x.collapsed;
     //   } else if (!rhs_x.collapsed) {
-    //     return rhs_x.#anchrELoc.posE(this.#anchrELoc);
+    //     return rhs_x.#anchrEloc.posE(this.#anchrEloc);
     //   }
     // }
     // return false;
-    return rhs_x.#focusELoc.posE(this.#focusELoc) &&
-      rhs_x.#anchrELoc.posE(this.#anchrELoc);
+    return rhs_x.#focusEloc.posE(this.#focusEloc) &&
+      rhs_x.#anchrEloc.posE(this.#anchrEloc);
   }
 
   /** @return reversed or not */
@@ -140,62 +147,18 @@ export class ERan {
 
     const ctnr = this.focusCtnr;
     const offs = this.focusOffs;
-    this.#focusELoc.ctnr_$ = this.anchrCtnr;
-    this.#focusELoc.offs_$ = this.anchrOffs;
-    this.#anchrELoc.ctnr_$ = ctnr;
-    this.#anchrELoc.offs_$ = offs;
+    this.#focusEloc.ctnr_$ = this.anchrCtnr;
+    this.#focusEloc.offs_$ = this.anchrOffs;
+    this.#anchrEloc.ctnr_$ = ctnr;
+    this.#anchrEloc.offs_$ = offs;
     return true;
   }
 
   /**
-   * Assign `#endpt` only, and return its `DOMRect`.
-   * @return `DOMRect` of synchronized `#endpt`
-   */
-  getRecSync_$(_x = Endpt.focus): DOMRect {
-    let ret;
-    // assert(this.focusCtnr);
-    const ctnr = /* final switch */ {
-      [Endpt.focus]: this.focusCtnr,
-      [Endpt.anchr]: this.anchrCtnr,
-    }[_x];
-    const offs = /* final switch */ {
-      [Endpt.focus]: this.focusOffs,
-      [Endpt.anchr]: this.anchrOffs,
-    }[_x];
-    if (ctnr.isText) {
-      this.#endpt.setEnd(ctnr, offs);
-      this.#endpt.collapse();
-      ret = this.#endpt.getBoundingClientRect();
-    } else {
-      //jjjj TOCHECK
-      let subNd: Node | undefined;
-      let i = 0, j = 0;
-      const iI = ctnr.childNodes.length;
-      for (; i < iI; ++i) {
-        if (!ctnr.childNodes[i][$facil_node]) {
-          subNd = ctnr.childNodes[i];
-          if (j++ === offs) break;
-        }
-      }
-      /*#static*/ if (INOUT) {
-        assert(subNd);
-      }
-      this.#endpt.selectNode(subNd!);
-      ret = this.#endpt.getBoundingClientRect();
-      if (i === iI) ret.x = ret.right; //!
-      ret.width = 0;
-    }
-    ret[$ovlap] = ctnr[$ovlap]; //!
-    // console.log( ret );
-    return ret;
-  }
-
-  /**
-   * Assign `#range` only.\
-   * ! Range's start is always ahead of end, otherwise `collapsed`.
+   **! Range's start is always ahead of end, otherwise `collapsed`.
    * @borrow @return synchronized `#range`
    */
-  syncRange_$(): Range {
+  #syncRange(): Range {
     const ctnr = this.anchrCtnr;
     const offs = this.anchrOffs;
     if (this.collapsed) {
@@ -222,29 +185,188 @@ export class ERan {
     return this.#range;
   }
 
+  /**
+   * Assign `#range`, and return its synchronized `DOMRect`.
+   * @const @param relPos_x
+   */
+  getBcr_$(relPos_x?: Pos): DOMRect {
+    const retRec = this.#syncRange().getBoundingClientRect();
+    if (relPos_x) {
+      retRec.x -= relPos_x.left;
+      retRec.y -= relPos_x.top;
+    }
+    return retRec;
+  }
+
+  /**
+   * @headconst @param elnO_x
+   * @const @param relPos_x
+   */
+  getRecA_$(elnO_x: ElnO_, relPos_x?: Pos): DOMRect[] {
+    this.#syncRange();
+    /*#static*/ if (INOUT) {
+      assert(!this.#range.collapsed);
+    }
+    /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
+    const ctnr_a: Node[] = [];
+
+    const frstCtnr = this.#range.startContainer;
+    const lastCtnr = this.#range.endContainer;
+    /*#static*/ if (INOUT) {
+      assert(frstCtnr.isText);
+      assert(lastCtnr.isText);
+    }
+    const strtOfs = this.#range.startOffset;
+    const stopOfs = this.#range.endOffset;
+
+    const frstBln = ELineBase.getBLine(frstCtnr);
+    const lastBln = ELineBase.getBLine(lastCtnr);
+    const lastStopBofs = (lastCtnr as Text).loff(stopOfs);
+
+    let ctnr = frstCtnr;
+    let stopBofs = (ctnr as Text).stopLoff;
+    let bln = frstBln;
+    let eln = elnO_x.eline(bln.lidx_1);
+
+    ctnr_a.push(ctnr);
+
+    if (bln !== lastBln) {
+      const VALVE = LnumMAX;
+      let valve = VALVE;
+      do {
+        const blnLEN = bln.uchrLen;
+        while (stopBofs < blnLEN) {
+          ctnr = eln.caretNodeAt(stopBofs);
+          /*#static*/ if (INOUT) {
+            assert(ctnr.isText && stopBofs === (ctnr as Text)[$loff_0]);
+          }
+          ctnr_a.push(ctnr);
+          stopBofs += (ctnr as Text).length;
+        }
+
+        stopBofs = 0;
+        bln = bln.nextLine!;
+        eln = elnO_x.eline(bln.lidx_1);
+      } while (bln !== lastBln && --valve);
+      assert(valve, `Loop ${VALVE}±1 times`);
+    }
+
+    if (frstBln !== bln) stopBofs = 0;
+    while (stopBofs <= lastStopBofs) {
+      ctnr = eln.caretNodeAt(stopBofs);
+      /*#static*/ if (INOUT) {
+        assert(ctnr.isText && stopBofs === (ctnr as Text)[$loff_0]);
+      }
+      ctnr_a.push(ctnr);
+      stopBofs += (ctnr as Text).length;
+    }
+    /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
+    const retRec: DOMRect[] = [];
+
+    const n_ = range_fac_.produce(ctnr_a.length);
+
+    ctnr = ctnr_a[0];
+    let len: uint,
+      r_1: Range;
+    //jjjj TOCLEANUP
+    // if (ctnr) {
+    len = n_ === 1
+      ? stopOfs
+      : ctnr.isText
+      ? (ctnr as Text)[$tail_ignored]
+        ? ctnr.textContent!.length - 1
+        : ctnr.textContent!.length
+      : ctnr.childNodes.length;
+    if (len) {
+      r_1 = range_fac_.val_a[0];
+      r_1.setStart(ctnr, strtOfs);
+      r_1.setEnd(ctnr, len);
+      r_1.getStickA(retRec, !ctnr.isText, relPos_x);
+    }
+    // }
+
+    for (let i = 1; i < n_ - 1; i++) {
+      ctnr = ctnr_a[i];
+      //jjjj TOCLEANUP
+      // if (ctnr) {
+      //jjjj TOCLEANUP
+      // const out_o = {};
+      // const bline = ELineBase.getBLine( ctnr, out_o );
+      // const offset = out_o.np === NodeInELine.indent ?
+      //   ctnr.textContent.length :
+      //   bline.uchrLen - out_o.vuu.indent;
+      len = ctnr.isText
+        ? (ctnr as Text)[$tail_ignored]
+          ? ctnr.textContent!.length - 1
+          : ctnr.textContent!.length
+        : ctnr.childNodes.length;
+      if (len) {
+        r_1 = range_fac_.val_a[i];
+        r_1.setStart(ctnr, 0);
+        r_1.setEnd(ctnr, len);
+        r_1.getStickA(retRec, !ctnr.isText, relPos_x);
+      }
+      // }
+    }
+
+    if (n_ > 1) {
+      ctnr = ctnr_a.at(-1)!;
+      //jjjj TOCLEANUP
+      // if (ctnr) {
+      len = stopOfs;
+      if (len) {
+        r_1 = range_fac_.val_a[n_ - 1];
+        r_1.setStart(ctnr, 0);
+        r_1.setEnd(ctnr, len);
+        r_1.getStickA(retRec, !ctnr.isText, relPos_x);
+      }
+      // }
+    }
+
+    return retRec;
+  }
+
   /** @const @param ct_x */
   collapse_$(ct_x = EdranCollapseTo.focus) {
     if (this.collapsed) return;
 
     if (ct_x === EdranCollapseTo.focus) {
-      this.#anchrELoc.ctnr_$ = this.focusCtnr;
-      this.#anchrELoc.offs_$ = this.focusOffs;
+      this.#anchrEloc.ctnr_$ = this.focusCtnr;
+      this.#anchrEloc.offs_$ = this.focusOffs;
     } else if (ct_x === EdranCollapseTo.anchr) {
-      this.#focusELoc.ctnr_$ = this.anchrCtnr;
-      this.#focusELoc.offs_$ = this.anchrOffs;
+      this.#focusEloc.ctnr_$ = this.anchrCtnr;
+      this.#focusEloc.offs_$ = this.anchrOffs;
     } else {
-      const range = this.syncRange_$();
+      const range = this.#syncRange();
       if (ct_x === EdranCollapseTo.rangeStrt) {
-        this.#focusELoc.ctnr_$ = range.startContainer;
-        this.#focusELoc.offs_$ = range.startOffset;
+        this.#focusEloc.ctnr_$ = range.startContainer;
+        this.#focusEloc.offs_$ = range.startOffset;
       } else if (ct_x === EdranCollapseTo.rangeStop) {
-        this.#focusELoc.ctnr_$ = range.endContainer;
-        this.#focusELoc.offs_$ = range.endOffset;
+        this.#focusEloc.ctnr_$ = range.endContainer;
+        this.#focusEloc.offs_$ = range.endOffset;
       } else fail();
-      this.#anchrELoc.ctnr_$ = this.focusCtnr;
-      this.#anchrELoc.offs_$ = this.focusOffs;
+      this.#anchrEloc.ctnr_$ = this.focusCtnr;
+      this.#anchrEloc.offs_$ = this.focusOffs;
     }
   }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
+  //jjjj TOCLEANUP
+  // /** @out @param ret_x */
+  // getRanval(ret_x?: Ranval): Ranval {
+  //   ret_x ??= new Ranval(0, 0);
+  //   ret_x.focusLidx = ELineBase.getBLine(this.focusCtnr).lidx_1;
+  //   ret_x.focusLoff = this.focusLoff;
+  //   if (this.collapsed) {
+  //     ret_x.collapseToFocus();
+  //   } else {
+  //     ret_x.anchrLidx = ELineBase.getBLine(this.anchrCtnr).lidx_1;
+  //     ret_x.anchrLoff = this.anchrLoff;
+  //   }
+  //   return ret_x;
+  // }
 }
 
 const enum EdranCollapseTo {
@@ -255,6 +377,7 @@ const enum EdranCollapseTo {
 }
 /*64----------------------------------------------------------*/
 
+/** @final */
 class ERanFac_ extends Factory<ERan> {
   /** @implement */
   protected createVal$() {
@@ -269,11 +392,26 @@ class ERanFac_ extends Factory<ERan> {
 
   protected override resetVal$(i_x: uint) {
     const ret = this.get(i_x);
-    ret.focusELoc.ctnr_$ = document;
-    ret.focusELoc.offs_$ = 0;
+    ret.focusEloc.ctnr_$ = document;
+    ret.focusEloc.offs_$ = 0;
     ret.collapse_$();
     return ret;
   }
 }
 export const g_eran_fac = new ERanFac_();
+
+/** @final */
+class RangeFac_ extends Factory<Range> {
+  /** @implement */
+  protected createVal$() {
+    return new Range();
+  }
+
+  protected override resetVal$(i_x: number) {
+    const ret = this.val_a$[i_x];
+    ret.reset();
+    return ret;
+  }
+}
+const range_fac_ = new RangeFac_();
 /*80--------------------------------------------------------------------------*/

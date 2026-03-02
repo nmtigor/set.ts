@@ -22,7 +22,7 @@ export abstract class Tfmr {
   /** @final */
   readonly id = ++Tfmr.#ID as Id_t;
   /** @final */
-  get _type_id_() {
+  get _class_id_() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -109,7 +109,7 @@ export abstract class Tfmr {
   tfmmrk_$(oldRan_a_x: Ran[]): this {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._type_id_}.tfmmrk_$(${oldRan_a_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._class_id_}.tfmmrk_$(${oldRan_a_x}) >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -128,7 +128,7 @@ export abstract class Tfmr {
     if (regressed || this.curTSeg$ && strtLoc_.posS(this.curTSeg$.stopLoc)) {
       /* reset `curTSeg$` */
       let ln_ = oldRan_0.frstLine;
-      let tseg = ln_.frstTSeg_$(this);
+      let tseg = ln_.frstTSegBy_$(this);
       while (!tseg || strtLoc_.posS(tseg.stopLoc)) {
         if (ln_.isFrstLine) {
           tseg = undefined;
@@ -136,7 +136,7 @@ export abstract class Tfmr {
         }
 
         ln_ = ln_.prevLine!;
-        tseg = ln_.frstTSeg_$(this);
+        tseg = ln_.frstTSegBy_$(this);
       }
       if (tseg) {
         /*#static*/ if (INOUT) {
@@ -154,7 +154,7 @@ export abstract class Tfmr {
     if (regressed || this.stopTSeg$ && stopLoc_.posG(this.stopTSeg$.strtLoc)) {
       /* reset `stopTSeg$` */
       let ln_ = oldRan_1.lastLine;
-      let tseg = ln_.lastTSeg_$(this);
+      let tseg = ln_.lastTSegBy_$(this);
       while (!tseg || stopLoc_.posG(tseg.strtLoc)) {
         if (ln_.isLastLine) {
           tseg = undefined;
@@ -162,7 +162,7 @@ export abstract class Tfmr {
         }
 
         ln_ = ln_.nextLine!;
-        tseg = ln_.lastTSeg_$(this);
+        tseg = ln_.lastTSegBy_$(this);
       }
       if (tseg) {
         /*#static*/ if (INOUT) {
@@ -192,7 +192,7 @@ export abstract class Tfmr {
   tfmadj_$(newRan_a_x: Ran[]): this {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._type_id_}.tfmadj_$(${newRan_a_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._class_id_}.tfmadj_$(${newRan_a_x}) >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -211,13 +211,13 @@ export abstract class Tfmr {
         do {
           tseg.line_$ = strtLn_tgt;
 
-          if (strtLn_src.isFrstByTSeg_$(tseg)) {
-            strtLn_tgt.frstByTSeg_$(tseg);
-            strtLn_src.delFrstTSeg_$(this);
+          if (tseg.isFrstOn_$(strtLn_src)) {
+            strtLn_tgt.setFrstTSeg_$(tseg);
+            strtLn_src.delFrstTSegBy_$(this);
           }
-          if (strtLn_src.isLastByTSeg_$(tseg)) {
-            strtLn_tgt.lastByTSeg_$(tseg);
-            strtLn_src.delLastTSeg_$(this);
+          if (tseg.isLastOn_$(strtLn_src)) {
+            strtLn_tgt.setLastTSeg_$(tseg);
+            strtLn_src.delLastTSegBy_$(this);
           }
 
           tseg = tseg.prevTSeg_$;
@@ -235,13 +235,13 @@ export abstract class Tfmr {
           tseg.stopLoc.set_Loc(stopLn_tgt, tseg.stopLoff + dtLoff);
 
           if (stopLn_src !== stopLn_tgt) {
-            if (stopLn_src.isFrstByTSeg_$(tseg)) {
-              stopLn_tgt.frstByTSeg_$(tseg);
-              stopLn_src.delFrstTSeg_$(this);
+            if (tseg.isFrstOn_$(stopLn_src)) {
+              stopLn_tgt.setFrstTSeg_$(tseg);
+              stopLn_src.delFrstTSegBy_$(this);
             }
-            if (stopLn_src.isLastByTSeg_$(tseg)) {
-              stopLn_tgt.lastByTSeg_$(tseg);
-              stopLn_src.delLastTSeg_$(this);
+            if (tseg.isLastOn_$(stopLn_src)) {
+              stopLn_tgt.lastTSegBy_$(tseg.tfmr_$);
+              stopLn_src.delLastTSegBy_$(this);
             }
           }
 
@@ -268,7 +268,7 @@ export abstract class Tfmr {
   })
   tfm(): void {
     /*#static*/ if (_TRACE) {
-      console.log(`${trace.indent}>>>>>>> ${this._type_id_}.tfm() >>>>>>>`);
+      console.log(`${trace.indent}>>>>>>> ${this._class_id_}.tfm() >>>>>>>`);
     }
     /* llll review similarly as `Lexr.lex()`  */
     if (!this.curTSeg$ || !this.stopTSeg$ || !this.reachTfmBdry$()) {

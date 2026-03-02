@@ -51,15 +51,15 @@ export abstract class Factory<V> {
   protected abstract createVal$(i_x: uint): V;
 
   /**
-   * `in( this.val_a$[i] )`
-   * @param i_x index of `val_a$`
+   * `in( this.val_a$[i])`
+   * @const @param i_x index of `val_a$`
    */
   protected resetVal$(i_x: uint): V {
     return this.get(i_x);
   }
   /**
-   * `in( this.val_a$[i] )`
-   * @param i_x index of `val_a$`
+   * `in( this.val_a$[i])`
+   * @const @param i_x index of `val_a$`
    */
   protected reuseVal$(i_x: uint): V {
     return this.get(i_x);
@@ -116,9 +116,10 @@ export abstract class Factory<V> {
     };
   }
 
-  lastIndexOf(v_x: V): uint | -1 {
+  /** @const @param val_x */
+  lastIndexOf(val_x: V): uint | -1 {
     for (let i = this.nUsed$; i--;) {
-      if (v_x === this.get(i)) return i;
+      if (val_x === this.get(i)) return i;
     }
     return -1;
   }
@@ -126,6 +127,7 @@ export abstract class Factory<V> {
   /**
    * Keep the order
    * @final
+   * @headconst @param val_x
    */
   revoke(val_x: V): this {
     const i_ = this.lastIndexOf(val_x);

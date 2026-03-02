@@ -22,7 +22,7 @@ export class SortedArray<T> extends Array<T> {
   static #ID = 0 as id_t;
   readonly id = ++SortedArray.#ID as id_t;
   /** @final */
-  get _type_id_() {
+  get _class_id_() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -46,7 +46,7 @@ export class SortedArray<T> extends Array<T> {
   }
 
   /**
-   * [0, this.length]
+   * `[0, this.length]`\
    * Helper. Set by `includes()`
    */
   #index: uint = 0;
@@ -162,7 +162,7 @@ export class SortedArray<T> extends Array<T> {
   // more_( a, b ) { return this.less_or_equal_( b, a ); }
 
   /**
-   * Assign `#index`
+   * Set `#index`
    * @headconst @param val_x
    * @const @param jdx_x
    * @const @param len_x
@@ -267,7 +267,7 @@ export class SortedArray<T> extends Array<T> {
    * `in( 0 <= _x && _x < this.length )`
    * @const @param _x
    */
-  #deleteByIndex_impl(_x: uint) {
+  #rmvByIndex_impl(_x: uint) {
     for (let i = _x + 1; i < this.length; ++i) {
       this[i - 1] = this[i];
     }
@@ -275,33 +275,33 @@ export class SortedArray<T> extends Array<T> {
   }
   /**
    * @param _x Could be any `int`, e.g. `-1` is the last
-   * @return Return the normalized index of the deleted
+   * @return Return the normalized index of the removed
    */
-  deleteByIndex(_x: int): uint | -1 {
+  rmvByIndex(_x: int): uint | -1 {
     if (!this.length) return -1;
 
     _x = Number.normalize(_x, this.length);
-    this.#deleteByIndex_impl(_x);
+    this.#rmvByIndex_impl(_x);
     return _x;
   }
   /**
    * @headconst @param val_x
-   * @return Return the index of the deleted;
+   * @return Return the index of the removed;
    *    if not exist, return `-1`
    */
-  delete(val_x: T): uint | -1 {
+  rmv(val_x: T): uint | -1 {
     /*#static*/ if (INOUT) {
       assert(this.#sorted, "This method is callable only in the sorted state.");
     }
     const has = this.includes(val_x);
     if (has) {
-      this.#deleteByIndex_impl(this.#index);
+      this.#rmvByIndex_impl(this.#index);
     }
     return has ? this.#index : -1;
   }
-  delete_O(val_a_x?: T[]): void {
+  rmv_O(val_a_x?: T[]): void {
     if (val_a_x) {
-      for (const v of val_a_x) this.delete(v);
+      for (const v of val_a_x) this.rmv(v);
     }
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/

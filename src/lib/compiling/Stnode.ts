@@ -79,7 +79,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /* children */
   // protected children$: Stnode<T>[] | undefined;
   get children(): Stnode<T>[] | undefined {
-    // return fail("Not implemented");
+    // return fail("jjjj Not implemented");
     return undefined;
   }
   _c_(i_x: int) {
@@ -245,7 +245,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
    * @primaryconst
    */
   get frstToken(): Token<T> {
-    return fail("Not implemented");
+    return fail("jjjj Not implemented");
   }
   /** @final */
   get frstBdryTk(): Token<T> {
@@ -278,7 +278,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
    * @primaryconst
    */
   get lastToken(): Token<T> {
-    return fail("Not implemented");
+    return fail("jjjj Not implemented");
   }
   /** @final */
   get lastBdryTk(): Token<T> {
@@ -356,7 +356,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
    * @headconst @param newSn_x
    */
   replaceChild(_oldSn_x: Stnode<T>, _newSn_x?: Stnode<T>): void {
-    return fail("Not implemented");
+    return fail("jjjj Not implemented");
   }
   /** @final */
   removeSelf(): void {
@@ -638,7 +638,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
 
     floatupAll();
 
-    unrelSn_sa?.delete_O(sn2del_sa);
+    unrelSn_sa?.rmv_O(sn2del_sa);
     unrelSn_sa?.add_O(unrelSn_a);
 
     /* `sn_sa_x[0]` may be `hasErr` */

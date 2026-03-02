@@ -51,10 +51,10 @@ export const $lidx = Symbol("$lidx");
  */
 export const $lidx_1 = Symbol("$lidx_1");
 /**
- * SpanVuu.el[ $loff ] { loff_t }
+ * SpanVuu.el[ $loff_0 ] { loff_t }
  * Start offset of the `Element` or `Text` in the `TokLine`
  */
-export const $loff = Symbol("$loff");
+export const $loff_0 = Symbol("$loff_0");
 /**
  * SpanVuu.el[ $loff_1 ] { loff_t }
  * Stop offset of the `Element` in the `TokLine`
@@ -62,7 +62,7 @@ export const $loff = Symbol("$loff");
 export const $loff_1 = Symbol("$loff_1");
 
 /**
- * DOMRect[ $ovlap ] { boolean }
+ * DOMRect[ $ovlap ] { boolean }\
  * Node[ $ovlap ] { boolean }
  */
 export const $ovlap = Symbol("$ovlap");
@@ -77,23 +77,11 @@ export const $palename = Symbol("$palename");
 export const $redirect_focus = Symbol("$redirect_focus");
 
 /**
- * document[ $selection_vu ] { HTMLVuu }\
- * Used in document.onSelectionchange callback
- */
-export const $selection_vu = Symbol("$selection_vu");
-
-/**
  * HTMLImageElement[ $src ] { String }\
  * To replace `src` to prevent console error messages\
  * For testing only
  */
 export const $src = Symbol("$src");
-
-/**
- * Selection[ $sync_eran ] { boolean }
- * @deprecated
- */
-export const $sync_eran = Symbol("$sync_eran");
 
 // /** document[ $theme_modified ] { {} } */
 // export const $theme_modified = Symbol("$theme_modified");

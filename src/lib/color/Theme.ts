@@ -111,6 +111,7 @@ export class Theme {
     else baseCoor.run();
 
     Pale.get("Error").forceHex().coor.run();
+    Pale.get("Warn").forceHex().coor.run();
   };
 
   /**

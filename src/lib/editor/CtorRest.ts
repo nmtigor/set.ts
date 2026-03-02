@@ -73,7 +73,7 @@ export class CtorRest {
 
   /**
    * `rest_x` becomes `#rest` and `rest_x.at(-1)` becomes the original `#rest`.
-   * @param rest_x
+   * @headconst @param rest_x
    */
   unshift(rest_x: ReplRest) {
     const r_ = this.#rest;

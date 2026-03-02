@@ -128,7 +128,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
 
   /**
    * @const @param raw_x
-   * @const @param palename_x For debugging only
+   * @const @param palename_x For development only
    */
   constructor(raw_x: PaleCoorRaw, palename_x: PaleName = "") {
     super();
@@ -202,7 +202,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
   //jjjj TOCLEANUP
   // /**
   //  * Assign `sample_c`, `#sampleMapped_c`\
-  //  * ! No actual relation to `#iAx`
+  //  *! No actual relation to `#iAx`
   //  */
   // sample(): this {
   //   const sampleMapped_ = this.getMapped();
@@ -249,7 +249,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
           this.#iQM_1 = i;
           if (isColrFn(qm[1])) {
             this.mapped_c.setByColr(this.#colr);
-            qm[1].get(this.mapped_c);
+            qm[1].run(this.mapped_c);
           } else {
             this.mapped_c.setByCssc(qm[1]);
           }
@@ -349,7 +349,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
     // const q_ = this.qm_sa.get(iQM_x)[0];
     // q_?.off(q_, this.#upR);
     // q_?.modified_mo.off(true, this.#onQModified);
-    this.qm_sa.deleteByIndex(iQM_x);
+    this.qm_sa.rmvByIndex(iQM_x);
 
     if (iQM_x < this.#iQM) {
       this.#iQM -= 1;
@@ -488,7 +488,7 @@ class SortedQM_ extends SortedArray<QM_> {
   //  */
   // delQ(_x: ColranQ) {
   //   const ret = this.val_a$.findIndex((_y) => _y[0] === _x);
-  //   return ret >= 0 ? this.deleteByIndex(ret) : ret;
+  //   return ret >= 0 ? this.rmvByIndex(ret) : ret;
   // }
 
   // override toJSON() {

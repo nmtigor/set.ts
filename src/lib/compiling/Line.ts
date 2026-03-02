@@ -3,50 +3,195 @@
  * @license MIT
  ******************************************************************************/
 
-import { INOUT } from "../../preNs.ts";
-import type { Id_t, lnum_t, Ts_t, UInt16 } from "../alias_v.ts";
-import type { BufrDir, loff_t, UChr, uint } from "../alias.ts";
-import { lnum_MAX } from "../alias_v.ts";
-import { loff_MAX } from "../alias.ts";
-import { Bidi, type Bidir } from "../Bidi.ts";
+import { _TREE, INOUT } from "../../preNs.ts";
+import type { BufrDir, lnum_t, loff_t, UChr, uint, unum } from "../alias.ts";
+import { LnumMAX, LoffMAX } from "../alias.ts";
+import type { Id_t, Ts_t, UInt16 } from "../alias_v.ts";
+import type { Bidir } from "../Bidi.ts";
+import { Bidi } from "../Bidi.ts";
+import "../jslang.ts";
 import { assert, out } from "../util.ts";
 import type { Tok } from "./alias.ts";
 import type { Bufr } from "./Bufr.ts";
 import type { Lexr } from "./Lexr.ts";
+import { LineTn } from "./LineTree.ts";
+import type { LineTp } from "./LineTree.ts";
 import type { Tfmr } from "./Tfmr.ts";
 import type { Token } from "./Token.ts";
 import type { TSeg } from "./TSeg.ts";
+import type { LineData } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
 /**
  * A nnon-generic base s.t. many related uses can be non-generic.
  *
- * primaryconst: const exclude `lidx$`
+ * primaryconst: const exclude `lidx$`, `hostTn_$`
  */
 export class Line implements Bidir {
   static #ID = 0 as Id_t;
   readonly id = ++Line.#ID as Id_t;
   /** @final */
-  get _type_id_() {
+  get _class_id_() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  protected bufr$: Bufr | undefined;
-  get bufr() {
-    return this.bufr$;
+  /* hostTn_$ */
+  readonly hostTn_$: LineTn;
+
+  //jjjj TOCLEANUP
+  // /**
+  //  * @final
+  //  * @const
+  //  */
+  // get #lidx_valid() {
+  //   return !this.removed &&
+  //     0 <= this.lidx$ && this.lidx$ <= this.bufr$!.maxValidLidx_$;
+  // }
+
+  //jjjj TOCLEANUP
+  // /**
+  //  * `in( !this.removed)`
+  //  * @final
+  //  * @primaryconst
+  //  */
+  // invalLidx$() {
+  //   /*#static*/ if (INOUT) {
+  //     assert(this.bufr$!.maxValidLidx_$ < LnumMAX - 1);
+  //   }
+  //   this.lidx$ = (this.bufr$!.maxValidLidx_$ + 1);
+  // }
+
+  //jjjj TOCLEANUP
+  // /**
+  //  * Imvalidate lidx's as few as possible after `this`.
+  //  * @primaryconst
+  //  */
+  // #inval_lidx_gt() {
+  //   for (
+  //     let line = this.nextLine$;
+  //     line && line.#lidx_valid;
+  //     line = line.nextLine$
+  //   ) {
+  //     line.invalLidx$();
+  //   }
+  // }
+
+  //jjjj TOCLEANUP
+  // /**
+  //  * `in( !this.removed)`
+  //  * @primaryconst
+  //  */
+  // #inval_lidx_selfup() {
+  //   if (!this.prevLine$) {
+  //     this.bufr$!.maxValidLidx_$ = 0;
+  //   } else if (this.prevLine$.#lidx_valid) {
+  //     this.bufr$!.maxValidLidx_$ = this.prevLine$.lidx_1;
+  //   }
+
+  //   if (this.#lidx_valid) this.invalLidx$();
+  //   this.#inval_lidx_gt();
+  // }
+
+  /**
+   * @final
+   * @primaryconst
+   */
+  get lidx_1(): lnum_t {
+    /*#static*/ if (INOUT) {
+      assert(!this.removed);
+    }
+    //jjjj TOCLEANUP
+    // if (!this.#lidx_valid) {
+    //   if (this.prevLine$) {
+    //     this.lidx$ = (this.prevLine$.lidx_1 + 1);
+    //   } else {
+    //     this.lidx$ = 0;
+    //   }
+
+    //   if (this.bufr$!.maxValidLidx_$ < this.lidx$) {
+    //     this.bufr$!.maxValidLidx_$ = this.lidx$;
+    //     this.#inval_lidx_gt();
+    //   }
+    // }
+    return this.hostTn_$.idx_1;
   }
+
+  lastLidx?: lnum_t;
+
+  /** @const @param id_x `EdtrBaseScrolr.id` */
+  invTpBSizeOn(id_x: Id_t): void {
+    this.hostTn_$.ctnr!.invBSizeOn_$(id_x);
+  }
+  /* ~ */
+
+  /* bufr */
+  readonly bufr: Bufr;
   get removed() {
-    return !this.bufr$;
+    return !this.bufr.hasLine_$(this);
   }
+
+  /** @const */
+  get isFrstLine() {
+    //jjjj TOCLEANUP
+    // /*#static*/ if (INOUT) {
+    //   assert(!this.removed /*jjjj TOCLEANUP && this.linked$ */);
+    // }
+    return this === this.bufr.frstLine_$;
+  }
+  /** @const */
+  get isLastLine() {
+    //jjjj TOCLEANUP
+    // /*#static*/ if (INOUT) {
+    //   assert(!this.removed /*jjjj TOCLEANUP && this.linked$ */);
+    // }
+    return this === this.bufr.lastLine_$;
+  }
+  /* ~ */
+
+  /**
+   * @const @param id_x `EdtrBaseScrolr.id`
+   * @const @param fb_x
+   */
+  getBSizeOn(id_x: Id_t, fb_x: unum = 0): unum {
+    return this.bufr.getLineBSize_$(this, id_x) ?? fb_x;
+  }
+  /**
+   * @param id_x `EdtrBaseScrolr.id`
+   * @param bsize_x
+   */
+  setBSizeOn(id_x: Id_t, bsize_x: unum): void {
+    this.bufr.setLineBSize_$(this, id_x, bsize_x);
+  }
+  /**
+   * @const @param id_x `EdtrBaseScrolr.id`
+   * @const @param bsizeFb_x
+   */
+  getBStrtOn(id_x: Id_t, bsizeFb_x: unum = 0): unum {
+    return this.hostTn_$.bstrtOn_$(id_x, bsizeFb_x);
+  }
+  /**
+   * @const @param id_x `EdtrBaseScrolr.id`
+   * @const @param bsizeFb_x
+   */
+  getBStopOn(id_x: Id_t, bsizeFb_x: unum = 0): unum {
+    return this.getBStrtOn(id_x, bsizeFb_x) + this.getBSizeOn(id_x, bsizeFb_x);
+  }
+
+  /** @const @param id_x `EdtrBaseScrolr.id` */
+  getFsrecA(id_x: Id_t) {
+    return this.bufr.getLineFsrecA(this.lidx_1, id_x);
+  }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /* text$ */
   protected text$ = "";
+  /** @const */
   get text(): string {
     return this.text$;
   }
 
-  /** @final */
+  /** @final @const */
   get uchrLen(): loff_t {
     return this.text.length;
   }
@@ -75,7 +220,7 @@ export class Line implements Bidir {
   /* ~ */
 
   get dir(): BufrDir {
-    return this.bufr$?.dir ?? "ltr";
+    return this.bufr.dir;
   }
 
   /* #bidi */
@@ -95,8 +240,11 @@ export class Line implements Bidir {
   /* ~ */
 
   /* lineLastCont_ts */
-  #lastCont_ts = Date.now_1();
-  /** @final */
+  #lastCont_ts = 0 as Ts_t;
+  /**
+   * last content timestamp
+   * @final
+   */
   get lineLastCont_ts() {
     return this.#lastCont_ts;
   }
@@ -109,168 +257,194 @@ export class Line implements Bidir {
   // eline: ELineBase | undefined;
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  /**
-   * ! `lidx$` must be nondecreasing, however valid or not
-   */
-  protected lidx$: lnum_t | -1 = -1; /** 0-based */
+  //jjjj TOCLEANUP
+  // /**
+  //  * 0-based\
+  // //jjjj TOCLEANUP
+  // //  **! `lidx$` must be nondecreasing, however valid or not
+  //  */
+  // protected lidx$: lnum_t | -1 = -1; /** 0-based */
 
-  protected linked$ = false;
-  /**
-   * @final
-   * @const @param linked_x
-   */
-  set linked_$(linked_x: boolean) {
-    /*#static*/ if (INOUT) {
-      assert(!this.removed);
-      assert(this.linked$ !== linked_x);
-    }
-    if (this.linked$) this.bufr$!.lineN_$--;
-    else this.bufr$!.lineN_$++;
-    this.linked$ = linked_x;
-  }
+  //jjjj TOCLEANUP
+  // protected linked$ = false;
+  // /**
+  //  * @final
+  //  * @const @param _x
+  //  */
+  // set linked_$(_x: boolean) {
+  //   /*#static*/ if (INOUT) {
+  //     assert(!this.removed);
+  //     assert(this.linked$ !== _x);
+  //   }
+  //   if (this.linked$) this.bufr$!.lineN_$--;
+  //   else this.bufr$!.lineN_$++;
+  //   this.linked$ = _x;
+  // }
 
-  protected prevLine$: Line | undefined;
+  //jjjj TOCLEANUP
+  // protected prevLine$: Line | undefined;
   get prevLine() {
-    return this.prevLine$;
+    //jjjj TOCLEANUP
+    // return this.prevLine$;
+    return this.hostTn_$.prev?.payload;
   }
 
-  protected nextLine$: Line | undefined;
+  //jjjj TOCLEANUP
+  // protected nextLine$: Line | undefined;
   get nextLine() {
-    return this.nextLine$;
+    //jjjj TOCLEANUP
+    // return this.nextLine$;
+    return this.hostTn_$.next?.payload;
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  /* #frstToken_m */
-  /**
-   * Map of `Token<any>`s whose `frstLine` is `this` and `prevToken_$?.frstLine`
-   * is not.
-   */
-  #frstToken_m = new Map<Lexr<any>, Token<any>>();
+  /* LineData.frstTk */
+  //jjjj TOCLEANUP
+  // readonly #frstToken_m = new Map<Lexr<any>, Token<any>>();
   /** `out( ret; !ret || ret.frstLine === this )` */
   frstTokenBy<T extends Tok>(lexr_x: Lexr<T>): Token<T> | undefined {
-    return this.#frstToken_m.get(lexr_x);
+    //jjjj TOCLEANUP
+    // return this.#frstToken_m.get(lexr_x);
+    return this.bufr.lineFrstTkO_$(this)[lexr_x.id];
   }
   /** `out( ret; !ret || ret.lastLine === this )` */
   strtTokenBy<T extends Tok>(lexr_x: Lexr<T>): Token<T> | undefined {
     let ret: Token<T> | undefined;
     let tk_ = this.frstTokenBy(lexr_x);
     if (tk_) {
-      ret = tk_.prevToken_$?.sntLastLine === this ? tk_.prevToken_$ : tk_;
+      ret = tk_.prevToken_$?.sntLastLine as Line === this
+        ? tk_.prevToken_$
+        : tk_;
     } else {
       tk_ = this.prevLine?.lastTokenBy(lexr_x);
-      if (tk_?.nextToken_$?.sntLastLine === this) {
-        ret = tk_.nextToken_$;
+      if (tk_?.nextToken_$?.sntLastLine as Line === this) {
+        ret = tk_!.nextToken_$;
       }
     }
     return ret;
   }
-  setFrstToken_$<T extends Tok>(tk_x: Token<T>) {
-    this.#frstToken_m.set(tk_x.lexr_$, tk_x);
-  }
-  isFrstToken_$<T extends Tok>(tk_x: Token<T>): boolean {
-    return this.#frstToken_m.get(tk_x.lexr_$) === tk_x;
+  setFrstToken_$<T extends Tok>(tk_x: Token<T>): void {
+    //jjjj TOCLEANUP
+    // this.#frstToken_m.set(tk_x.lexr_$, tk_x);
+    this.bufr.lineFrstTkO_$(this)[tk_x.lexr_$.id] = tk_x;
   }
   delFrstTokenBy_$<T extends Tok>(lexr_x: Lexr<T>) {
-    this.#frstToken_m.delete(lexr_x);
+    //jjjj TOCLEANUP
+    // this.#frstToken_m.delete(lexr_x);
+    delete this.bufr.lineFrstTkO_$(this)[lexr_x.id];
   }
   // hasStrt_$( lexr_x:Lexr ) { return this.#frstToken_m.has(lexr_x); }
   /* ~ */
 
-  /* #lastToken_m */
-  /**
-   * Map of `Token<any>`s whose `lastLine` is `this` and `nextToken_$?.lastLine`
-   * is not.
-   */
-  #lastToken_m = new Map<Lexr<any>, Token<any>>();
+  /* LineData.lastTk */
+  //jjjj TOCLEANUP
+  // readonly #lastToken_m = new Map<Lexr<any>, Token<any>>();
   /** `out( ret; !ret || ret.lastLine === this )` */
   lastTokenBy<T extends Tok>(lexr_x: Lexr<T>): Token<T> | undefined {
-    return this.#lastToken_m.get(lexr_x);
+    //jjjj TOCLEANUP
+    // return this.#lastToken_m.get(lexr_x);
+    return this.bufr.lineLastTkO_$(this)[lexr_x.id];
   }
   /** `out( ret; !ret || ret.frstLine === this )` */
   stopTokenBy<T extends Tok>(lexr_x: Lexr<T>): Token<T> | undefined {
     let ret: Token<T> | undefined;
     let tk_ = this.lastTokenBy(lexr_x);
     if (tk_) {
-      ret = tk_.nextToken_$?.sntFrstLine === this ? tk_.nextToken_$ : tk_;
+      ret = tk_.nextToken_$?.sntFrstLine as Line === this
+        ? tk_.nextToken_$
+        : tk_;
     } else {
       tk_ = this.nextLine?.frstTokenBy(lexr_x);
-      if (tk_?.prevToken_$?.sntFrstLine === this) {
-        ret = tk_.prevToken_$;
+      if (tk_?.prevToken_$?.sntFrstLine as Line === this) {
+        ret = tk_!.prevToken_$;
       }
     }
     return ret;
   }
-  setLastToken_$<T extends Tok>(tk_x: Token<T>) {
-    this.#lastToken_m.set(tk_x.lexr_$, tk_x);
-  }
-  isLastToken_$<T extends Tok>(tk_x: Token<T>): boolean {
-    return this.#lastToken_m.get(tk_x.lexr_$) === tk_x;
+  setLastToken_$<T extends Tok>(tk_x: Token<T>): void {
+    //jjjj TOCLEANUP
+    // this.#lastToken_m.set(tk_x.lexr_$, tk_x);
+    this.bufr.lineLastTkO_$(this)[tk_x.lexr_$.id] = tk_x;
   }
   delLastTokenBy_$<T extends Tok>(lexr_x: Lexr<T>) {
-    this.#lastToken_m.delete(lexr_x);
+    //jjjj TOCLEANUP
+    // this.#lastToken_m.delete(lexr_x);
+    delete this.bufr.lineLastTkO_$(this)[lexr_x.id];
   }
   // hasStop_$( lexr_x:Lexr ) { return this.#lastToken_m.has(lexr_x); }
   /* ~ */
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  /* #strtTSeg_m */
-  #strtTSeg_m = new Map<Tfmr, TSeg>();
-  frstTSeg_$(tfmr_x: Tfmr): TSeg | undefined {
-    return this.#strtTSeg_m.get(tfmr_x);
+  /* LineData.frstTSeg */
+  //jjjj TOCLEANUP
+  // readonly #strtTSeg_m = new Map<Tfmr, TSeg>();
+  frstTSegBy_$(tfmr_x: Tfmr): TSeg | undefined {
+    //jjjj TOCLEANUP
+    // return this.#strtTSeg_m.get(tfmr_x);
+    return this.bufr.lineFrstTSegO_$(this)[tfmr_x.id];
   }
-  frstByTSeg_$(tseg_x: TSeg) {
-    this.#strtTSeg_m.set(tseg_x.tfmr_$, tseg_x);
+  setFrstTSeg_$(tseg_x: TSeg): void {
+    //jjjj TOCLEANUP
+    // this.#strtTSeg_m.set(tseg_x.tfmr_$, tseg_x);
+    this.bufr.lineFrstTSegO_$(this)[tseg_x.tfmr_$.id] = tseg_x;
   }
-  isFrstByTSeg_$(tseg_x: TSeg) {
-    return this.#strtTSeg_m.get(tseg_x.tfmr_$) === tseg_x;
-  }
-  delFrstTSeg_$(tfmr_x: Tfmr) {
-    this.#strtTSeg_m.delete(tfmr_x);
+  delFrstTSegBy_$(tfmr_x: Tfmr): void {
+    //jjjj TOCLEANUP
+    // this.#strtTSeg_m.delete(tfmr_x);
+    delete this.bufr.lineFrstTSegO_$(this)[tfmr_x.id];
   }
   /* ~ */
 
-  /* #stopTSeg_m */
-  #stopTSeg_m = new Map<Tfmr, TSeg>();
-  lastTSeg_$(tfmr_x: Tfmr): TSeg | undefined {
-    return this.#stopTSeg_m.get(tfmr_x);
+  /* LineData.lastTSeg */
+  //jjjj TOCLEANUP
+  // readonly #stopTSeg_m = new Map<Tfmr, TSeg>();
+  lastTSegBy_$(tfmr_x: Tfmr): TSeg | undefined {
+    //jjjj TOCLEANUP
+    // return this.#stopTSeg_m.get(tfmr_x);
+    return this.bufr.lineLastTSegO_$(this)[tfmr_x.id];
   }
-  lastByTSeg_$(tseg_x: TSeg) {
-    this.#stopTSeg_m.set(tseg_x.tfmr_$, tseg_x);
+  setLastTSeg_$(tseg_x: TSeg): void {
+    //jjjj TOCLEANUP
+    // this.#stopTSeg_m.set(tseg_x.tfmr_$, tseg_x);
+    this.bufr.lineLastTSegO_$(this)[tseg_x.tfmr_$.id] = tseg_x;
   }
-  isLastByTSeg_$(tseg_x: TSeg) {
-    return this.#stopTSeg_m.get(tseg_x.tfmr_$) === tseg_x;
-  }
-  delLastTSeg_$(tfmr_x: Tfmr) {
-    this.#stopTSeg_m.delete(tfmr_x);
+  delLastTSegBy_$(tfmr_x: Tfmr): void {
+    //jjjj TOCLEANUP
+    // this.#stopTSeg_m.delete(tfmr_x);
+    delete this.bufr.lineLastTSegO_$(this)[tfmr_x.id];
   }
   /* ~ */
 
   /** @headconst @param tfmr_x */
   @out((self: Line, _, args) => {
-    assert(self.frstTSeg_$(args[0]) === undefined);
-    assert(self.lastTSeg_$(args[0]) === undefined);
+    assert(self.frstTSegBy_$(args[0]) === undefined);
+    assert(self.lastTSegBy_$(args[0]) === undefined);
   })
   delTSegBdryOf(tfmr_x: Tfmr) {
-    this.frstTSeg_$(tfmr_x)?.revokeSelf_$();
-    this.lastTSeg_$(tfmr_x)?.revokeSelf_$();
+    this.frstTSegBy_$(tfmr_x)?.revokeSelf_$();
+    this.lastTSegBy_$(tfmr_x)?.revokeSelf_$();
   }
 
   delTSegBdry() {
-    for (const tseg of this.#strtTSeg_m.values()) {
+    //jjjj TOCLEANUP
+    // for (const tseg of this.#strtTSeg_m.values()) {
+    for (const tseg of Object.values(this.bufr.lineFrstTSegO_$(this))) {
       tseg.revokeSelf_$();
     }
-    for (const tseg of this.#stopTSeg_m.values()) {
+    //jjjj TOCLEANUP
+    // for (const tseg of this.#stopTSeg_m.values()) {
+    for (const tseg of Object.values(this.bufr.lineLastTSegO_$(this))) {
       tseg.revokeSelf_$();
     }
-    this.#strtTSeg_m.clear();
-    this.#stopTSeg_m.clear();
+    this.bufr.clearLineFrstTSeg_$(this);
+    this.bufr.clearLineLastTSeg_$(this);
   }
 
   /** @headconst @param tseg_x */
   hasTSeg(tseg_x: TSeg) {
     const tfmr = tseg_x.tfmr_$;
-    const strtTSeg = this.frstTSeg_$(tfmr);
-    const stopTSeg = this.lastTSeg_$(tfmr);
+    const strtTSeg = this.frstTSegBy_$(tfmr);
+    const stopTSeg = this.lastTSegBy_$(tfmr);
     // if (!strtTSeg || !stopTSeg) return true;
     if (!strtTSeg || !stopTSeg) return false;
 
@@ -285,23 +459,33 @@ export class Line implements Bidir {
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
+  /** @const @param bufr_x */
   protected constructor(bufr_x: Bufr) {
-    this.bufr$ = bufr_x;
-    this.invalLidx$();
+    this.hostTn_$ = new LineTn(this);
+    this.bufr = bufr_x;
+    //jjjj TOCLEANUP
+    // this.resetText_$(text_x);
+    //jjjj TOCLEANUP
+    // this.invalLidx$();
   }
   /**
-   * @package
    * @headconst @param bufr_x
    * @const @param text_x
    */
-  static create(bufr_x: Bufr, text_x?: string) {
-    return new Line(bufr_x).resetText_$(text_x);
+  static create_$(
+    bufr_x: Bufr,
+    text_x?: string,
+  ): { line: Line; data: LineData } {
+    return {
+      line: new Line(bufr_x).resetText_$(text_x),
+      data: Array.sparse(6) as LineData,
+    };
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @const @param text_x */
   @out((self: Line) => {
-    assert(self.text$.length < loff_MAX);
+    assert(self.text$.length < LoffMAX);
   })
   resetText_$(text_x?: string): this {
     this.text$ = text_x ?? "";
@@ -320,7 +504,7 @@ export class Line implements Bidir {
     // /*#static*/ if (_TRACE) {
     //   console.log([
     //     trace.indent,
-    //     `>>>>>>> ${this._type_id_}.splice_$( ${strt_x}, ${stop_x}, `,
+    //     `>>>>>>> ${this._class_id_}.splice_$( ${strt_x}, ${stop_x}, `,
     //     newt_x === undefined ? "" : `"${newt_x}"`,
     //     " ) >>>>>>>",
     //   ].join(""));
@@ -348,98 +532,10 @@ export class Line implements Bidir {
   //   this.resetText_$( this.text$.concat(newt_x) );
   // }
 
-  /**
-   * @final
-   * @const
-   */
-  get #lidx_valid() {
-    return !this.removed &&
-      0 <= this.lidx$ && this.lidx$ <= this.bufr$!.maxValidLidx_$;
-  }
-
-  /**
-   * `in( !this.removed)`
-   * @final
-   * @primaryconst
-   */
-  invalLidx$() {
-    /*#static*/ if (INOUT) {
-      assert(this.bufr$!.maxValidLidx_$ < lnum_MAX - 1);
-    }
-    this.lidx$ = (this.bufr$!.maxValidLidx_$ + 1) as lnum_t;
-  }
-
-  /**
-   * Imvalidate lidx's as few as possible after `this`.
-   * @primaryconst
-   */
-  #inval_lidx_gt() {
-    for (
-      let line = this.nextLine$;
-      line && line.#lidx_valid;
-      line = line.nextLine$
-    ) {
-      line.invalLidx$();
-    }
-  }
-
-  /**
-   * `in( !this.removed)`
-   * @primaryconst
-   */
-  #inval_lidx_selfup() {
-    if (!this.prevLine$) {
-      this.bufr$!.maxValidLidx_$ = 0 as lnum_t;
-    } else if (this.prevLine$.#lidx_valid) {
-      this.bufr$!.maxValidLidx_$ = this.prevLine$.lidx_1;
-    }
-
-    if (this.#lidx_valid) this.invalLidx$();
-    this.#inval_lidx_gt();
-  }
-
-  /**
-   * @final
-   * @primaryconst
-   */
-  get lidx_1(): lnum_t {
-    /*#static*/ if (INOUT) {
-      assert(!this.removed);
-    }
-    if (!this.#lidx_valid) {
-      if (this.prevLine$) {
-        this.lidx$ = (this.prevLine$.lidx_1 + 1) as lnum_t;
-      } else {
-        this.lidx$ = 0 as lnum_t;
-      }
-
-      if (this.bufr$!.maxValidLidx_$ < this.lidx$) {
-        this.bufr$!.maxValidLidx_$ = this.lidx$;
-        this.#inval_lidx_gt();
-      }
-    }
-    return this.lidx$ as lnum_t;
-  }
-
-  /** @const */
-  get isFrstLine() {
-    /*#static*/ if (INOUT) {
-      assert(!this.removed && this.linked$);
-    }
-    return this === this.bufr$!.frstLine_$;
-  }
-  /** @const */
-  get isLastLine() {
-    /*#static*/ if (INOUT) {
-      assert(!this.removed && this.linked$);
-    }
-    return this === this.bufr$!.lastLine_$;
-  }
-
   nextLineWith(
     cb_x: (ln_y: Line) => boolean,
     do_x?: (ln_y: Line) => void,
-    valve_x = lnum_MAX,
+    valve_x = LnumMAX,
   ) {
     // let ln = this.nextLine$;
     // while (ln && !cb_x(ln) && --valve_x) {
@@ -450,14 +546,14 @@ export class Line implements Bidir {
     // return (ln && cb_x(ln)) ? ln : undefined;
     let ln: Line | undefined = this;
     while (--valve_x) {
-      ln = ln!.nextLine$;
+      ln = ln!.nextLine;
       if (!ln) break;
       if (cb_x(ln)) return ln;
       else do_x?.(ln);
     }
     return undefined;
   }
-  nextNonemptyLine(orCb_x?: (ln_y: Line) => boolean, valve_x = lnum_MAX) {
+  nextNonemptyLine(orCb_x?: (ln_y: Line) => boolean, valve_x = LnumMAX) {
     return this.nextLineWith(
       (ln_y) => !!ln_y.uchrLen || !!orCb_x?.(ln_y),
       (ln_y) => ln_y.delTSegBdry(),
@@ -467,7 +563,7 @@ export class Line implements Bidir {
   prevLineWith(
     cb_x: (ln_y: Line) => boolean,
     do_x?: (ln_y: Line) => void,
-    valve_x = lnum_MAX,
+    valve_x = LnumMAX,
   ) {
     // let ln = this.prevLine$;
     // while (ln && !cb_x(ln) && --valve_x) {
@@ -478,14 +574,14 @@ export class Line implements Bidir {
     // return (ln && cb_x(ln)) ? ln : undefined;
     let ln: Line | undefined = this;
     while (--valve_x) {
-      ln = ln!.prevLine$;
+      ln = ln!.prevLine;
       if (!ln) break;
       if (cb_x(ln)) return ln;
       else do_x?.(ln);
     }
     return undefined;
   }
-  prevNonemptyLine(orCb_x?: (ln_y: Line) => boolean, valve_x = lnum_MAX) {
+  prevNonemptyLine(orCb_x?: (ln_y: Line) => boolean, valve_x = LnumMAX) {
     return this.prevLineWith(
       (ln_y) => !!ln_y.uchrLen || !!orCb_x?.(ln_y),
       (ln_y) => ln_y.delTSegBdry(),
@@ -494,114 +590,144 @@ export class Line implements Bidir {
   }
 
   /** @const @param ret_ln_x */
-  @out((self: Line, ret: any) => {
-    assert(ret.linked$);
-    assert(ret === self.prevLine$);
-    assert(ret.nextLine$ === self);
-    if (ret.prevLine$) {
-      assert(ret === ret.prevLine$.nextLine$);
-    } else {
-      assert(ret === self.bufr$!.frstLine_$);
-    }
-  })
+  //jjjj TOCLEANUP
+  // @out((self: Line, ret: any) => {
+  //   //jjjj TOCLEANUP
+  //   // assert(ret.linked$);
+  //   assert(ret === self.prevLine$);
+  //   assert(ret.nextLine$ === self);
+  //   if (ret.prevLine$) {
+  //     assert(ret === ret.prevLine$.nextLine$);
+  //   } else {
+  //     assert(ret === self.bufr$!.frstLine_$);
+  //   }
+  // })
   insertPrev_$<L extends Line>(ret_ln_x: L) {
-    /*#static*/ if (INOUT) {
-      assert(!this.removed && this.linked$);
-      assert(ret_ln_x?.bufr$ === this.bufr$);
-      assert(!ret_ln_x.linked$);
+    /*#static*/ if (_TREE) {
+      assert(!this.removed /*jjjj TOCLEANUP && this.linked$ */);
+      assert(ret_ln_x.bufr === this.bufr);
+      //jjjj TOCLEANUP
+      // assert(!ret_ln_x.linked$);
     }
-    if (this.prevLine$) {
-      this.prevLine$.nextLine$ = ret_ln_x;
-      ret_ln_x.prevLine$ = this.prevLine$;
-    } else {
-      this.bufr$!.frstLine_$ = ret_ln_x;
-    }
+    //jjjj TOCLEANUP
+    // if (this.prevLine$) {
+    //   this.prevLine$.nextLine$ = ret_ln_x;
+    //   ret_ln_x.prevLine$ = this.prevLine$;
+    // } else {
+    //   this.bufr$!.frstLine_$ = ret_ln_x;
+    // }
 
-    ret_ln_x.nextLine$ = this;
-    this.prevLine$ = ret_ln_x;
+    //jjjj TOCLEANUP
+    // ret_ln_x.nextLine$ = this;
+    // this.prevLine$ = ret_ln_x;
 
-    ret_ln_x.linked_$ = true;
+    //jjjj TOCLEANUP
+    // ret_ln_x.linked_$ = true;
 
-    ret_ln_x.#inval_lidx_selfup();
-    return ret_ln_x;
+    //jjjj TOCLEANUP
+    // ret_ln_x.#inval_lidx_selfup();
+
+    if (!this.prevLine) this.bufr.frstLine_$ = ret_ln_x;
+    return this.hostTn_$.insertPrev(ret_ln_x.hostTn_$).payload as L;
   }
   /** @const @param ret_ln_x */
-  @out((self: Line, ret: any) => {
-    assert(ret.linked$);
-    assert(ret === self.nextLine$);
-    assert(ret.prevLine$ === self);
-    if (ret.nextLine$) {
-      assert(ret === ret.nextLine$.prevLine$);
-    } else {
-      assert(ret === self.bufr$!.lastLine_$);
-    }
-  })
+  //jjjj TOCLEANUP
+  // @out((self: Line, ret: any) => {
+  //   //jjjj TOCLEANUP
+  //   // assert(ret.linked$);
+  //   assert(ret === self.nextLine$);
+  //   assert(ret.prevLine$ === self);
+  //   if (ret.nextLine$) {
+  //     assert(ret === ret.nextLine$.prevLine$);
+  //   } else {
+  //     assert(ret === self.bufr$!.lastLine_$);
+  //   }
+  // })
   insertNext_$<L extends Line>(ret_ln_x: L) {
-    /*#static*/ if (INOUT) {
-      assert(!this.removed && this.linked$);
-      assert(ret_ln_x?.bufr === this.bufr$);
-      assert(!ret_ln_x.linked$);
+    /*#static*/ if (_TREE) {
+      assert(!this.removed /*jjjj TOCLEANUP && this.linked$ */);
+      assert(ret_ln_x.bufr === this.bufr);
+      //jjjj TOCLEANUP
+      // assert(!ret_ln_x.linked$);
     }
-    if (this.nextLine$) {
-      this.nextLine$.prevLine$ = ret_ln_x;
-      ret_ln_x.nextLine$ = this.nextLine$;
-    } else {
-      this.bufr$!.lastLine_$ = ret_ln_x;
-    }
+    //jjjj TOCLEANUP
+    // if (this.nextLine$) {
+    //   this.nextLine$.prevLine$ = ret_ln_x;
+    //   ret_ln_x.nextLine$ = this.nextLine$;
+    // } else {
+    //   this.bufr$!.lastLine_$ = ret_ln_x;
+    // }
 
-    ret_ln_x.prevLine$ = this;
-    this.nextLine$ = ret_ln_x;
+    //jjjj TOCLEANUP
+    // ret_ln_x.prevLine$ = this;
+    // this.nextLine$ = ret_ln_x;
 
-    ret_ln_x.linked_$ = true;
+    //jjjj TOCLEANUP
+    // ret_ln_x.linked_$ = true;
 
-    ret_ln_x.#inval_lidx_selfup();
-    return ret_ln_x;
+    //jjjj TOCLEANUP
+    // ret_ln_x.#inval_lidx_selfup();
+
+    if (!this.nextLine) this.bufr.lastLine_$ = ret_ln_x;
+    return this.hostTn_$.insertNext(ret_ln_x.hostTn_$).payload as L;
   }
 
   @out((self: Line) => {
     assert(
       self.removed ||
-        self === self.bufr$!.frstLine_$ &&
-          self === self.bufr$!.lastLine_$,
+        self === self.bufr.frstLine_$ &&
+          self === self.bufr.lastLine_$,
     );
-  })
-  removeSelf_$(): void {
-    /* `frstTSeg_$?`, `lastTSeg_$?` could be useful in `Tfmr.lexadj_$()` even
+  }, _TREE)
+  rmvSelf_$(): void {
+    /* `frstTSegBy_$?`, `lastTSegBy_$?` could be useful in `Tfmr.lexadj_$()` even
     after `this.removed`.*/
     // this.delTSegBdryOf();
 
     if (this.removed) {
       return;
     }
-    if (this.bufr$!.lineN == 1) {
+    if (this.bufr.lineN == 1) {
       this.resetText_$("");
       return;
     }
 
-    this.#inval_lidx_selfup();
+    //jjjj TOCLEANUP
+    // this.#inval_lidx_selfup();
 
-    if (this.nextLine$) {
-      if (this.prevLine$) {
-        this.nextLine$.prevLine$ = this.prevLine$;
-        this.prevLine$.nextLine$ = this.nextLine$;
-      } else {
-        /*#static*/ if (INOUT) {
-          assert(this === this.bufr$!.frstLine_$);
-        }
-        this.nextLine$.prevLine$ = undefined;
-        this.bufr$!.frstLine_$ = this.nextLine$;
-      }
-    } else {
-      /*#static*/ if (INOUT) {
-        assert(this === this.bufr$!.lastLine_$);
-        assert(this.prevLine$);
-      }
-      this.prevLine$!.nextLine$ = undefined;
-      this.bufr$!.lastLine_$ = this.prevLine$!;
+    //jjjj TOCLEANUP
+    // if (this.nextLine$) {
+    //   if (this.prevLine$) {
+    //     this.nextLine$.prevLine$ = this.prevLine$;
+    //     this.prevLine$.nextLine$ = this.nextLine$;
+    //   } else {
+    //     /*#static*/ if (INOUT) {
+    //       assert(this === this.bufr$!.frstLine_$);
+    //     }
+    //     this.nextLine$.prevLine$ = undefined;
+    //     this.bufr$!.frstLine_$ = this.nextLine$;
+    //   }
+    // } else {
+    //   /*#static*/ if (INOUT) {
+    //     assert(this === this.bufr$!.lastLine_$);
+    //     assert(this.prevLine$);
+    //   }
+    //   this.prevLine$!.nextLine$ = undefined;
+    //   this.bufr$!.lastLine_$ = this.prevLine$!;
+    // }
+    // /* `prevLine$`, `lastLine_$` are not modified */
+    if (this === this.bufr.frstLine_$) {
+      this.bufr.frstLine_$ = this.nextLine!;
     }
-    // `prevLine$`, `lastLine_$` are not modified
-    this.linked_$ = false;
-    this.bufr$ = undefined;
+    if (this === this.bufr.lastLine_$) {
+      this.bufr.lastLine_$ = this.prevLine!;
+    }
+    this.hostTn_$.rmvSelf();
+    //jjjj TOCLEANUP
+    // this.linked_$ = false;
+    this.bufr.rmvLine_$(this);
+    //jjjj TOCLEANUP
+    // this.bufr$ = undefined;
 
     /* `#frstToken_m`, `#lastToken_m` will be used in `Lexr.lexadj_$()` */
     // /* Because Lexr<T> could keep using to make `this` unreleasable. */
@@ -615,7 +741,7 @@ export class Line implements Bidir {
   //  */
   // tmap_$(tstrt_x: loff_t, tstop_x: loff_t) {
   //   const ret: Ranval[] = [];
-  //   let tseg = this.frstTSeg_$;
+  //   let tseg = this.frstTSegBy_$;
   //   if (tseg) {
   //     let valve = 100;
   //     do {
@@ -633,7 +759,7 @@ export class Line implements Bidir {
   //       }
 
   //       tseg = tseg.nextTSeg_$;
-  //     } while (tseg && tseg !== this.lastTSeg_$ && --valve);
+  //     } while (tseg && tseg !== this.lastTSegBy_$ && --valve);
   //     assert(valve);
   //   }
   //   return ret;
@@ -641,9 +767,20 @@ export class Line implements Bidir {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   get _info_(): string {
-    return `${this._type_id_}, ${this.bufr$?._type_id_ ?? "-"}, ` +
-      `prev: ${this.prevLine$?._type_id_ ?? "-"}, ` +
-      `next: ${this.nextLine$?._type_id_ ?? "-"}`;
+    return [
+      this._class_id_,
+      this.removed ? "-" : this.bufr._class_id_,
+      `prev: ${this.prevLine?._class_id_ ?? "-"}`,
+      `next: ${this.nextLine?._class_id_ ?? "-"}`,
+    ].join(", ");
+  }
+
+  /** For testing only */
+  toString() {
+    const t_ = this.text$.length > 10
+      ? this.text$.slice(0, 10) + "..."
+      : this.text$;
+    return `#${this.id}:|${t_}|`;
   }
 }
 /*80--------------------------------------------------------------------------*/
