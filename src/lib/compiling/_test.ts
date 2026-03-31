@@ -11,14 +11,12 @@ import type { Pazr } from "./Pazr.ts";
 import { Ran } from "./Ran.ts";
 import { Ranval } from "./Ranval.ts";
 import type { Replin } from "./Repl.ts";
-import type { Tfmr } from "./Tfmr.ts";
 /*80--------------------------------------------------------------------------*/
 
 export type TestO = {
   bufr: Bufr;
   lexr: Lexr;
   pazr: Pazr;
-  tfmr: Tfmr;
 };
 export const test_o = Object.create(null) as TestO;
 /*64----------------------------------------------------------*/

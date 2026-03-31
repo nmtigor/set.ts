@@ -176,8 +176,8 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   }
 
   /** @const */
-  getTexta(): string[] {
-    return this.ran_$.getTexta();
+  getTextA(): string[] {
+    return this.ran_$.getTextA();
   }
   /** @const */
   getText(): string {
@@ -670,7 +670,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   }
 
   /**
-   * !`retTk_x.prevToken_$` will be untouched. (cf. {@linkcode insertPrev()})\
+   * !`retTk_x.prevToken_$` will be untouched. (cf. {@linkcode insPrev()})\
    * `stnod_$`s do not change.
    * @headconst @param retTk_x
    */
@@ -706,7 +706,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     return retTk_x;
   }
   /**
-   * ! `retTk_x.nextToken_$` will be untouched. (cf. {@linkcode insertNext()})
+   * ! `retTk_x.nextToken_$` will be untouched. (cf. {@linkcode insNext()})
    * `stnod_$`s do not change.
    * @headconst @param retTk_x
    */
@@ -773,7 +773,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
    * `stnod_$`s do not change.
    * @headconst @param retTk_x
    */
-  insertPrev(retTk_x: Token<T>) {
+  insPrev(retTk_x: Token<T>) {
     /*#static*/ if (INOUT) {
       assert(retTk_x !== this);
       assert(retTk_x.posS(this));
@@ -787,8 +787,8 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     }
     return this.linkPrev(retTk_x);
   }
-  /** @see {@linkcode insertPrev()} */
-  insertNext(retTk_x: Token<T>) {
+  /** @see {@linkcode insPrev()} */
+  insNext(retTk_x: Token<T>) {
     /*#static*/ if (INOUT) {
       assert(retTk_x !== this);
       assert(this.posS(retTk_x));
@@ -911,7 +911,7 @@ export type MdextTk = Token<MdextTok>;
 //     return this.strtLoc.line;
 //   }
 
-//   override getTexta() {
+//   override getTextA() {
 //     return fail("jjjj Not implemented");
 //   }
 //   override getText() {

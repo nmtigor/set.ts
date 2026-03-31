@@ -5,12 +5,11 @@
  * @license MIT
  ******************************************************************************/
 
-import type { HTMLVCo } from "@fe-lib/cv.ts";
 import type { uint } from "@fe-lib/alias.ts";
 import { Hover, Pointer } from "@fe-lib/alias.ts";
+import type { HTMLVCo } from "@fe-lib/cv.ts";
 import { assert, out } from "@fe-lib/util.ts";
-import { trace } from "@fe-lib/util/trace.ts";
-import { _TRACE, AUTOTEST, CYPRESS, RESIZ } from "./preNs.ts";
+import { CYPRESS, DEBUG } from "./preNs.ts";
 /*80--------------------------------------------------------------------------*/
 
 export const global = new class {
@@ -105,14 +104,18 @@ export const global = new class {
   // /* ~ */
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
+  opfs_pr = Promise.withResolvers<FileSystemDirectoryHandle>();
   /** OPFS root directory handle */
-  opfs!: FileSystemDirectoryHandle;
+  opfs: FileSystemDirectoryHandle | undefined;
 
-  locl: {
-    bk: "bk-dev" | "bk-dev-t";
-  } = {
-    bk: /*#static*/ CYPRESS ? "bk-dev-t" : "bk-dev",
-  };
+  locl = {
+    bk: /*#static*/ DEBUG
+      ? (/*#static*/ CYPRESS ? "bk-dev-t" : "bk-dev")
+      : (/*#static*/ CYPRESS ? "bk-pro-t" : "bk-pro"),
+    cmd: /*#static*/ DEBUG
+      ? (/*#static*/ CYPRESS ? "cmd-dev-t" : "cmd-dev")
+      : (/*#static*/ CYPRESS ? "cmd-pro-t" : "cmd-pro"),
+  } as const;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   toJSON() {
@@ -128,46 +131,5 @@ export const global = new class {
 }();
 
 global.mw_pr.promise.then((mw) => global.mw = mw);
-/*80--------------------------------------------------------------------------*/
-
-//jjjj TOCLEANUP
-// // export const g_getRootVCo: () => HTMLVCo | undefined = () => global.vco as any;
-// export const g_getRootVCo = () => global.vco as HTMLVCo | undefined;
-
-export const g_onresize = () => {
-  /*#static*/ if (_TRACE && RESIZ) {
-    console.log(
-      `%c${trace.indent}>>>>>>> window.on("resize") >>>>>>>`,
-      "color:#ffcd4a",
-    );
-  }
-  /*#static*/ if (_TRACE && RESIZ) {
-    console.log(
-      `${trace.dent}w:${document.documentElement.clientWidth}, h:${document.documentElement.clientHeight}`,
-    );
-    trace.outdent;
-  }
-};
-
-export const g_onerror = (evt_x: ErrorEvent) => {
-  console.error(evt_x);
-
-  const mw_ = global.mw;
-  if (mw_) mw_.el.style.backgroundColor = "#61bed4";
-
-  /*#static*/ if (!AUTOTEST) {
-    mw_?.ci.reportError?.(evt_x.message);
-  }
-};
-
-export const g_onunhandledrejection = (evt_x: PromiseRejectionEvent) => {
-  console.error(evt_x);
-
-  const mw_ = global.mw;
-  if (mw_) mw_.el.style.backgroundColor = "#b6d361";
-
-  /*#static*/ if (!AUTOTEST) {
-    mw_?.ci.reportError?.(evt_x.reason);
-  }
-};
+global.opfs_pr.promise.then((opfs) => global.opfs = opfs);
 /*80--------------------------------------------------------------------------*/

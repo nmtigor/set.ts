@@ -6,7 +6,7 @@
 import type { Ranpo } from "@fe-cpl/Ran.ts";
 import { g_ranval_fac, Ranval, RanvalMo } from "@fe-cpl/Ranval.ts";
 import { _TRACE, CYPRESS, DEBUG, EDTR } from "../../preNs.ts";
-import type { int, lnum_t } from "../alias.ts";
+import type { int } from "../alias.ts";
 import { WritingDir } from "../alias.ts";
 import type { Id_t } from "../alias_v.ts";
 import type { Cssc } from "../color/alias.ts";
@@ -77,7 +77,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   /**
    * Not active means no reaction. But the `el$` could still `shown`. Call
    * `disable_$()` to hide `this`.
-   * @fianl
+   * @final
    */
   get active() {
     return !!this.caretrvm$?.[1].nCb;
@@ -96,6 +96,8 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   protected get isMain$(): boolean {
     return false;
   }
+
+  protected focusd$ = false;
   /* ~ */
 
   get #bgCssc(): Cssc {
@@ -111,33 +113,6 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   get #zidx(): int {
     return this.class === "MainCaret" ? Caret_proactive_z : Caret_passive_z;
   }
-
-  /* #focusd */
-  /** For main caret only */
-  //llll move to MainCaret
-  #focusd = false;
-  @traceOut(_TRACE && EDTR)
-  protected set focusd$(_x: boolean) {
-    /*#static*/ if (_TRACE && EDTR) {
-      console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.focusd( _x: ${_x}) >>>>>>>`,
-      );
-    }
-    if (this.#focusd === _x) return;
-
-    this.#focusd = _x;
-
-    if (this.#focusVisible) {
-      if (this.isMain$ && this.#focusd) {
-        this.#blink();
-      } else {
-        this.#stare();
-      }
-    }
-
-    //jjjj TOCLEANUP
-    // if (this.#focusd) this.#ranval_kept = undefined; //!
-  }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   //jjjj TOCLEANUP
@@ -146,11 +121,10 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   // keepRanval_$(rv_x: Ranval) {
   //   this.#ranval_kept = rv_x;
   // }
-  /* ~ */
 
-  #focusVisible = false;
+  protected focusVisible$ = false;
   get focusVisible() {
-    return this.#focusVisible;
+    return this.focusVisible$;
   }
   // #anchrVisible = false;
   // #selecVisible = false;
@@ -178,7 +152,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   }
 
   #blink_an?: Animation;
-  #stare(): void {
+  protected stare$(): void {
     if (this.#st === CaretState.staring) return;
 
     this.#blink_an?.cancel();
@@ -188,7 +162,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
 
     this.#st = CaretState.staring;
   }
-  #blink(): void {
+  protected blink$(): void {
     if (this.#st === CaretState.blinking) return;
 
     if (this.#blink_an) {
@@ -316,8 +290,9 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     //jjjj TOCLEANUP "Avoid calling virtual (overridden) methods inside a constructor."
     // this.resetCaretRvM_$(crm_x);
 
-    this.on("focus", this._onFocus);
-    this.on("blur", this._onBlur);
+    //jjjj TOCLEANUP
+    // this.on("focus", this._onFocus);
+    // this.on("blur", this._onBlur);
     //jjjj TOCLEANUP
     // // this.on( "keydown", this.#onKeyDown );
     // this.on("keyup", this.#onKeyUp);
@@ -436,10 +411,10 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
 
     //jjjj TOCLEANUP
     // // if (this.#st === CaretState.hidden) {
-    // if (this.isMain$ && this.#focusd) {
-    //   this.#blink();
+    // if (this.isMain$ && this.focusd$) {
+    //   this.blink$();
     // } else {
-    //   this.#stare();
+    //   this.stare$();
     // }
     // // }
     // if (!this.#eran.collapsed) {
@@ -469,38 +444,39 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   //   this.draw_$();
   //   this.sufDraw$();
 
-  //   this.#stare();
+  //   this.stare$();
   //   if (!this.#eran.collapsed) {
   //     this.#showSelec();
   //   }
   // }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  @bind
-  @traceOut(_TRACE && EDTR)
-  private _onFocus(_evt_x: FocusEvent) {
-    /*#static*/ if (_TRACE && EDTR) {
-      console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}._onFocus() >>>>>>>`,
-      );
-    }
-    this.focusd$ = true;
-    this.eslr.host.touched = true; //!
-  }
-  @bind
-  @traceOut(_TRACE && EDTR)
-  private _onBlur(_evt_x: FocusEvent) {
-    /*#static*/ if (_TRACE && EDTR) {
-      console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}._onBlur() >>>>>>>`,
-      );
-    }
-    // console.log(`${trace.dent}edtr.dragingM: ${this.edtr.dragingM}`);
-    // console.log(`${trace.dent}edtr.draggedM: ${this.edtr.draggedM}`);
-    if (!this.eslr.dragingM) {
-      this.focusd$ = false;
-    }
-  }
+  //jjjj TOCLEANUP
+  // @bind
+  // @traceOut(_TRACE && EDTR)
+  // private _onFocus(_evt_x: FocusEvent) {
+  //   /*#static*/ if (_TRACE && EDTR) {
+  //     console.log(
+  //       `${trace.indent}>>>>>>> ${this._class_id_}._onFocus() >>>>>>>`,
+  //     );
+  //   }
+  //   this.focusd$ = true;
+  //   this.eslr.host.touched = true; //!
+  // }
+  // @bind
+  // @traceOut(_TRACE && EDTR)
+  // private _onBlur(_evt_x: FocusEvent) {
+  //   /*#static*/ if (_TRACE && EDTR) {
+  //     console.log(
+  //       `${trace.indent}>>>>>>> ${this._class_id_}._onBlur() >>>>>>>`,
+  //     );
+  //   }
+  //   // console.log(`${trace.dent}edtr.dragingM: ${this.edtr.dragingM}`);
+  //   // console.log(`${trace.dent}edtr.draggedM: ${this.edtr.draggedM}`);
+  //   if (!this.eslr.dragingM) {
+  //     this.focusd$ = false;
+  //   }
+  // }
 
   //jjjj TOCLEANUP
   // #onKeyUp = (evt_x: KeyboardEvent) => {
@@ -616,7 +592,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     eslr.bufr.correctRv(rv_);
 
     if (eslr.strtLidx <= rv_.focusLidx && rv_.focusLidx < eslr.stopLidx) {
-      this.#focusVisible = true;
+      this.focusVisible$ = true;
       this.#focusEloc = eslr.getEFocusOf_$(rv_, this.#focusEloc);
       using fat_rv = g_ranval_fac.oneMore()
         .set_Ranval(rv_.focusLidx, rv_.focusLoff);
@@ -645,13 +621,13 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
         //jjjj TOCLEANUP
         // outlineColor: this.#fatOlCssc,
       });
-      if (this.isMain$ && this.#focusd) {
-        this.#blink();
+      if (this.isMain$ && this.focusd$) {
+        this.blink$();
       } else {
-        this.#stare();
+        this.stare$();
       }
     } else {
-      this.#focusVisible = false;
+      this.focusVisible$ = false;
       if (!this.isMain$) this.el$.style.display = "none";
       this.#fat_el.style.display = "none";
     }

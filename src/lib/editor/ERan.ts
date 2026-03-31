@@ -204,9 +204,7 @@ export class ERan {
    */
   getRecA_$(elnO_x: ElnO_, relPos_x?: Pos): DOMRect[] {
     this.#syncRange();
-    /*#static*/ if (INOUT) {
-      assert(!this.#range.collapsed);
-    }
+    if (this.#range.collapsed) return [];
     /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
     const ctnr_a: Node[] = [];

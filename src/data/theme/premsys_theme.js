@@ -752,14 +752,14 @@ export default [
     }],
     "cidx": 0,
   }],
-  ["premsys.ExplorSrcbar.bg", {
+  ["premsys.ExplorEndbar.bg", {
     "coors": [{
       "axes": ["Primary Container"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
     }],
     "cidx": 0,
   }],
-  ["premsys.ExplorSrcbar.fg", {
+  ["premsys.ExplorEndbar.fg", {
     "coors": [{
       "axes": ["On Primary Container"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],

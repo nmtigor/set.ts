@@ -514,8 +514,12 @@ export class Boor<D = any, I = any> {
 export class Runr<D = any, I = any> implements IRunr {
   readonly #_mo; // = new Moo<true, D, I>({ val: true, forcing: true });
 
-  set data(_x: D) {
+  // set data(_x: D) {
+  //   this.#_mo.data = _x;
+  // }
+  setData(_x: D): this {
     this.#_mo.data = _x;
+    return this;
   }
 
   set info(_x: I) {

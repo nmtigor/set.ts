@@ -505,14 +505,14 @@ export abstract class Lexr<T extends Tok = BaseTok> {
         if (this.#strtLexTk_a[i] === this.#strtLexTk_a[i + 1]) {
           const tk_ = this.#stopLexTk_a[i] =
             this.#strtLexTk_a[i + 1] =
-              this.#strtLexTk_a[i].insertNext(gen_tk());
+              this.#strtLexTk_a[i].insNext(gen_tk());
           if (
             tk_.nextToken_$ && tk_.sntStopLoc.posG(tk_.nextToken_$.sntStrtLoc)
           ) tk_.nextToken_$.setStrt(tk_.sntStopLoc);
         } else if (this.#stopLexTk_a[i] === this.#stopLexTk_a[i + 1]) {
           const tk_ = this.#stopLexTk_a[i] =
             this.#strtLexTk_a[i + 1] =
-              this.#stopLexTk_a[i + 1].insertPrev(gen_tk());
+              this.#stopLexTk_a[i + 1].insPrev(gen_tk());
           if (
             tk_.prevToken_$ && tk_.sntStrtLoc.posS(tk_.prevToken_$.sntStopLoc)
           ) tk_.prevToken_$.setStop(tk_.sntStrtLoc);

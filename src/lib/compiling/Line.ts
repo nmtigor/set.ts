@@ -15,11 +15,9 @@ import type { Tok } from "./alias.ts";
 import type { Bufr } from "./Bufr.ts";
 import type { Lexr } from "./Lexr.ts";
 import { LineTn } from "./LineTree.ts";
-import type { LineTp } from "./LineTree.ts";
-import type { Tfmr } from "./Tfmr.ts";
 import type { Token } from "./Token.ts";
-import type { TSeg } from "./TSeg.ts";
 import type { LineData } from "./util.ts";
+import { lineBSizeO, lineFrstTkO, lineLastTkO } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
 /**
@@ -35,6 +33,8 @@ export class Line implements Bidir {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
+  readonly data_$ = Array.sparse(3) as LineData;
 
   /* hostTn_$ */
   readonly hostTn_$: LineTn;
@@ -128,7 +128,8 @@ export class Line implements Bidir {
   /* bufr */
   readonly bufr: Bufr;
   get removed() {
-    return !this.bufr.hasLine_$(this);
+    // return !this.bufr.hasLine_$(this);
+    return this.hostTn_$.rmvd;
   }
 
   /** @const */
@@ -154,14 +155,18 @@ export class Line implements Bidir {
    * @const @param fb_x
    */
   getBSizeOn(id_x: Id_t, fb_x: unum = 0): unum {
-    return this.bufr.getLineBSize_$(this, id_x) ?? fb_x;
+    //jjjj TOCLEANUP
+    // return this.bufr.getLineBSize_$(this, id_x) ?? fb_x;
+    return lineBSizeO(this.data_$)[id_x] ?? fb_x;
   }
   /**
-   * @param id_x `EdtrBaseScrolr.id`
-   * @param bsize_x
+   * @const @param id_x `EdtrBaseScrolr.id`
+   * @const @param bsize_x
    */
   setBSizeOn(id_x: Id_t, bsize_x: unum): void {
-    this.bufr.setLineBSize_$(this, id_x, bsize_x);
+    //jjjj TOCLEANUP
+    // this.bufr.setLineBSize_$(this, id_x, bsize_x);
+    lineBSizeO(this.data_$)[id_x] = bsize_x;
   }
   /**
    * @const @param id_x `EdtrBaseScrolr.id`
@@ -178,10 +183,13 @@ export class Line implements Bidir {
     return this.getBStrtOn(id_x, bsizeFb_x) + this.getBSizeOn(id_x, bsizeFb_x);
   }
 
-  /** @const @param id_x `EdtrBaseScrolr.id` */
-  getFsrecA(id_x: Id_t) {
-    return this.bufr.getLineFsrecA(this.lidx_1, id_x);
-  }
+  //jjjj TOCLEANUP
+  // /** @const @param id_x `EdtrBaseScrolr.id` */
+  // getFsrecaOn(id_x: Id_t) {
+  //   //jjjj TOCLEANUP
+  //   // return this.bufr.getLineFsrecA(this.lidx_1, id_x);
+  //   return lineFsrecaO(this.data_$)[id_x] ??= [];
+  // }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /* text$ */
@@ -191,7 +199,10 @@ export class Line implements Bidir {
     return this.text$;
   }
 
-  /** @final @const */
+  /**
+   * @final
+   * @const
+   */
   get uchrLen(): loff_t {
     return this.text.length;
   }
@@ -301,13 +312,20 @@ export class Line implements Bidir {
   /* LineData.frstTk */
   //jjjj TOCLEANUP
   // readonly #frstToken_m = new Map<Lexr<any>, Token<any>>();
-  /** `out( ret; !ret || ret.frstLine === this )` */
+  /**
+   * `out( ret; !ret || ret.frstLine === this)`
+   * @const @param lexr_x
+   */
   frstTokenBy<T extends Tok>(lexr_x: Lexr<T>): Token<T> | undefined {
     //jjjj TOCLEANUP
     // return this.#frstToken_m.get(lexr_x);
-    return this.bufr.lineFrstTkO_$(this)[lexr_x.id];
+    // return this.bufr.lineFrstTkO_$(this)[lexr_x.id];
+    return lineFrstTkO(this.data_$)[lexr_x.id];
   }
-  /** `out( ret; !ret || ret.lastLine === this )` */
+  /**
+   * `out( ret; !ret || ret.lastLine === this)`
+   * @headconst @param lexr_x
+   */
   strtTokenBy<T extends Tok>(lexr_x: Lexr<T>): Token<T> | undefined {
     let ret: Token<T> | undefined;
     let tk_ = this.frstTokenBy(lexr_x);
@@ -323,15 +341,19 @@ export class Line implements Bidir {
     }
     return ret;
   }
+  /** @const @param tk_x */
   setFrstToken_$<T extends Tok>(tk_x: Token<T>): void {
     //jjjj TOCLEANUP
     // this.#frstToken_m.set(tk_x.lexr_$, tk_x);
-    this.bufr.lineFrstTkO_$(this)[tk_x.lexr_$.id] = tk_x;
+    // this.bufr.lineFrstTkO_$(this)[tk_x.lexr_$.id] = tk_x;
+    lineFrstTkO(this.data_$)[tk_x.lexr_$.id] = tk_x;
   }
+  /** @const @param lexr_x */
   delFrstTokenBy_$<T extends Tok>(lexr_x: Lexr<T>) {
     //jjjj TOCLEANUP
     // this.#frstToken_m.delete(lexr_x);
-    delete this.bufr.lineFrstTkO_$(this)[lexr_x.id];
+    // delete this.bufr.lineFrstTkO_$(this)[lexr_x.id];
+    lineFrstTkO(this.data_$)[lexr_x.id] = undefined;
   }
   // hasStrt_$( lexr_x:Lexr ) { return this.#frstToken_m.has(lexr_x); }
   /* ~ */
@@ -339,13 +361,20 @@ export class Line implements Bidir {
   /* LineData.lastTk */
   //jjjj TOCLEANUP
   // readonly #lastToken_m = new Map<Lexr<any>, Token<any>>();
-  /** `out( ret; !ret || ret.lastLine === this )` */
+  /**
+   * `out( ret; !ret || ret.lastLine === this)`
+   * @const @param lexr_x
+   */
   lastTokenBy<T extends Tok>(lexr_x: Lexr<T>): Token<T> | undefined {
     //jjjj TOCLEANUP
     // return this.#lastToken_m.get(lexr_x);
-    return this.bufr.lineLastTkO_$(this)[lexr_x.id];
+    // return this.bufr.lineLastTkO_$(this)[lexr_x.id];
+    return lineLastTkO(this.data_$)[lexr_x.id];
   }
-  /** `out( ret; !ret || ret.frstLine === this )` */
+  /**
+   * `out( ret; !ret || ret.frstLine === this)`
+   * @headconst @param lexr_x
+   */
   stopTokenBy<T extends Tok>(lexr_x: Lexr<T>): Token<T> | undefined {
     let ret: Token<T> | undefined;
     let tk_ = this.lastTokenBy(lexr_x);
@@ -361,106 +390,132 @@ export class Line implements Bidir {
     }
     return ret;
   }
+  /** @const @param tk_x */
   setLastToken_$<T extends Tok>(tk_x: Token<T>): void {
     //jjjj TOCLEANUP
     // this.#lastToken_m.set(tk_x.lexr_$, tk_x);
-    this.bufr.lineLastTkO_$(this)[tk_x.lexr_$.id] = tk_x;
+    // this.bufr.lineLastTkO_$(this)[tk_x.lexr_$.id] = tk_x;
+    lineLastTkO(this.data_$)[tk_x.lexr_$.id] = tk_x;
   }
+  /** @const @param lexr_x */
   delLastTokenBy_$<T extends Tok>(lexr_x: Lexr<T>) {
     //jjjj TOCLEANUP
     // this.#lastToken_m.delete(lexr_x);
-    delete this.bufr.lineLastTkO_$(this)[lexr_x.id];
+    // delete this.bufr.lineLastTkO_$(this)[lexr_x.id];
+    lineLastTkO(this.data_$)[lexr_x.id] = undefined;
   }
   // hasStop_$( lexr_x:Lexr ) { return this.#lastToken_m.has(lexr_x); }
   /* ~ */
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  /* LineData.frstTSeg */
   //jjjj TOCLEANUP
-  // readonly #strtTSeg_m = new Map<Tfmr, TSeg>();
-  frstTSegBy_$(tfmr_x: Tfmr): TSeg | undefined {
-    //jjjj TOCLEANUP
-    // return this.#strtTSeg_m.get(tfmr_x);
-    return this.bufr.lineFrstTSegO_$(this)[tfmr_x.id];
-  }
-  setFrstTSeg_$(tseg_x: TSeg): void {
-    //jjjj TOCLEANUP
-    // this.#strtTSeg_m.set(tseg_x.tfmr_$, tseg_x);
-    this.bufr.lineFrstTSegO_$(this)[tseg_x.tfmr_$.id] = tseg_x;
-  }
-  delFrstTSegBy_$(tfmr_x: Tfmr): void {
-    //jjjj TOCLEANUP
-    // this.#strtTSeg_m.delete(tfmr_x);
-    delete this.bufr.lineFrstTSegO_$(this)[tfmr_x.id];
-  }
-  /* ~ */
+  // /* LineData.frstTSeg */
+  // //jjjj TOCLEANUP
+  // // readonly #strtTSeg_m = new Map<Tfmr, TSeg>();
+  // /** @const @param tfmr_x */
+  // frstTSegBy_$(tfmr_x: Tfmr): TSeg | undefined {
+  //   //jjjj TOCLEANUP
+  //   // return this.#strtTSeg_m.get(tfmr_x);
+  //   // return this.bufr.lineFrstTSegO_$(this)[tfmr_x.id];
+  //   return lineFrstTSegO(this.data_$)[tfmr_x.id];
+  // }
+  // /** @const @param tseg_x */
+  // setFrstTSeg_$(tseg_x: TSeg): void {
+  //   //jjjj TOCLEANUP
+  //   // this.#strtTSeg_m.set(tseg_x.tfmr_$, tseg_x);
+  //   // this.bufr.lineFrstTSegO_$(this)[tseg_x.tfmr_$.id] = tseg_x;
+  //   lineFrstTSegO(this.data_$)[tseg_x.tfmr_$.id] = tseg_x;
+  // }
+  // /** @const @param tfmr_x */
+  // delFrstTSegBy_$(tfmr_x: Tfmr): void {
+  //   //jjjj TOCLEANUP
+  //   // this.#strtTSeg_m.delete(tfmr_x);
+  //   // delete this.bufr.lineFrstTSegO_$(this)[tfmr_x.id];
+  //   lineFrstTSegO(this.data_$)[tfmr_x.id] = undefined;
+  // }
+  // /* ~ */
 
-  /* LineData.lastTSeg */
   //jjjj TOCLEANUP
-  // readonly #stopTSeg_m = new Map<Tfmr, TSeg>();
-  lastTSegBy_$(tfmr_x: Tfmr): TSeg | undefined {
-    //jjjj TOCLEANUP
-    // return this.#stopTSeg_m.get(tfmr_x);
-    return this.bufr.lineLastTSegO_$(this)[tfmr_x.id];
-  }
-  setLastTSeg_$(tseg_x: TSeg): void {
-    //jjjj TOCLEANUP
-    // this.#stopTSeg_m.set(tseg_x.tfmr_$, tseg_x);
-    this.bufr.lineLastTSegO_$(this)[tseg_x.tfmr_$.id] = tseg_x;
-  }
-  delLastTSegBy_$(tfmr_x: Tfmr): void {
-    //jjjj TOCLEANUP
-    // this.#stopTSeg_m.delete(tfmr_x);
-    delete this.bufr.lineLastTSegO_$(this)[tfmr_x.id];
-  }
-  /* ~ */
+  // /* LineData.lastTSeg */
+  // //jjjj TOCLEANUP
+  // // readonly #stopTSeg_m = new Map<Tfmr, TSeg>();
+  // /** @const @param tfmr_x */
+  // lastTSegBy_$(tfmr_x: Tfmr): TSeg | undefined {
+  //   //jjjj TOCLEANUP
+  //   // return this.#stopTSeg_m.get(tfmr_x);
+  //   // return this.bufr.lineLastTSegO_$(this)[tfmr_x.id];
+  //   return lineLastTSegO(this.data_$)[tfmr_x.id];
+  // }
+  // /** @const @param tseg_x */
+  // setLastTSeg_$(tseg_x: TSeg): void {
+  //   //jjjj TOCLEANUP
+  //   // this.#stopTSeg_m.set(tseg_x.tfmr_$, tseg_x);
+  //   // this.bufr.lineLastTSegO_$(this)[tseg_x.tfmr_$.id] = tseg_x;
+  //   lineLastTSegO(this.data_$)[tseg_x.tfmr_$.id] = tseg_x;
+  // }
+  // /** @const @param tfmr_x */
+  // delLastTSegBy_$(tfmr_x: Tfmr): void {
+  //   //jjjj TOCLEANUP
+  //   // this.#stopTSeg_m.delete(tfmr_x);
+  //   // delete this.bufr.lineLastTSegO_$(this)[tfmr_x.id];
+  //   lineLastTSegO(this.data_$)[tfmr_x.id] = undefined;
+  // }
+  // /* ~ */
 
-  /** @headconst @param tfmr_x */
-  @out((self: Line, _, args) => {
-    assert(self.frstTSegBy_$(args[0]) === undefined);
-    assert(self.lastTSegBy_$(args[0]) === undefined);
-  })
-  delTSegBdryOf(tfmr_x: Tfmr) {
-    this.frstTSegBy_$(tfmr_x)?.revokeSelf_$();
-    this.lastTSegBy_$(tfmr_x)?.revokeSelf_$();
-  }
+  //jjjj TOCLEANUP
+  // /** @headconst @param tfmr_x */
+  // @out((self: Line, _, args) => {
+  //   assert(self.frstTSegBy_$(args[0]) === undefined);
+  //   assert(self.lastTSegBy_$(args[0]) === undefined);
+  // })
+  // delTSegBdryOf(tfmr_x: Tfmr) {
+  //   this.frstTSegBy_$(tfmr_x)?.revokeSelf_$();
+  //   this.lastTSegBy_$(tfmr_x)?.revokeSelf_$();
+  // }
 
-  delTSegBdry() {
-    //jjjj TOCLEANUP
-    // for (const tseg of this.#strtTSeg_m.values()) {
-    for (const tseg of Object.values(this.bufr.lineFrstTSegO_$(this))) {
-      tseg.revokeSelf_$();
-    }
-    //jjjj TOCLEANUP
-    // for (const tseg of this.#stopTSeg_m.values()) {
-    for (const tseg of Object.values(this.bufr.lineLastTSegO_$(this))) {
-      tseg.revokeSelf_$();
-    }
-    this.bufr.clearLineFrstTSeg_$(this);
-    this.bufr.clearLineLastTSeg_$(this);
-  }
+  //jjjj TOCLEANUP
+  // delTSegBdry() {
+  //   //jjjj TOCLEANUP
+  //   // for (const tseg of this.#strtTSeg_m.values()) {
+  //   // for (const tseg of Object.values(this.bufr.lineFrstTSegO_$(this))) {
+  //   for (const tseg of Object.values(lineFrstTSegO(this.data_$))) {
+  //     tseg?.revokeSelf_$();
+  //   }
+  //   //jjjj TOCLEANUP
+  //   // for (const tseg of this.#stopTSeg_m.values()) {
+  //   // for (const tseg of Object.values(this.bufr.lineLastTSegO_$(this))) {
+  //   for (const tseg of Object.values(lineLastTSegO(this.data_$))) {
+  //     tseg?.revokeSelf_$();
+  //   }
+  //   //jjjj TOCLEANUP
+  //   // this.bufr.clearLineFrstTSeg_$(this);
+  //   // this.bufr.clearLineLastTSeg_$(this);
+  //   clearLineFrstTSeg(this.data_$);
+  //   clearLineLastTSeg(this.data_$);
+  // }
 
-  /** @headconst @param tseg_x */
-  hasTSeg(tseg_x: TSeg) {
-    const tfmr = tseg_x.tfmr_$;
-    const strtTSeg = this.frstTSegBy_$(tfmr);
-    const stopTSeg = this.lastTSegBy_$(tfmr);
-    // if (!strtTSeg || !stopTSeg) return true;
-    if (!strtTSeg || !stopTSeg) return false;
+  //jjjj TOCLEANUP
+  // /** @headconst @param tseg_x */
+  // hasTSeg(tseg_x: TSeg) {
+  //   const tfmr = tseg_x.tfmr_$;
+  //   const strtTSeg = this.frstTSegBy_$(tfmr);
+  //   const stopTSeg = this.lastTSegBy_$(tfmr);
+  //   // if (!strtTSeg || !stopTSeg) return true;
+  //   if (!strtTSeg || !stopTSeg) return false;
 
-    let tseg = strtTSeg;
-    const VALVE = 100;
-    let valve = VALVE;
-    while (tseg !== tseg_x && tseg !== stopTSeg && --valve) {
-      tseg = tseg.nextTSeg_$!;
-    }
-    assert(valve, `Loop ${VALVE}±1 times`);
-    return tseg === tseg_x;
-  }
+  //   let tseg = strtTSeg;
+  //   const VALVE = 100;
+  //   let valve = VALVE;
+  //   while (tseg !== tseg_x && tseg !== stopTSeg && --valve) {
+  //     tseg = tseg.nextTSeg_$!;
+  //   }
+  //   assert(valve, `Loop ${VALVE}±1 times`);
+  //   return tseg === tseg_x;
+  // }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @const @param bufr_x */
-  protected constructor(bufr_x: Bufr) {
+  constructor(bufr_x: Bufr) {
     this.hostTn_$ = new LineTn(this);
     this.bufr = bufr_x;
     //jjjj TOCLEANUP
@@ -468,19 +523,20 @@ export class Line implements Bidir {
     //jjjj TOCLEANUP
     // this.invalLidx$();
   }
-  /**
-   * @headconst @param bufr_x
-   * @const @param text_x
-   */
-  static create_$(
-    bufr_x: Bufr,
-    text_x?: string,
-  ): { line: Line; data: LineData } {
-    return {
-      line: new Line(bufr_x).resetText_$(text_x),
-      data: Array.sparse(6) as LineData,
-    };
-  }
+  //jjjj TOCLEANUP
+  // /**
+  //  * @headconst @param bufr_x
+  //  * @const @param text_x
+  //  */
+  // static create_$(
+  //   bufr_x: Bufr,
+  //   text_x?: string,
+  // ): { line: Line; data: LineData } {
+  //   return {
+  //     line: new Line(bufr_x).resetText_$(text_x),
+  //     data: Array.sparse(6) as LineData,
+  //   };
+  // }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @const @param text_x */
@@ -556,7 +612,9 @@ export class Line implements Bidir {
   nextNonemptyLine(orCb_x?: (ln_y: Line) => boolean, valve_x = LnumMAX) {
     return this.nextLineWith(
       (ln_y) => !!ln_y.uchrLen || !!orCb_x?.(ln_y),
-      (ln_y) => ln_y.delTSegBdry(),
+      //jjjj TOCLEANUP
+      // (ln_y) => ln_y.delTSegBdry(),
+      undefined,
       valve_x,
     );
   }
@@ -584,12 +642,16 @@ export class Line implements Bidir {
   prevNonemptyLine(orCb_x?: (ln_y: Line) => boolean, valve_x = LnumMAX) {
     return this.prevLineWith(
       (ln_y) => !!ln_y.uchrLen || !!orCb_x?.(ln_y),
-      (ln_y) => ln_y.delTSegBdry(),
+      //jjjj TOCLEANUP
+      // (ln_y) => ln_y.delTSegBdry(),
+      undefined,
       valve_x,
     );
   }
 
-  /** @const @param ret_ln_x */
+  /**
+   * @const @param ret_ln_x
+   */
   //jjjj TOCLEANUP
   // @out((self: Line, ret: any) => {
   //   //jjjj TOCLEANUP
@@ -602,7 +664,7 @@ export class Line implements Bidir {
   //     assert(ret === self.bufr$!.frstLine_$);
   //   }
   // })
-  insertPrev_$<L extends Line>(ret_ln_x: L) {
+  insPrev_$<L extends Line>(ret_ln_x: L /*jjjj TOCLEANUP , ts_x?: Ts_t */) {
     /*#static*/ if (_TREE) {
       assert(!this.removed /*jjjj TOCLEANUP && this.linked$ */);
       assert(ret_ln_x.bufr === this.bufr);
@@ -628,9 +690,11 @@ export class Line implements Bidir {
     // ret_ln_x.#inval_lidx_selfup();
 
     if (!this.prevLine) this.bufr.frstLine_$ = ret_ln_x;
-    return this.hostTn_$.insertPrev(ret_ln_x.hostTn_$).payload as L;
+    return this.hostTn_$.insPrev(ret_ln_x.hostTn_$).payload as L;
   }
-  /** @const @param ret_ln_x */
+  /**
+   * @const @param ret_ln_x
+   */
   //jjjj TOCLEANUP
   // @out((self: Line, ret: any) => {
   //   //jjjj TOCLEANUP
@@ -643,7 +707,7 @@ export class Line implements Bidir {
   //     assert(ret === self.bufr$!.lastLine_$);
   //   }
   // })
-  insertNext_$<L extends Line>(ret_ln_x: L) {
+  insNext_$<L extends Line>(ret_ln_x: L /*jjjj TOCLEANUP , ts_x?: Ts_t */) {
     /*#static*/ if (_TREE) {
       assert(!this.removed /*jjjj TOCLEANUP && this.linked$ */);
       assert(ret_ln_x.bufr === this.bufr);
@@ -669,7 +733,7 @@ export class Line implements Bidir {
     // ret_ln_x.#inval_lidx_selfup();
 
     if (!this.nextLine) this.bufr.lastLine_$ = ret_ln_x;
-    return this.hostTn_$.insertNext(ret_ln_x.hostTn_$).payload as L;
+    return this.hostTn_$.insNext(ret_ln_x.hostTn_$).payload as L;
   }
 
   @out((self: Line) => {
@@ -679,7 +743,7 @@ export class Line implements Bidir {
           self === self.bufr.lastLine_$,
     );
   }, _TREE)
-  rmvSelf_$(): void {
+  rmvSelf_$(/*jjjj TOCLEANUP ts_x?: Ts_t */): void {
     /* `frstTSegBy_$?`, `lastTSegBy_$?` could be useful in `Tfmr.lexadj_$()` even
     after `this.removed`.*/
     // this.delTSegBdryOf();
@@ -725,7 +789,8 @@ export class Line implements Bidir {
     this.hostTn_$.rmvSelf();
     //jjjj TOCLEANUP
     // this.linked_$ = false;
-    this.bufr.rmvLine_$(this);
+    //jjjj TOCLEANUP
+    // this.bufr.rmvLine_$(this);
     //jjjj TOCLEANUP
     // this.bufr$ = undefined;
 

@@ -25,6 +25,11 @@ export type FSRec = {
   //jjjj TOCLEANUP
   // uts: Ts_t;
 };
+
+/** view focus margin in px */
+export const VFMrgin = 20;
+/** view focus pulse in milliseconds */
+export const VFPulse = 500;
 /*80--------------------------------------------------------------------------*/
 /* zIndex */
 
@@ -47,6 +52,7 @@ export const REP = Object.freeze({
   replace: 5,
 });
 /*80--------------------------------------------------------------------------*/
+/* Editing commands */
 
 /* deno-fmt-ignore */
 export type EdtrFuncName =
@@ -141,6 +147,7 @@ export const enum EdtrFuncRet {
   func,
 }
 /*80--------------------------------------------------------------------------*/
+/* Customized virtual keyboard */
 
 export type Keycnt = string | Key;
 /* alias_v */

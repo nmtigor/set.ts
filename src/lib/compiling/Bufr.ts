@@ -4,37 +4,27 @@
  ******************************************************************************/
 
 import type { EdtrBaseScrolr } from "@fe-edt/EdtrBase.ts";
-import { DEBUG, INOUT } from "../../preNs.ts";
-import { Boor, LastCb_i, Moo, type MooHandler } from "../Moo.ts";
+import { _TREE, DEBUG, INOUT } from "../../preNs.ts";
+import { Boor, LastCb_i, Moo } from "../Moo.ts";
 import type { BufrDir, lnum_t, uint, unum } from "../alias.ts";
-import { LnumMAX, LOG_cssc } from "../alias.ts";
+import { LnumMAX } from "../alias.ts";
 import type { Id_t, Ts_t } from "../alias_v.ts";
 import { assert, out } from "../util.ts";
 import { SortedIdo } from "../util/SortedArray.ts";
 import { Unre } from "../util/Unre.ts";
+import * as Is from "../util/is.ts";
 import { linesOf } from "../util/string.ts";
 import { Line } from "./Line.ts";
 import { LineTree } from "./LineTree.ts";
+import { Loc } from "./Loc.ts";
 import type { Ran } from "./Ran.ts";
-import { g_ranval_fac } from "./Ranval.ts";
 import { Ranval } from "./Ranval.ts";
 import { Repl, type Replin } from "./Repl.ts";
 import { ReplActr } from "./ReplActr.ts";
 import type { sig_t } from "./alias.ts";
 import { BufrDoState, BufrReplState } from "./alias.ts";
 import type { LineData } from "./util.ts";
-import {
-  clearLineFrstTSeg,
-  clearLineLastTSeg,
-  lineBSizeO,
-  lineFrstTkO,
-  lineFrstTSegO,
-  lineFsrecaO,
-  lineLastTkO,
-  lineLastTSegO,
-} from "./util.ts";
-import type { FSRec } from "@fe-edt/alias.ts";
-import { Loc } from "./Loc.ts";
+import { lineBSizeO } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
 /**
@@ -61,17 +51,17 @@ export class Bufr {
   }
 
   #onDir = (n_x: BufrDir): void => {
-    // const rv_a = this.edtr_sa.map((edtr_y) =>
+    // const rv_a = this.eslr_sa.map((edtr_y) =>
     //   (edtr_y as EdtrBaseScrolr).mainCaret.ranval
     // );
     // console.log(rv_a);
     this.refresh_Bufr();
-    /* Notice, `invalidate_bcr()` should be called firstly for all `edtr_sa`,
+    /* Notice, `invalidate_bcr()` should be called firstly for all `eslr_sa`,
     because setting `mc_.caretrvm![1]` in one `edslr` will impact other `edslr`s
     immediately. */
-    this.edtr_sa.forEach((edslr) => (edslr as EdtrBaseScrolr).invalidate_bcr());
-    for (let i = this.edtr_sa.length; i--;) {
-      const edslr_i = this.edtr_sa.at(i) as EdtrBaseScrolr;
+    this.eslr_sa.forEach((edslr) => (edslr as EdtrBaseScrolr).invalidate_bcr());
+    for (let i = this.eslr_sa.length; i--;) {
+      const edslr_i = this.eslr_sa.at(i) as EdtrBaseScrolr;
       edslr_i.coo.el.dir = n_x;
 
       const mc_ = edslr_i.mainCaret;
@@ -85,91 +75,93 @@ export class Bufr {
 
   readonly lineTree: LineTree;
 
-  /* #oldLidx_m */
-  //kkkk could slow in case of (e.g.) "remove all lines", need to optimize further
+  /* oldLidx_m_$ */
   /**
    * Possible removed Line could still be useful (e.g. `strtLn_src` in
    * `Lexr.lexadj_$()`)
    */
-  readonly #oldLidx_m = new Map</* Line.lastLidx */ lnum_t, LineData>();
+  readonly oldLidx_m_$ = new Map</* Line.lastLidx */ lnum_t, LineData>();
 
-  /** Called only by `Repl.#pre()` (in order not to public `#oldLidx_m`) */
+  /** Called only by `Repl.#pre()` (in order not to public `oldLidx_m_$`) */
   resetOldLidxM_$(): void {
-    this.#oldLidx_m.clear();
+    this.oldLidx_m_$.clear();
 
-    const VALVE = LnumMAX;
-    let valve = VALVE;
     for (const ran of this.oldRan_a_$) {
-      let ln_: Line | undefined = ran.frstLine;
-      const stopLn = ran.lastLine.nextLine;
-      while (ln_ && ln_ !== stopLn && --valve) {
-        // /*#static*/ if (INOUT) {
-        //   assert(this.line_m$.has(ln_.id));
-        // }
-        const lidx = ln_.lastLidx = ln_.lidx_1;
-        this.#oldLidx_m.set(lidx, this.line_m$.get(ln_.id)!);
-        ln_ = ln_.nextLine;
+      for (
+        let i = ran.frstLine.lidx_1, iI = ran.lastLine.lidx_1;
+        i <= iI;
+        i++
+      ) {
+        const ln_ = this.line(i);
+        ln_.lastLidx = i;
+        //jjjj TOCLEANUP
+        // this.oldLidx_m_$.set(i, this.line_m$.get(ln_.id)!);
+        this.oldLidx_m_$.set(i, ln_.data_$);
       }
-      assert(valve, `Loop ${VALVE}±1 times`);
     }
   }
 
   /**
-   * `in( this.#oldLidx_m.has(lidx_x))`
+   * `in( this.oldLidx_m_$.has(lidx_x))`
    * @const @param lidx_x
    * @const @param id_x `EdtrBaseScrolr.id`
    * @const @param fb_x
    */
   getOldBSize(lidx_x: lnum_t, id_x: Id_t, fb_x: unum = 0): unum {
-    return lineBSizeO(this.#oldLidx_m.get(lidx_x)!)[id_x] ?? fb_x;
+    return lineBSizeO(this.oldLidx_m_$.get(lidx_x)!)[id_x] ?? fb_x;
   }
   /* ~ */
 
   /* line_m$ */
-  protected readonly line_m$ = new Map</* Line */ Id_t, LineData>();
+  //jjjj TOCLEANUP
+  // protected readonly line_m$ = new Map</* Line */ Id_t, LineData>();
 
-  /**
-   * `in( this.line_m$.has(ln_x.id) || ln_x.lastLidx !== undefined)`
-   * @const @param ln_x
-   */
-  #lineDataOf(ln_x: Line): LineData | undefined {
-    return this.line_m$.get(ln_x.id) ?? this.#oldLidx_m.get(ln_x.lastLidx!);
-  }
+  //jjjj TOCLEANUP
+  // /**
+  //  * `in( this.line_m$.has(ln_x.id) || ln_x.lastLidx !== undefined)`
+  //  * @const @param ln_x
+  //  */
+  // #lineDataOf(ln_x: Line): LineData | undefined {
+  //   return this.line_m$.get(ln_x.id) ?? this.oldLidx_m_$.get(ln_x.lastLidx!);
+  // }
 
-  /** `in( this.#lineDataOf(ln_x))` */
-  lineFrstTkO_$(ln_x: Line) {
-    return lineFrstTkO(this.#lineDataOf(ln_x)!);
-  }
-  /** `in( this.#lineDataOf(ln_x))` */
-  lineLastTkO_$(ln_x: Line) {
-    return lineLastTkO(this.#lineDataOf(ln_x)!);
-  }
+  //jjjj TOCLEANUP
+  // /** `in( this.#lineDataOf(ln_x))` */
+  // lineFrstTkO_$(ln_x: Line) {
+  //   return lineFrstTkO(this.#lineDataOf(ln_x)!);
+  // }
+  // /** `in( this.#lineDataOf(ln_x))` */
+  // lineLastTkO_$(ln_x: Line) {
+  //   return lineLastTkO(this.#lineDataOf(ln_x)!);
+  // }
 
-  /** `in( this.#lineDataOf(ln_x))` */
-  lineFrstTSegO_$(ln_x: Line) {
-    return lineFrstTSegO(this.#lineDataOf(ln_x)!);
-  }
-  /** `in( this.#lineDataOf(ln_x))` */
-  lineLastTSegO_$(ln_x: Line) {
-    return lineLastTSegO(this.#lineDataOf(ln_x)!);
-  }
+  // /** `in( this.#lineDataOf(ln_x))` */
+  // lineFrstTSegO_$(ln_x: Line) {
+  //   return lineFrstTSegO(this.#lineDataOf(ln_x)!);
+  // }
+  // /** `in( this.#lineDataOf(ln_x))` */
+  // lineLastTSegO_$(ln_x: Line) {
+  //   return lineLastTSegO(this.#lineDataOf(ln_x)!);
+  // }
 
-  clearLineFrstTSeg_$(ln_x: Line) {
-    clearLineFrstTSeg(this.#lineDataOf(ln_x));
-  }
-  clearLineLastTSeg_$(ln_x: Line) {
-    clearLineLastTSeg(this.#lineDataOf(ln_x));
-  }
+  //jjjj TOCLEANUP
+  // clearLineFrstTSeg_$(ln_x: Line) {
+  //   clearLineFrstTSeg(this.#lineDataOf(ln_x));
+  // }
+  // clearLineLastTSeg_$(ln_x: Line) {
+  //   clearLineLastTSeg(this.#lineDataOf(ln_x));
+  // }
 
-  /**
-   * `in( this.#lineDataOf(ln_x))`
-   * @const @param ln_x
-   * @const @param id_x `EdtrBaseScrolr.id`
-   * @const @param bsize_x
-   */
-  setLineBSize_$(ln_x: Line, id_x: Id_t, bsize_x: unum): void {
-    lineBSizeO(this.#lineDataOf(ln_x)!)[id_x] = bsize_x;
-  }
+  //jjjj TOCLEANUP
+  // /**
+  //  * `in( this.#lineDataOf(ln_x))`
+  //  * @const @param ln_x
+  //  * @const @param id_x `EdtrBaseScrolr.id`
+  //  * @const @param bsize_x
+  //  */
+  // setLineBSize_$(ln_x: Line, id_x: Id_t, bsize_x: unum): void {
+  //   lineBSizeO(this.#lineDataOf(ln_x)!)[id_x] = bsize_x;
+  // }
   //jjjj TOCLEANUP
   // /**
   //  * `in( this.#lineDataOf(ln_x))`
@@ -182,14 +174,15 @@ export class Bufr {
   //     this.#lineDataOf(ln_x)!,
   //   )[id_x] ??= [undefined, undefined])[0] = bstrt_x;
   // }
-  /**
-   * `in( this.#lineDataOf(ln_x))`
-   * @const @param ln_x
-   * @const @param id_x `EdtrBaseScrolr.id`
-   */
-  getLineBSize_$(ln_x: Line, id_x: Id_t): unum | undefined {
-    return lineBSizeO(this.#lineDataOf(ln_x)!)[id_x];
-  }
+  //jjjj TOCLEANUP
+  // /**
+  //  * `in( this.#lineDataOf(ln_x))`
+  //  * @const @param ln_x
+  //  * @const @param id_x `EdtrBaseScrolr.id`
+  //  */
+  // getLineBSize_$(ln_x: Line, id_x: Id_t): unum | undefined {
+  //   return lineBSizeO(this.#lineDataOf(ln_x)!)[id_x];
+  // }
   //jjjj TOCLEANUP
   // /**
   //  * `in( this.#lineDataOf(ln_x))`
@@ -200,30 +193,33 @@ export class Bufr {
   //   return lineBSizeO(this.#lineDataOf(ln_x)!)[id_x]?.[0];
   // }
 
-  /**
-   * `in( this.#lineDataOf( this.line(lidx_x)))`
-   * @const @param lidx_x
-   * @const @param id_x `EdtrBaseScrolr.id`
-   */
-  getLineFsrecA(lidx_x: lnum_t, id_x: Id_t): FSRec[] {
-    const ln_ = this.line(lidx_x);
-    return lineFsrecaO(this.#lineDataOf(ln_)!)[id_x] ??= [];
-  }
+  //jjjj TOCLEANUP
+  // /**
+  //  * `in( this.#lineDataOf( this.line(lidx_x)))`
+  //  * @const @param lidx_x
+  //  * @const @param id_x `EdtrBaseScrolr.id`
+  //  */
+  // getLineFsrecA(lidx_x: lnum_t, id_x: Id_t): FSRec[] {
+  //   const ln_ = this.line(lidx_x);
+  //   return lineFsrecaO(this.#lineDataOf(ln_)!)[id_x] ??= [];
+  // }
 
-  /** Called only by `Line.rmvSelf_$()` (in order not to public `line_m$`) */
-  rmvLine_$(ln_x: Line): void {
-    //jjjj TOCLEANUP
-    // const ld_ = this.line_m$.get(ln_x.id);
-    // if (ld_) {
-    //   this.line_m$.delete(ln_x.id);
-    //   this.#oldLidx_m.set(ln_x.id, ld_);
-    // }
-    this.line_m$.delete(ln_x.id);
-  }
-  /** Called only by `Line.removed()` (in order not to public `line_m$`) */
-  hasLine_$(ln_x: Line): boolean {
-    return this.line_m$.has(ln_x.id);
-  }
+  //jjjj TOCLEANUP
+  // /** Called only by `Line.rmvSelf_$()` (in order not to public `line_m$`) */
+  // rmvLine_$(ln_x: Line): void {
+  //   //jjjj TOCLEANUP
+  //   // const ld_ = this.line_m$.get(ln_x.id);
+  //   // if (ld_) {
+  //   //   this.line_m$.delete(ln_x.id);
+  //   //   this.oldLidx_m_$.set(ln_x.id, ld_);
+  //   // }
+  //   this.line_m$.delete(ln_x.id);
+  // }
+  //jjjj TOCLEANUP
+  // /** Called only by `Line.removed()` (in order not to public `line_m$`) */
+  // hasLine_$(ln_x: Line): boolean {
+  //   return this.line_m$.has(ln_x.id);
+  // }
   /* ~ */
 
   //jjjj TOCLEANUP
@@ -258,6 +254,7 @@ export class Bufr {
    */
   set modified(modified_x: boolean) {
     this.modified_br_Bufr.val = modified_x;
+
     if (modified_x) {
       this.#updateLastContTs();
     } else {
@@ -350,7 +347,7 @@ export class Bufr {
   /* ~ */
 
   /* #sigPool */
-  #sigPool: sig_t = 0xffff_ffff;
+  #sigPool: sig_t = 0x7fff_ffff;
   getSig(): sig_t {
     /*#static*/ if (INOUT) {
       assert(this.#sigPool);
@@ -376,24 +373,25 @@ export class Bufr {
   }
   /* ~ */
 
-  /* edtr_sa */
-  readonly edtr_sa = new SortedIdo();
-  readonly #onEdtrActiv: MooHandler<boolean, unknown, EdtrBaseScrolr> = (
-    n_x,
-    _o_x,
-    _d_x,
-    i_x,
+  /* eslr_sa */
+  readonly eslr_sa = new SortedIdo();
+  readonly #moEdtrActiv = (
+    n_x: boolean,
+    _o_x: unknown,
+    _d_x: unknown,
+    i_x: EdtrBaseScrolr | undefined,
   ) => {
     if (n_x) this.#curEdtrId = i_x!.id;
     else if (this.#curEdtrId === i_x!.id) this.#curEdtrId = 0 as Id_t;
   };
-  addEdtr(_x: EdtrBaseScrolr) {
-    this.edtr_sa.add(_x);
-    _x.edtrActiv_mo.registHandler(this.#onEdtrActiv);
+  addEslr(_x: EdtrBaseScrolr) {
+    this.eslr_sa.add(_x);
+    _x.edtrActiv_mo.registHandler(this.#moEdtrActiv);
   }
-  rmvEdtr(_x: EdtrBaseScrolr) {
-    this.edtr_sa.rmv(_x);
-    _x.edtrActiv_mo.removeHandler(this.#onEdtrActiv);
+  rmvEslr(_x: EdtrBaseScrolr) {
+    this.eslr_sa.rmv(_x);
+    _x.eslrActiv = false; //!
+    _x.edtrActiv_mo.removeHandler(this.#moEdtrActiv);
 
     _x.reset_EdtrBaseScrolr(); //!
   }
@@ -455,16 +453,19 @@ export class Bufr {
     this.dir_mo.reset_Moo()
       .registHandler(this.#onDir, { i: LastCb_i });
 
-    let ln_: Line | undefined = this.lastLine;
-    const VALVE = LnumMAX;
-    let valve = VALVE;
-    while (ln_ && ln_ !== this.frstLine_$ && --valve) {
-      const ln_1: Line | undefined = ln_.prevLine;
-      ln_.rmvSelf_$();
-      ln_ = ln_1;
-    }
-    assert(valve, `Loop ${VALVE}±1 times`);
-    ln_!.rmvSelf_$();
+    //jjjj TOCLEANUP
+    // let ln_: Line | undefined = this.lastLine;
+    // const VALVE = LnumMAX;
+    // let valve = VALVE;
+    // while (ln_ && ln_ !== this.frstLine_$ && --valve) {
+    //   const ln_1: Line | undefined = ln_.prevLine;
+    //   ln_.rmvSelf_$();
+    //   ln_ = ln_1;
+    // }
+    // assert(valve, `Loop ${VALVE}±1 times`);
+    // ln_!.rmvSelf_$();
+    if (this.lineN > 1) this.rmvLines(1);
+    this.frstLine_$.resetText_$();
 
     this.modified_br_Bufr.reset_Boor();
     this.#lastRepl = this.#repl_saved = undefined;
@@ -485,8 +486,8 @@ export class Bufr {
     this.#updateLastContTs();
 
     /*#static*/ if (DEBUG) {
-      assert(this.#sigPool === 0xffff_ffff); //kkkk
-      assert(this.edtr_sa.length === 0); //kkkk
+      assert(this.#sigPool === 0x7fff_ffff); //kkkk
+      assert(this.eslr_sa.length === 0); //kkkk
     }
     return this;
   }
@@ -497,16 +498,16 @@ export class Bufr {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @const @param text_x */
-  setLines(text_x?: string): this {
+  setLines(text_x?: string | string[]): this {
     /*#static*/ if (INOUT) {
       assert(this.lineN === 1);
     }
-    const txt_a = text_x ? linesOf(text_x) : [""];
+    const txt_a = Is.array(text_x) ? text_x : text_x ? linesOf(text_x) : [""];
     this.frstLine_$.resetText_$(txt_a[0]);
 
     let ln_ = this.frstLine_$;
     for (let i = 1, iI = txt_a.length; i < iI; ++i) {
-      ln_ = ln_.insertNext_$(this.createLine(txt_a[i]));
+      ln_ = ln_.insNext_$(this.createLine(txt_a[i]));
     }
     /*#static*/ if (INOUT) {
       assert(ln_ === this.lastLine_$);
@@ -516,10 +517,29 @@ export class Bufr {
 
   /** @const @param text_x */
   createLine(text_x?: string): Line {
-    const { line, data } = Line.create_$(this, text_x);
-    this.line_m$.set(line.id, data);
-    return line;
+    // const { line, data } = Line.create_$(this, text_x);
+    // this.line_m$.set(line.id, data);
+    // return line;
+    return new Line(this).resetText_$(text_x);
   }
+
+  /**
+   * @const @param strtLidx_x
+   * @const @param stopLidx_x
+   */
+  rmvLines(strtLidx_x: lnum_t, stopLidx_x = this.lineN): void {
+    /*#static*/ if (_TREE) {
+      assert(strtLidx_x < stopLidx_x);
+      assert(stopLidx_x - strtLidx_x < this.lineN);
+    }
+    if (strtLidx_x === 0) {
+      this.frstLine_$ = this.line(stopLidx_x);
+    } else if (stopLidx_x === this.lineN) {
+      this.lastLine_$ = this.line(strtLidx_x - 1);
+    }
+    this.lineTree.rmv(strtLidx_x, stopLidx_x);
+  }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @const @param lidx_x */
   //jjjj TOCLEANUP
@@ -586,6 +606,7 @@ export class Bufr {
   lastNonemptyLine(valve_x = LnumMAX) {
     return this.lastLineWith((ln_y) => !!ln_y.uchrLen, valve_x);
   }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   #focusLoc: Loc | undefined;
   /**
@@ -605,6 +626,17 @@ export class Bufr {
     }
     retRv_x.setFocus(this.#focusLoc.line.lidx_1, this.#focusLoc.correctLoff());
     return retRv_x;
+  }
+  /**
+   * Set or assign `#focusLoc`
+   * @out @param rv_x `focusLidx`, `focusLoff` will be corrected
+   * @borrow @return `#focusLoc`,
+   *    so suggest to `.usingDup()` it to prevent being affected by further
+   *    calls of `focusLoc()`.
+   */
+  focusLoc(rv_x: Ranval): Loc {
+    this.correctRvFocus(rv_x);
+    return this.#focusLoc!;
   }
 
   #anchrLoc: Loc | undefined;
@@ -626,6 +658,17 @@ export class Bufr {
     retRv_x.setAnchr(this.#anchrLoc.line.lidx_1, this.#anchrLoc.correctLoff());
     return retRv_x;
   }
+  /**
+   * Set or assign `#anchrLoc`
+   * @out @param rv_x `anchrLidx`, `anchrLoff` will be corrected
+   * @borrow @return `#anchrLoc`,
+   *    so suggest to `.usingDup()` it to prevent being affected by further
+   *    calls of `anchrLoc()`.
+   */
+  anchrLoc(rv_x: Ranval): Loc {
+    this.correctRvAnchr(rv_x);
+    return this.#anchrLoc!;
+  }
 
   /**
    * Set or assign `#focusLoc`, `#anchrLoc`
@@ -645,7 +688,7 @@ export class Bufr {
   @out((_, ret) => {
     assert(ret.length);
   })
-  getTexta(szMAX_x?: uint): string[] {
+  getTextA(szMAX_x?: uint): string[] {
     const ret: string[] = [];
 
     let sz = 0;
@@ -691,10 +734,10 @@ export class Bufr {
 
   /**
    * To trigger `repl_mo`s callbacks
-   * @const @param text_x
+   * @const @param text_x If `string[]`, it is responsible for line break。
    * @const @param doq_x
    */
-  refresh_Bufr(text_x?: string, doq_x?: "doq"): void {
+  refresh_Bufr(text_x?: string | string[], doq_x?: "doq"): void {
     const doState_save = this.#doState;
     this.#doState = BufrDoState.doing;
 
@@ -705,7 +748,7 @@ export class Bufr {
         this.lastLine_$.lidx_1,
         this.lastLine_$.uchrLen,
       ),
-      txt: text_x ?? this.getTexta(),
+      txt: text_x ?? this.getTextA(),
     };
     // console.log({ replin });
     const repl = new Repl(this, replin);
@@ -735,7 +778,7 @@ export class Bufr {
     this.#doState = doState_save;
   }
 
-  /** @const @param edtrId_x */
+  // /** @const @param edtrId_x */
   undo(): boolean {
     const ret = this.#doq.canGetUn();
     if (ret) {
@@ -757,7 +800,7 @@ export class Bufr {
     }
     return ret;
   }
-  /** @const @param edtrId_x */
+  // /** @const @param edtrId_x */
   redo(): boolean {
     const ret = this.#doq.canGetRe();
     if (ret) {

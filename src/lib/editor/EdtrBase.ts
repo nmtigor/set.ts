@@ -22,12 +22,12 @@ import { rmvRange } from "../util/general.ts";
 import { trace, traceOut } from "../util/trace.ts";
 import type { CaretRvM } from "./Caret.ts";
 import { Caret } from "./Caret.ts";
-import { ELineBase } from "./ELineBase.ts";
+import type { ELineBase } from "./ELineBase.ts";
 import type { ELoc } from "./ELoc.ts";
 import { ERan } from "./ERan.ts";
 import { MainCaret } from "./MainCaret.ts";
 import type { EdtrType, FSRec, Pos } from "./alias.ts";
-import { EdtrMain_z } from "./alias.ts";
+import { EdtrMain_z, VFMrgin, VFPulse } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
 
 export interface EdtrBaseCI extends CooInterface {
@@ -317,7 +317,8 @@ export type GetEln = (bln_x: Line) => ELineBase;
 export type RevEln = (eln_x: ELineBase) => void;
 
 /**
- * A non-generic base s.t. many related uses (e.g. Caret) can be non-generic.
+ * A non-generic (except `CI`) base s.t. many related uses (e.g. Caret) can be
+ * non-generic.
  */
 export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   extends Scrolr<EdtrBase<CI>> {
@@ -363,13 +364,13 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     return this.eline(lidx_x).bidi;
   }
 
-  #elnBSize$: unum = 0;
-  get _elnBSize_() {
-    return this.#elnBSize$;
+  #elnBSize: unum = 0;
+  get elnBSize() {
+    return this.#elnBSize;
   }
   /** `out( ret; ret > 0)` */
   protected get elnBSize$(): unum {
-    if (this.#elnBSize$ > 0) return this.#elnBSize$;
+    if (this.#elnBSize > 0) return this.#elnBSize;
 
     const elnEl = div("|");
     this.main_el$.append(elnEl);
@@ -380,7 +381,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       assert(elnBs > 0);
     }
     elnEl.remove();
-    return this.#elnBSize$ = elnBs;
+    return this.#elnBSize = elnBs;
   }
   /** @return `>0` */
   protected get nElnMax$(): uint {
@@ -398,6 +399,9 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   get stopLidx() {
     return this.stopLidx$;
   }
+
+  /** `[ strtLidx$, stopLidx$ )` */
+  readonly drtLidxStrt_mo = new Moo<lnum_t>({ val: 0, forcing: true });
   /* ~ */
 
   /** Scrollee, the Element being scrolled */
@@ -407,9 +411,9 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   protected readonly main_el$ = div();
 
   protected get mainBSize$(): unum {
-    return this.coo$._writingMode & WritingDir.h
-      ? this.main_el$.clientHeight
-      : this.main_el$.clientWidth;
+    return this.coo$._writingMode & WritingDir.v
+      ? this.main_el$.clientWidth
+      : this.main_el$.clientHeight;
   }
   /* ~ */
 
@@ -420,13 +424,17 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   // /** head size: `elnBSize$ * (bufr$.lineN - stopLidx$) + headBDt$` */
   // protected headBDt$: unum = 0;
 
+  readonly headBSize_mo = new Moo<unum>({ val: 0 });
+
   protected get headBSize$(): unum {
     return this.coo$._writingMode & WritingDir.v
       ? this.#head_el.clientWidth
       : this.#head_el.clientHeight;
   }
-  protected set headBSize$(bs_x: unum) {
+  protected set headBSize$(bs_x: number) {
+    if (bs_x < 0) bs_x = 0;
     this.#head_el.style.blockSize = `${bs_x}px`;
+    this.headBSize_mo.val = this.headBSize$;
   }
   /* ~ */
 
@@ -437,13 +445,17 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   // /** foot size: `elnBSize$ * strtLidx$ + footBDt$` */
   // protected footBDt$: unum = 0;
 
+  // readonly footBSize_mo = new Moo<unum>({ val: 0 });
+
   protected get footBSize$(): unum {
     return this.coo$._writingMode & WritingDir.v
       ? this.#foot_el.clientWidth
       : this.#foot_el.clientHeight;
   }
-  protected set footBSize$(bs_x: unum) {
+  protected set footBSize$(bs_x: number) {
+    if (bs_x < 0) bs_x = 0;
     this.#foot_el.style.blockSize = `${bs_x}px`;
+    // this.footBSize_mo.val = this.footBSize$;
   }
   /* ~ */
 
@@ -486,14 +498,25 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     return this;
   }
 
-  protected viewFocus$<C extends Caret>(retC_x: C): C {
-    if (retC_x.focusVisible && this.bcr.containRec(retC_x.bcr_1, 20)) {
-      return retC_x;
+  #lastVF_ts = 0 as Ts_t;
+  @traceOut(_TRACE && EDTR)
+  protected viewFocus$<C extends Caret>(retC_x: C): void {
+    /*#static*/ if (_TRACE && EDTR) {
+      console.log(
+        `${trace.indent}>>>>>>> ${this._class_id_}.viewFocus$() >>>>>>>`,
+      );
+    }
+    if (retC_x.focusVisible && this.bcr.containRec(retC_x.bcr_1, VFMrgin)) {
+      return;
     }
 
+    const ts_ = Date.now() as Ts_t;
+    if (ts_ < this.#lastVF_ts + VFPulse) return;
+
     this.#mainLidx(retC_x.ranval.focusLidx);
-    this.host.scrollScrolrContain(retC_x.bcr_1, 20);
-    return retC_x;
+    this.host.scrollScrolrContain(retC_x.bcr_1, VFMrgin);
+
+    this.#lastVF_ts = ts_;
   }
   /* ~ */
 
@@ -551,9 +574,9 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   // protected sel$: Selection | null = null;
   /* ~ */
 
-  protected readonly dragingM_mo$ = new Moo({ val: false });
+  readonly dragingM_mo = new Moo({ val: false });
   get dragingM() {
-    return this.dragingM_mo$.val;
+    return this.dragingM_mo.val;
   }
 
   protected readonly draggedM_mo$ = new Moo({ val: false });
@@ -585,25 +608,25 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   //   this.dir_mo$.val = _x;
   // }
 
-  /* #activEdtr_mo, activ_mo */
-  static readonly #activEdtr_mo = new Moo<EdtrBaseScrolr | null>({
+  /* #activEslr_mo, activ_mo */
+  static readonly #activEslr_mo = new Moo<EdtrBaseScrolr | null>({
     val: null,
   });
-  static inactivate() {
-    this.#activEdtr_mo.val = null;
-  }
-  set edtrActiv(_x: boolean) {
+  // static inactivate() {
+  //   this.#activEslr_mo.val = null;
+  // }
+  set eslrActiv(_x: boolean) {
     if (_x) {
-      EdtrBaseScrolr.#activEdtr_mo.val = this;
+      EdtrBaseScrolr.#activEslr_mo.val = this;
     } else {
-      if (EdtrBaseScrolr.#activEdtr_mo.val === this) {
-        EdtrBaseScrolr.#activEdtr_mo.val = null;
+      if (EdtrBaseScrolr.#activEslr_mo.val === this) {
+        EdtrBaseScrolr.#activEslr_mo.val = null;
       }
     }
   }
 
   readonly edtrActiv_mo = new Moo({ val: false, info: this as EdtrBaseScrolr });
-  // get edtrActiv() {
+  // get eslrActiv() {
   //   return this.edtrActiv_mo.val;
   // }
   /* ~ */
@@ -710,7 +733,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     this.el$.append(this.scrole_el);
     this.mainCaret.attachTo(this);
 
-    EdtrBaseScrolr.#activEdtr_mo.registHandler((_y) => {
+    EdtrBaseScrolr.#activEslr_mo.registHandler((_y) => {
       this.edtrActiv_mo.val = _y === this;
     });
     this.edtrActiv_mo.registHandler((_y) => {
@@ -773,8 +796,8 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     // this.footBDt$ = 0;
 
     this.elidx_m$.clear();
-    this.headBSize$ = 0;
-    this.footBSize$ = 0;
+    this.strtLidx$ = 0;
+    this.stopLidx$ = 0;
     return this;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -1082,6 +1105,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     }
     this.strtLidx$ = strtLidx_x;
     this.stopLidx$ = stopLidx;
+    this.drtLidxStrt_mo.val = this.strtLidx$;
     this.refreshCarets();
   }
   #sufScroll_sync = false;
@@ -1154,10 +1178,14 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
 
   /**
    * `in( this.strtLidx$ <= rv_x.anchrLidx && rv_x.anchrLidx < this.stopLidx$)`
-   * @borrow @headconst @param rv_x will be modified
+   * @headborrow @headconst @param rv_x will be modified
    * @const @param elnBrc_x
    */
-  abstract anchrRecOf_$(rv_x: Ranval, elnBrc_x: DOMRectReadOnly): FSRec;
+  abstract anchrRecOf_$(rv_x: Ranval, elnBrc_x?: DOMRectReadOnly): FSRec;
+  /** @final */
+  _anchrRecOf_(rv_x: Ranval, elnBrc_x: DOMRectReadOnly): FSRec {
+    return this.anchrRecOf_$(rv_x, elnBrc_x);
+  }
 
   //jjjj TOCLEANUP
   // /**
@@ -1217,18 +1245,18 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       ? undefined
       : [this.mainCaret, new RanvalMo()] as CaretRvM;
     this.mainCaret.resetCaretRvM_$(crm);
-    for (const edtr of this.bufr$.edtr_sa) {
-      if (edtr === this) continue;
+    for (const eslr of this.bufr$.eslr_sa) {
+      if (eslr === this) continue;
 
-      (edtr as EdtrBaseScrolr<CI>).#setShadowCaret(crm);
+      (eslr as EdtrBaseScrolr<CI>).#setShadowCaret(crm);
       if (!hard_x) {
-        this.#setShadowCaret((edtr as EdtrBaseScrolr<CI>).mainCaret.caretrvm!);
+        this.#setShadowCaret((eslr as EdtrBaseScrolr<CI>).mainCaret.caretrvm!);
       }
     }
   }
 
   /**
-   * Cf. {@linkcode refresh_EdtrBaseScrolr()}\
+   * Cf. {@linkcode refresh_EdtrBaseScrolr()}
    * @final
    */
   refreshCarets(): void {
@@ -1253,7 +1281,8 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     }
     if (!this.el$.isConnected) return;
 
-    this.invalidate_bcr().refreshCarets();
+    this.invalidate_bcr()
+      .refreshCarets();
   }
   // _onResiz_() {
   //   return this._onResiz();
@@ -1351,7 +1380,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       );
     }
     if (evt_x.button === MouseButton.Main) {
-      this.edtrActiv = true;
+      this.eslrActiv = true;
     }
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/

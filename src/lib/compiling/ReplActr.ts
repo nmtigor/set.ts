@@ -9,7 +9,6 @@ import { assert } from "../util.ts";
 import type { Bufr } from "./Bufr.ts";
 import { Lexr } from "./Lexr.ts";
 import { Pazr } from "./Pazr.ts";
-import { Tfmr } from "./Tfmr.ts";
 import type { TokRan } from "./TokRan.ts";
 import { BufrReplState } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
@@ -17,9 +16,10 @@ import { BufrReplState } from "./alias.ts";
 /** @final */
 export class ReplActr {
   readonly #bufr;
-  #lexr!: Lexr<any> | undefined;
+  #lexr: Lexr<any> | undefined;
   #pazr: Pazr<any> | undefined;
-  #tfmr: Tfmr | undefined;
+  //jjjj TOCLEANUP
+  // #tfmr: Tfmr | undefined;
 
   /* "states" use literal names "idle", "preRepl", ... rather then
   `BufrReplState[BufrReplState.idle]`, ..., because otherwise xstate graph can
@@ -46,7 +46,8 @@ export class ReplActr {
                 }
                 this.#lexr?.lexmrk_$(this.#bufr.oldRan_a_$ as TokRan<any>[]);
                 this.#pazr?.pazmrk_$();
-                this.#tfmr?.tfmmrk_$(this.#bufr.oldRan_a_$);
+                //jjjj TOCLEANUP
+                // this.#tfmr?.tfmmrk_$(this.#bufr.oldRan_a_$);
               },
               target: "preRepl",
             },
@@ -63,9 +64,10 @@ export class ReplActr {
                   ?.lexadj_$(this.#bufr.newRan_a_$ as TokRan<any>[])
                   .lex();
                 this.#pazr?.paz();
-                this.#tfmr
-                  ?.tfmadj_$(this.#bufr.newRan_a_$)
-                  .tfm();
+                //jjjj TOCLEANUP
+                // this.#tfmr
+                //   ?.tfmadj_$(this.#bufr.newRan_a_$)
+                //   .tfm();
               },
               target: "sufRepl",
             },
@@ -95,16 +97,22 @@ export class ReplActr {
     this.#bufr = bufr_x;
   }
 
-  init(lexr_x?: Lexr<any>, pazr_x?: Pazr<any>, tfmr_x?: Tfmr) {
+  /**
+   * @const @param lexr_x
+   * @const @param pazr_x
+   */
+  init(lexr_x?: Lexr<any>, pazr_x?: Pazr<any>) {
     /*#static*/ if (INOUT) {
       assert(!this.#inited_ReplActr);
       assert(!lexr_x || lexr_x.bufr === this.#bufr);
       assert(!pazr_x || lexr_x && pazr_x.lexr === lexr_x);
-      assert(!tfmr_x || tfmr_x.bufr === this.#bufr);
+      //jjjj TOCLEANUP
+      // assert(!tfmr_x || tfmr_x.bufr === this.#bufr);
     }
     this.#lexr = lexr_x;
     this.#pazr = pazr_x;
-    this.#tfmr = tfmr_x;
+    //jjjj TOCLEANUP
+    // this.#tfmr = tfmr_x;
 
     this.#actr.start();
 
@@ -114,7 +122,8 @@ export class ReplActr {
   fina() {
     this.#lexr = undefined;
     this.#pazr = undefined;
-    this.#tfmr = undefined;
+    //jjjj TOCLEANUP
+    // this.#tfmr = undefined;
 
     this.#actr.stop();
 

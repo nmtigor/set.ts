@@ -35,13 +35,13 @@ export const enum Ranp {
 // export const RanP_unstable = Ranp.inOldRan | Ranp.lastLineAfter |
 //   Ranp.ranLinesAfter;
 
-type RanpData_ =
+export type RanpData =
   | [Ranp.unknown | Ranp.known, 0]
   | [Ranp.inOldRan, -1]
   | [Ranp.frstLineBefor | Ranp.lastLineAfter, loff_t]
   | [Ranp.ranLinesBefor | Ranp.ranLinesAfter, lnum_t];
 
-export type Ranpo = { anchr: RanpData_; focus: RanpData_ };
+export type Ranpo = { anchr: RanpData; focus: RanpData };
 /*64----------------------------------------------------------*/
 
 /** */
@@ -100,7 +100,7 @@ export class Ran {
   //jjjj TOCLEANUP
   // /* #ranpo */
   // /** ranp and offs */
-  // #ranpo?: { anchr: RanpData_; focus: RanpData_ };
+  // #ranpo?: { anchr: RanpData; focus: RanpData };
   // private get _ranpo() {
   //   return this.#ranpo ??= {
   //     anchr: [Ranp.unknown, 0],
@@ -108,7 +108,7 @@ export class Ran {
   //   };
   // }
 
-  // get ranpoAnchr(): RanpData_ {
+  // get ranpoAnchr(): RanpData {
   //   return this._ranpo.anchr;
   // }
   // // setRanpoAnchr(ranpA_x: Ranp, offsA_x: loff_t | lnum_t): void {
@@ -116,7 +116,7 @@ export class Ran {
   // //   this._ranpo.anchr[1] = offsA_x;
   // // }
 
-  // get ranpoFocus(): RanpData_ {
+  // get ranpoFocus(): RanpData {
   //   return this._ranpo.focus;
   // }
   // // setRanpoFocus(ranpF_x: Ranp, offsF_x: loff_t | lnum_t): void {
@@ -324,7 +324,7 @@ export class Ran {
    *  If `text` is non-const-wise overloaded, should also overload this without
    *  "@const".
    */
-  getTexta(): string[] {
+  getTextA(): string[] {
     const ret: string[] = [];
 
     let ln_: Line | undefined = this.frstLine;
@@ -361,7 +361,7 @@ export class Ran {
   }
   /** @const */
   getText() {
-    return this.getTexta().join("\n");
+    return this.getTextA().join("\n");
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -372,21 +372,21 @@ export class Ran {
    * @const @param loff_x
    * @out @param out_x
    */
-  calcRanp(lidx_x: lnum_t, loff_x: loff_t, out_x: RanpData_): void {
+  calcRanp(lidx_x: lnum_t, loff_x: loff_t, out_x: RanpData): void {
     let ranp = Ranp.unknown;
     let offs: loff_t | lnum_t = 0;
-    if (this.lastLine.lidx_1 === lidx_x && this.stopLoff <= loff_x) {
-      ranp = Ranp.lastLineAfter;
+    if (lidx_x === this.lastLine.lidx_1 && this.stopLoff <= loff_x) {
+      ranp = Ranp.lastLineAfter; //! MUST before `frstLineBefor`
       offs = loff_x - this.stopLoff;
-    } else if (this.frstLine.lidx_1 === lidx_x && loff_x <= this.strtLoff) {
+    } else if (lidx_x === this.frstLine.lidx_1 && loff_x <= this.strtLoff) {
       ranp = Ranp.frstLineBefor;
-      offs = loff_x;
-    } else if (lidx_x < this.frstLine.lidx_1) {
-      ranp = Ranp.ranLinesBefor;
-      offs = lidx_x;
+      offs = this.strtLoff - loff_x; //!
     } else if (this.lastLine.lidx_1 < lidx_x) {
       ranp = Ranp.ranLinesAfter;
       offs = lidx_x - this.lastLine.lidx_1;
+    } else if (lidx_x < this.frstLine.lidx_1) {
+      ranp = Ranp.ranLinesBefor;
+      offs = this.frstLine.lidx_1 - lidx_x; //!
     } else {
       ranp = Ranp.inOldRan;
       offs = -1;

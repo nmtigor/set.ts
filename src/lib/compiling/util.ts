@@ -3,15 +3,13 @@
  * @license MIT
  ******************************************************************************/
 
-import * as Is from "../util/is.ts";
 import { INOUT } from "../../preNs.ts";
 import type { loff_t, unum } from "../alias.ts";
 import type { Id_t, UInt16 } from "../alias_v.ts";
 import { assert } from "../util.ts";
+import * as Is from "../util/is.ts";
 import type { Line } from "./Line.ts";
 import type { Token } from "./Token.ts";
-import type { TSeg } from "./TSeg.ts";
-import type { FSRec } from "@fe-edt/alias.ts";
 /*80--------------------------------------------------------------------------*/
 
 export type LineData = [
@@ -19,30 +17,33 @@ export type LineData = [
    * Record of `Token<any>`s whose `frstLine` is this Line and
    * `prevToken_$?.frstLine` is not.
    */
-  frstTk: Record</** Lexr.id */ Id_t, Token<any>> | undefined,
+  frstTk: Record</** Lexr.id */ Id_t, Token<any> | undefined> | undefined,
   /**
    * Record of `Token<any>`s whose `lastLine` is this Line and
    * `nextToken_$?.lastLine` is not.
    */
-  lastTk: Record</** Lexr.id */ Id_t, Token<any>> | undefined,
+  lastTk: Record</** Lexr.id */ Id_t, Token<any> | undefined> | undefined,
 
-  frstTSeg: Record</** Tfmr.id */ Id_t, TSeg> | undefined,
-  lastTSeg: Record</** Tfmr.id */ Id_t, TSeg> | undefined,
+  //jjjj TOCLEANUP
+  // frstTSeg: Record</** Tfmr.id */ Id_t, TSeg | undefined> | undefined,
+  // lastTSeg: Record</** Tfmr.id */ Id_t, TSeg | undefined> | undefined,
 
   blockSize: Record</** EdtrBaseScrolr.id */ Id_t, unum> | undefined,
-  fsrec_a: Record</** EdtrBaseScrolr.id */ Id_t, FSRec[]> | undefined,
+  //jjjj TOCLEANUP
+  // fsrec_a: Record</** EdtrBaseScrolr.id */ Id_t, FSRec[]> | undefined,
 ];
 
 export const lineFrstTkO = (_x: LineData) => _x[0] ??= {};
 export const lineLastTkO = (_x: LineData) => _x[1] ??= {};
 
-export const lineFrstTSegO = (_x: LineData) => _x[2] ??= {};
-export const lineLastTSegO = (_x: LineData) => _x[3] ??= {};
-export const clearLineFrstTSeg = (_x?: LineData) => !_x || (_x[2] = undefined);
-export const clearLineLastTSeg = (_x?: LineData) => !_x || (_x[3] = undefined);
+//jjjj TOCLEANUP
+// export const lineFrstTSegO = (_x: LineData) => _x[2] ??= {};
+// export const lineLastTSegO = (_x: LineData) => _x[3] ??= {};
+// export const clearLineFrstTSeg = (_x?: LineData) => !_x || (_x[2] = undefined);
+// export const clearLineLastTSeg = (_x?: LineData) => !_x || (_x[3] = undefined);
 
-export const lineBSizeO = (_x: LineData) => _x[4] ??= {};
-export const lineFsrecaO = (_x: LineData) => _x[5] ??= {};
+export const lineBSizeO = (_x: LineData) => _x[2] ??= {};
+// export const lineFsrecaO = (_x: LineData) => _x[5] ??= {};
 /*80--------------------------------------------------------------------------*/
 
 /**

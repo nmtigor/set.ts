@@ -40,6 +40,7 @@ export class Unre<T extends {} | null> {
   get lastUR() {
     return this.lastUR$;
   }
+  /** @const */
   get lastGot(): T | undefined {
     return this.lastUR$ === LastUR.bakw
       ? this.ary$.at(this.i$)
@@ -51,7 +52,7 @@ export class Unre<T extends {} | null> {
     /*#static*/ if (INOUT) {
       assert(2 <= len_x); // to prevent `i_0$` === `i_1$`
     }
-    this.#Len = len_x; // to prevent `i_0$` === `i_1$`
+    this.#Len = len_x;
     this.ary$ = Array.sparse<T>(this.#Len);
   }
 
@@ -101,12 +102,13 @@ export class Unre<T extends {} | null> {
     return this.i$ === this.i_0$ ? this.i$ : this.#loopMinusOne(this.i$);
   };
 
-  add(rhs_x: T): void {
+  add(rhs_x: T): this {
     this.ary$[this.i$] = rhs_x;
     this.i$ = this.#loopPlusOne(this.i$);
     this.i_1$ = this.i$;
     if (this.i_1$ === this.i_0$) this.i_0$ = this.#loopPlusOne(this.i_0$);
     this.lastUR$ = LastUR.forw;
+    return this;
   }
 
   /** @const */
@@ -128,6 +130,10 @@ export class Unre<T extends {} | null> {
     this.lastUR$ = LastUR.bakw;
     return this.ary$[this.i$];
   }
+  /**
+   **! If call this when `!canGetRe()`, returned value will be different to
+   * `lastGot`.
+   */
   getRe(): T {
     const i_ = this.i$;
     this.i$ = this.#forw();

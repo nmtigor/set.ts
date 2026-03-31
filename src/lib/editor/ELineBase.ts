@@ -98,18 +98,21 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   /* ~ */
 
   // protected empty$ = true;
-  /** @final @const */
+  /**
+   * @final
+   * @const
+   */
   get empty() {
     return this.bline_$.text.length === 0;
   }
 
-  get _fsrec_a_() {
-    const eslr = this.coo$._scrolr;
-    // /*#static*/ if (INOUT) {
-    //   assert(eslr.bufr === this.bline_$.bufr);
-    // }
-    return eslr.bufr.getLineFsrecA(this.lidx_1, eslr.id);
-  }
+  //jjjj TOCLEANUP
+  // get #fsrec_a() {
+  //   return this.bline_$.getFsrecaOn(this.coo$._scrolr.id);
+  // }
+  // get _fsrec_a_() {
+  //   return this.#fsrec_a;
+  // }
 
   /**
    * @headconst @param coo_x
@@ -211,12 +214,17 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   //   return this.bline_$.getBSizeOn(this.coo$._scrolr.id);
   // }
 
-  /** @final */
-  clearFsrecA(): this {
-    const id_ = this.coo$._scrolr.id;
-    this.bline_$.getFsrecA(id_).length = 0;
-    return this;
-  }
+  //jjjj TOCLEANUP
+  // /* For long editing of huge doc, need optimize further：
+  // Set a boolean variable to control if in the cleaning stage, in which case,
+  // gradually remove cached fsrec_a from back (so fsrec_a's should be stored in
+  // linked list sorted by recent usage time).
+  //  */
+  // /** @final */
+  // clearFsrecA(): this {
+  //   this.#fsrec_a.length = 0;
+  //   return this;
+  // }
 
   /**
    * According to `bline_$`, which is updated in `EdtrScrolr._resetELine()`\
@@ -230,8 +238,8 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   /** `in( this.el$.isConnected)` */
   refresh_$(): void {
     this.refreshPlain()
-      .syncBSize()
-      .clearFsrecA();
+      .syncBSize();
+    // .clearFsrecA();
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 

@@ -100,6 +100,8 @@ https://bitsofco.de/the-new-system-font-stack/
 
 export const Rem = 16;
 export const PopitemHigt = 32;
+export const TouchSquaMIN = 44;
+export const TouchLineMIN = 32;
 /*64----------------------------------------------------------*/
 /* zIndex */
 

@@ -42,6 +42,6 @@ within the dirty node. So it is very efficient for editing.
 
 ```bash
 cd /path_to/set.ts
-# deno 2.5.6
+# deno 2.7.9
 deno test # 2 passed (15 steps)
 ```

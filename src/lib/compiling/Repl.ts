@@ -4,9 +4,8 @@
  ******************************************************************************/
 
 import { _TRACE, INOUT } from "../../preNs.ts";
-import type { lnum_t } from "../alias.ts";
 import { LnumMAX } from "../alias.ts";
-import type { Id_t } from "../alias_v.ts";
+import type { Id_t, Ts_t } from "../alias_v.ts";
 import { assert, fail } from "../util.ts";
 import * as Is from "../util/is.ts";
 import { type Less, SortedArray } from "../util/SortedArray.ts";
@@ -19,7 +18,11 @@ import { Ran } from "./Ran.ts";
 import { Ranval } from "./Ranval.ts";
 /*80--------------------------------------------------------------------------*/
 
-export type Replin = { rv: Ranval; txt: string | string[] };
+export type Replin = {
+  rv: Ranval;
+  /** If `string[]`, it is responsible for line break。 */
+  txt: string | string[];
+};
 
 class SortedReplin_ extends SortedArray<Replin> {
   static #less: Less<Replin> = (a_y, b_y) =>
@@ -91,6 +94,9 @@ export class Repl {
   /** Helper */
   readonly #tmpRan;
 
+  //jjjj TOCLEANUP
+  // #ts = 0 as Ts_t;
+
   /**
    * Use `Ranval` not `Ran` directly because `Ran` can be invalid
    * after `undo()` / `redo()`.
@@ -132,7 +138,7 @@ export class Repl {
    * @out @param outRan_x range of inTxt_a_x
    * @out @param outTxt_a_x texts of inRan_x
    */
-  #repl_impl(
+  #repl(
     inRan_x: Ran,
     inTxt_a_x: string[],
     outRan_x: Ran,
@@ -140,6 +146,7 @@ export class Repl {
   ) {
     // console.log(this.#bufr.lineTree._treRepr_);
     let srcLn: Line | undefined = inRan_x.frstLine;
+    const strtLidx = srcLn.lastLidx!;
     const srcLastLn = inRan_x.lastLine;
     /*#static*/ if (INOUT) {
       assert(!srcLastLn.removed);
@@ -171,19 +178,29 @@ export class Repl {
       assert(srcLn);
     }
 
+    const bufr = this.#bufr;
     const srcTxt_1 = srcLastLn.text;
     let srcFrstLn = inRan_x.frstLine;
     if (i_ === tgtN) {
-      while (srcLn && srcLn !== srcLastLn && --valve) {
-        outTxt_a_x[i_++] = srcLn.text;
+      //jjjj TOCLEANUP
+      // while (srcLn && srcLn !== srcLastLn && --valve) {
+      //   outTxt_a_x[i_++] = srcLn.text;
 
-        const ln_ = srcLn.nextLine;
-        srcLn.rmvSelf_$();
-        srcLn = ln_;
-      }
-      assert(valve, `Loop ${VALVE}±1 times`);
-      /*#static*/ if (INOUT) {
-        assert(srcLn);
+      //   const ln_ = srcLn.nextLine;
+      //   srcLn.rmvSelf_$();
+      //   srcLn = ln_;
+      // }
+      // assert(valve, `Loop ${VALVE}±1 times`);
+      // /*#static*/ if (INOUT) {
+      //   assert(srcLn);
+      // }
+      const i_0 = i_;
+      const i_1 = srcLastLn.lastLidx! - strtLidx;
+      if (i_0 < i_1) {
+        for (; i_ < i_1; i_++) {
+          outTxt_a_x[i_] = bufr.line(strtLidx + i_).text;
+        }
+        bufr.rmvLines(strtLidx + i_0, strtLidx + i_1);
       }
 
       /*#static*/ if (INOUT) {
@@ -217,19 +234,18 @@ export class Repl {
         outRan_x.stopLoc.set_Loc(srcLastLn, srcStrtLoff + inTxt_a_x[0].length);
       } else {
         if (i_ < tgtN - 1) {
-          const bufr = this.#bufr;
           if (srcOneLn) {
-            srcFrstLn = srcLastLn.insertPrev_$(
+            srcFrstLn = srcLastLn.insPrev_$(
               bufr.createLine(
                 `${srcTxt_1.slice(0, srcStrtLoff)}${inTxt_a_x[i_]}`,
               ),
             );
           } else {
-            srcLastLn.insertPrev_$(bufr.createLine(inTxt_a_x[i_]));
+            srcLastLn.insPrev_$(bufr.createLine(inTxt_a_x[i_]));
           }
           i_++;
           for (; i_ < tgtN - 1; i_++) {
-            srcLastLn.insertPrev_$(bufr.createLine(inTxt_a_x[i_]));
+            srcLastLn.insPrev_$(bufr.createLine(inTxt_a_x[i_]));
           }
         }
         /*#static*/ if (INOUT) {
@@ -278,6 +294,8 @@ export class Repl {
       // const lnN_inRan = inRan.lineN_1;
     }
 
+    //jjjj TOCLEANUP
+    // this.#ts = Date.now() as Ts_t;
     this.#bufr.resetOldLidxM_$();
     return inRan_a;
   }
@@ -288,7 +306,7 @@ export class Repl {
    * @out @param outRv_x range of inTxt_a_x
    * @out @param outTxt_a_x texts of inRv_x
    */
-  #suf(
+  #impl(
     inRan_a: Ran[],
     inTxt_a_x: string[] | string[][],
     outRv_x: Ranval | Ranval[],
@@ -303,7 +321,7 @@ export class Repl {
       for (let i = inRan_a.length; i--;) {
         const prevToHead = i > 0 &&
           inRan_a[i - 1].lastLine === inRan_a[i].frstLine;
-        this.#repl_impl(
+        this.#repl(
           inRan_a[i],
           (inTxt_a_x as string[][])[i],
           this.#tmpRan,
@@ -330,7 +348,7 @@ export class Repl {
         outRan_a[i] = this.#tmpRan.usingDup();
       }
     } else {
-      this.#repl_impl(
+      this.#repl(
         inRan_a[0],
         inTxt_a_x as string[],
         this.#tmpRan,
@@ -356,6 +374,7 @@ export class Repl {
   }
 
   /**
+   * Same as `_impl_cb()` without triggering `repl_mo` callbacks
    * @const @param inRv_x
    * @const @param inTxt_a_x
    * @out @param outRv_x range of inTxt_a_x
@@ -368,11 +387,11 @@ export class Repl {
     outTxt_a_x: string[] | string[][],
   ) {
     const inRan_a = this.#pre(inRv_x);
-    this.#suf(inRan_a, inTxt_a_x, outRv_x, outTxt_a_x);
+    this.#impl(inRan_a, inTxt_a_x, outRv_x, outTxt_a_x);
   }
 
   /**
-   * Trigger `repl_mo` callbacks, besides invoking `#repl_impl()`\
+   * Trigger `repl_mo` callbacks, besides invoking `#repl()`\
    * Assign `#bufr.oldRan_a_$`, `#bufr.newRan_a_$`.
    * @const @param inRv_x
    * @const @param inTxt_a_x
@@ -380,20 +399,23 @@ export class Repl {
    * @out @param outTxt_a_x texts of inRv_x
    */
   @traceOut(_TRACE)
-  private _impl(
+  private _impl_cb(
     inRv_x: Ranval | Ranval[],
     inTxt_a_x: string[] | string[][],
     outRv_x: Ranval | Ranval[],
     outTxt_a_x: string[] | string[][],
   ) {
     /*#static*/ if (_TRACE) {
-      console.log(`${trace.indent}>>>>>>> ${this._class_id_}._impl() >>>>>>>`);
+      console.log(
+        `${trace.indent}>>>>>>> ${this._class_id_}._impl_cb() >>>>>>>`,
+      );
     }
     const inRan_a = this.#pre(inRv_x);
 
     this.#bufr.repl_mo.val = BufrReplState.preRepl;
 
-    this.#suf(inRan_a, inTxt_a_x, outRv_x, outTxt_a_x);
+    this.#impl(inRan_a, inTxt_a_x, outRv_x, outTxt_a_x);
+    // console.log(`${trace.dent}`, { outRv_x, outTxt_a_x });
 
     this.#bufr.repl_mo.val = BufrReplState.sufRepl;
     this.#bufr.repl_mo.val = BufrReplState.sufRepl_edtr;
@@ -440,14 +462,14 @@ export class Repl {
     }
 
     if (this.aoa) {
-      this._impl(
+      this._impl_cb(
         this.#ranval_a!,
         this.#text_a2!,
         this.#ranval_rev_a!,
         this.#replText_a2!,
       );
     } else {
-      this._impl(
+      this._impl_cb(
         this.#ranval!,
         this.#text_a!,
         this.#ranval_rev!,
@@ -479,14 +501,14 @@ export class Repl {
   /** Assign `#ranval`, `#text_a` */
   replBRun() {
     if (this.aoa) {
-      this._impl(
+      this._impl_cb(
         this.#ranval_rev_a!,
         this.#replText_a2_0 ?? this.#replText_a2!,
         this.#ranval_a!,
         this.#text_a2!,
       );
     } else {
-      this._impl(
+      this._impl_cb(
         this.#ranval_rev!,
         this.#replText_a_0 ?? this.#replText_a!,
         this.#ranval!,

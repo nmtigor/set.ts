@@ -48,17 +48,17 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
 
     //jjjj TOCLEANUP
     // this.dir_mo.registHandler((n_y) => {
-    //   // const rv_a = this.edtr_sa.map((edtr_y) =>
+    //   // const rv_a = this.eslr_sa.map((edtr_y) =>
     //   //   (edtr_y as EdtrScrolr).mainCaret.ranval
     //   // );
     //   // console.log(rv_a);
     //   this.refresh();
-    //   /* Notice, `invalidate_bcr()` should be called firstly for all `edtr_sa`,
+    //   /* Notice, `invalidate_bcr()` should be called firstly for all `eslr_sa`,
     //   because setting `mc_.caretrvm![1]` in one `edslr` will impact other `edslr`s
     //   immediately. */
-    //   this.edtr_sa.forEach((edslr) => (edslr as EdtrScrolr).invalidate_bcr());
-    //   for (let i = this.edtr_sa.length; i--;) {
-    //     const edslr = this.edtr_sa.at(i) as EdtrScrolr;
+    //   this.eslr_sa.forEach((edslr) => (edslr as EdtrScrolr).invalidate_bcr());
+    //   for (let i = this.eslr_sa.length; i--;) {
+    //     const edslr = this.eslr_sa.at(i) as EdtrScrolr;
     //     const mc_ = edslr.mainCaret;
     //     if (mc_.shown) {
     //       // mc_.caretrvm![1].force().val = rv_a[i];
@@ -129,14 +129,7 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
     retRv_x.setFocus(this.#focusLoc.line.lidx_1, this.#focusLoc.correctLoff());
     return retRv_x;
   }
-  /**
-   * Set or assign `#focusLoc`
-   * @out @param rv_x `focusLidx`, `focusLoff` will be corrected
-   * @borrow @return `#focusLoc`,
-   *    so suggest to `.usingDup()` it to prevent being affected by further
-   *    calls of `focusLoc()`.
-   */
-  focusLoc(rv_x: Ranval): TokLoc<T> {
+  override focusLoc(rv_x: Ranval): TokLoc<T> {
     this.correctRvFocus(rv_x);
     return this.#focusLoc!;
   }
@@ -155,14 +148,7 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
     retRv_x.setAnchr(this.#anchrLoc.line.lidx_1, this.#anchrLoc.correctLoff());
     return retRv_x;
   }
-  /**
-   * Set or assign `#anchrLoc`
-   * @out @param rv_x `anchrLidx`, `anchrLoff` will be corrected
-   * @borrow @return `#anchrLoc`,
-   *    so suggest to `.usingDup()` it to prevent being affected by further
-   *    calls of `anchrLoc()`.
-   */
-  anchrLoc(rv_x: Ranval): TokLoc<T> {
+  override anchrLoc(rv_x: Ranval): TokLoc<T> {
     this.correctRvAnchr(rv_x);
     return this.#anchrLoc!;
   }

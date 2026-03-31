@@ -694,6 +694,12 @@ export class Loc {
     this.visulFarleftenIn(bidiO_x);
     return true;
   }
+
+  /** @headconst @param bidiO_x */
+  updateBidi(bidiO_x: BidiO_): void {
+    const bidi = bidiO_x.bidi(this.lidx_1);
+    bidi.update(this.loff_$);
+  }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /**

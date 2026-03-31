@@ -91,7 +91,7 @@ export abstract class Factory<V> {
   }
 
   /** @final */
-  produceMore(n_x: uint) {
+  produceMore(n_x: uint): uint {
     return this.produce(this.nUsed$ + n_x);
   }
   /** @final */
