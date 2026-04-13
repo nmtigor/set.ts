@@ -79,9 +79,6 @@ export const vId_t = v.pipe(vuint, v.brand("Id_t"));
 // export type Brand_id<TBrand> = Id_t & { [$brand_id]: TBrand };
 export type Brand_id<TBrand extends v.BrandName> = Id_t & v.Brand<TBrand>;
 
-/** Count one "\t" as 1 */
-export type ldt_t = Brand_Int32<"ldt_t">;
-
 export const vts_t = v.pipe(vint);
 /** Type of unix timestamp */
 export type Ts_t = Brand_Int64<"Ts_t">;

@@ -36,7 +36,7 @@ export class Set extends SetSN {
 
     this.#paren = _x;
 
-    this.invalidateBdry();
+    this.invalBdry();
     this.ensureBdry();
   }
 
@@ -96,7 +96,7 @@ export class Set extends SetSN {
     this.#unpanenSet = newSn_x;
     this.#children = undefined;
 
-    this.invalidateBdry();
+    this.invalBdry();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

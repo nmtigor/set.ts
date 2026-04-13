@@ -191,9 +191,7 @@ export type id_t = uint;
 
 /** Count one "\t" as 1 */
 export type loff_t = uint32;
-/* alias_v */
-// export type ldt_t = Brand_Int32<"ldt_t">;
-/* ~ */
+export type ldt_t = int32;
 export const LoffUNDEFINED: loff_t = -1_000_000_001;
 export const LoffMAX: loff_t = 1_000_000_000;
 /** Count one "\t" as e.g. 2, 4, 8 */

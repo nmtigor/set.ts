@@ -21,7 +21,6 @@ Object.assign(test_o, { bufr, lexr } as Partial<TestO>);
 const init_ = (text_x?: string | string[]) => {
   lexr.reset_Lexr();
   bufr.repl_actr.init(lexr);
-  bufr.repl_mo.registHandler((n_y) => bufr.repl_actr.to(n_y));
 
   if (text_x) repl(rv(0, 0), text_x);
 };
@@ -45,7 +44,7 @@ after(() => {
 });
 
 describe("SetLexr.lex()", () => {
-  it("lex() fuzykey, and its concatTokens$()", () => {
+  it("lex() fuzykey, and concatTokens$()", () => {
     init_();
     assertEquals(lexr.strtLexTk_$.toString(), "strtBdry[0-0)");
     assertEquals(lexr.stopLexTk_$.toString(), "stopBdry[0-0)");
@@ -75,7 +74,7 @@ describe("SetLexr.lex()", () => {
     /*
     d
     */
-    repl(ran(0)._rv, "ef");
+    repl(ran(0).rv, "ef");
     assertEquals(lexr.strtLexTk_$._Repr_(), [
       ["strtBdry[0-0)", "fuzykey[0-0,0-3)"],
       "stopBdry[0-3)",
@@ -106,7 +105,7 @@ describe("SetLexr.lex()", () => {
       [],
     ]);
     assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
-    repl(ran(0)._rv, " ");
+    repl(ran(0).rv, " ");
     /*
     d→→→ef·
     */
@@ -134,9 +133,9 @@ describe("SetLexr.lex()", () => {
       "strtBdry[0-0)",
       ["quotkey[0-0,0-1)", "stopBdry[0-1)"],
     ]);
-    assertEquals(lexr._err_, [["quotkey[0-0,0-1)", [
-      Err.double_quoted_string_open,
-    ]]]);
+    assertEquals(lexr._err_, [
+      ["quotkey[0-0,0-1)", [Err.quoted_string_open]],
+    ]);
     repl(rv(0, 0), '"');
     assertEquals(lexr.strtLexTk_$._Repr_(), [
       ["strtBdry[0-0)", "quotkey[0-0,0-2)"],
@@ -180,7 +179,7 @@ describe("SetLexr.lex()", () => {
     ]);
     assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
     undo();
-    repl(ran(0)._rv, "\\");
+    repl(ran(0).rv, "\\");
     assertEquals(lexr.strtLexTk_$._Repr_(), [
       ["strtBdry[0-0)", "fuzykey[0-0,0-2)"],
       "stopBdry[0-2)",
@@ -201,28 +200,28 @@ describe("SetLexr.lex()", () => {
       ["quotkey[0-5,0-6)", "stopBdry[0-6)"],
     ]);
     assertEquals(lexr._err_, [["quotkey[0-5,0-6)", [
-      Err.double_quoted_string_open,
+      Err.quoted_string_open,
     ]]]);
   });
 
   it("lex() other SetTok", () => {
     init_();
 
-    repl(ran(0)._rv, "?");
+    repl(ran(0).rv, "?");
     assertEquals(lexr.strtLexTk_$._Repr_(), [
       ["strtBdry[0-0)", "question[0-0,0-1)"],
       "stopBdry[0-1)",
       [],
     ]);
     assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
-    repl(ran(0)._rv, ">");
+    repl(ran(0).rv, ">");
     assertEquals(lexr.strtLexTk_$._Repr_(), [
       ["strtBdry[0-0)", "question[0-0,0-1)", "joiner[0-1,0-2)"],
       "stopBdry[0-2)",
       [],
     ]);
     assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
-    repl(ran(0)._rv, "∩");
+    repl(ran(0).rv, "∩");
     assertEquals(lexr.strtLexTk_$._Repr_(), [
       [
         "strtBdry[0-0)",
@@ -234,7 +233,7 @@ describe("SetLexr.lex()", () => {
       [],
     ]);
     assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
-    repl(ran(0)._rv, "∪");
+    repl(ran(0).rv, "∪");
     assertEquals(lexr.strtLexTk_$._Repr_(), [
       [
         "strtBdry[0-0)",
@@ -247,7 +246,7 @@ describe("SetLexr.lex()", () => {
       [],
     ]);
     assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
-    repl(ran(0)._rv, "(");
+    repl(ran(0).rv, "(");
     assertEquals(lexr.strtLexTk_$._Repr_(), [
       [
         "strtBdry[0-0)",
@@ -261,7 +260,7 @@ describe("SetLexr.lex()", () => {
       [],
     ]);
     assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
-    repl(ran(0)._rv, ")");
+    repl(ran(0).rv, ")");
     assertEquals(lexr.strtLexTk_$._Repr_(), [
       [
         "strtBdry[0-0)",

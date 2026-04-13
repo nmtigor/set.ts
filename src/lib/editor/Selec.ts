@@ -26,19 +26,23 @@ class Selec extends HTMLVuu<EdtrBase, HTMLSpanElement> {
 
   /* Pale */
   #proactiveBgSelec_p = Pale.get("lib.editor.Selec.proactiveBgSelec");
-  #proactiveBgOvlap_p = Pale.get("lib.editor.Selec.proactiveBgOvlap");
-  #passiveBgSelec_p = Pale.get("lib.editor.Selec.passiveBgSelec");
-  #passiveBgOvlap_p = Pale.get("lib.editor.Selec.passiveBgOvlap");
   #onProactiveBgCssc = (_x: Cssc) => {
     if (this.isMain_$) {
       this.el$.style.backgroundColor = _x;
     }
   };
+
+  #proactiveBgOvlap_p = Pale.get("lib.editor.Selec.proactiveBgOvlap");
+
+  #passiveBgSelec_p = Pale.get("lib.editor.Selec.passiveBgSelec");
   #onPassiveBgCssc = (_x: Cssc) => {
     if (!this.isMain_$) {
       this.el$.style.backgroundColor = _x;
     }
   };
+
+  #passiveBgOvlap_p = Pale.get("lib.editor.Selec.passiveBgOvlap");
+
   override observeTheme() {
     this.#proactiveBgSelec_p.registCsscHandler(this.#onProactiveBgCssc);
     this.#proactiveBgOvlap_p.registCsscHandler(this.#onProactiveBgCssc);
@@ -185,13 +189,12 @@ export class SelecFac extends Factory<Selec> {
     return ret;
   }
 
-  protected override resetVal$(i_x: uint) {
-    return this.get(i_x).reset_Selec().hide_$();
+  protected override resetVal$(v_x: Selec): void {
+    v_x.reset_Selec().hide_$();
   }
-  protected override reuseVal$(i_x: uint) {
-    const ret = this.get(i_x).reuse_Selec();
-    ret.isMain_$ = this.#isMain;
-    return ret;
+  protected override reuseVal$(v_x: Selec): void {
+    v_x.reuse_Selec();
+    v_x.isMain_$ = this.#isMain;
   }
 
   //jjjj TOCLEANUP

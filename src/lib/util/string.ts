@@ -60,6 +60,10 @@ export const isWordLetter = (_x: uint16): boolean =>
 /** @see {@linkcode isSpaceOrTab()} */
 export const isASCIIControl = (_x: uint16): boolean =>
   0 <= _x && _x <= 0x1F || _x === 0x7F;
+/** @see {@linkcode isSpaceOrTab()} */
+export const isASCIINonprint = (_x: uint16): boolean =>
+  isASCIIControl(_x) &&
+  (_x !== /* "\t" */ 9 && _x !== /* "\n" */ 0xA && _x !== 0xC && _x !== 0xD);
 
 // deno-fmt-ignore
 /**
@@ -74,9 +78,11 @@ export const ws_a = [
   0x0_3000,
   0x0_FEFF,
 ] as uint16[];
-/** @see {@linkcode isSpaceOrTab()} */
-export const isWhitespaceUCod = (_x: uint16, a_x: uint16[] = ws_a) =>
-  a_x.indexOf(_x) >= 0;
+/**
+ * whitespace
+ * @see {@linkcode isSpaceOrTab()}
+ */
+export const isWs = (_x: uint16, a_x: uint16[] = ws_a) => a_x.indexOf(_x) >= 0;
 
 // /* Not sure if js impls use regexp interning like string. So. */
 // const ws_re_ = /^\s+$/;

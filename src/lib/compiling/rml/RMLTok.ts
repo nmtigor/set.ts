@@ -7,11 +7,11 @@ import { BaseTok } from "../BaseTok.ts";
 /*80--------------------------------------------------------------------------*/
 
 enum RMLTok_ {
-  _ = 700,
+  _ = 600,
 
   _max,
 }
-console.assert(RMLTok_._max <= 800);
+console.assert(RMLTok_._max <= 700);
 
 export type RMLTok = BaseTok | RMLTok_;
 export const RMLTok = { ...BaseTok, ...RMLTok_ };

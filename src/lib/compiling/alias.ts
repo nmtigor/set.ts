@@ -6,6 +6,7 @@
 import type { Dulstr, lnum_t, loff_t, uint32 } from "../alias.ts";
 import type { Chr } from "../alias_v.ts";
 import type { BaseTok } from "./BaseTok.ts";
+import type { CSSTok } from "./css/CSSTok.ts";
 import type { HTMLTok } from "./html/HTMLTok.ts";
 import type { JSLangTok } from "./jslang/JSLangTok.ts";
 import type { MdextTok } from "./mdext/MdextTok.ts";
@@ -55,15 +56,18 @@ export type Tok =
   | PDFTok // <= 600
   | RMLTok // <= 800
   | JSLangTok // <= 1000
-  | HTMLTok; // <= 1100
+  | HTMLTok // <= 1100
+  | CSSTok; // <= 1200
 
 /** Dulling map */
 export type Dulmap = Map<Chr, Dulstr | Dulstr[]>;
 /*80--------------------------------------------------------------------------*/
 
 export const enum Err {
-  double_quoted_string_open = "Double quoted string does not closed.",
+  quoted_string_open = "Quoted string does not closed.",
+  block_comment_open = "Block comment does not closed.",
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+  /* set */
 
   /* Set */
   set_unexpected_token = "Unexpected token for Set",
@@ -82,14 +86,7 @@ export const enum Err {
   set_rel_no_srt = "In Rel of set, no src or rel or tgt.",
   set_rel_no_2nd = 'In Rel of set, no 2nd joiner ">".',
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
-  /* mdext */
-
-  mdext_unexpected_close = "Unexpected close for Block of mdext",
-
-  /* Link */
-  //jjjj TOCLEANUP
-  // unrecognizable_linkdest = "The link destination is unrecognizable.",
-  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+  /* uri */
 
   ipv4_leading_0 = "Redundant leading 0 in one dec-octet field for IPv4",
   ipv4_exceed_255 = "In IPv4, exceed 255 in one dec-octet field.",
@@ -105,5 +102,17 @@ export const enum Err {
   uri_no_authority = "In PathPart of uri, no authority before path-abempty.",
   uri_no_scheme = "In URI, no scheme.",
   uri_unexpected_scheme = "Unexpected token for URI",
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+  /* css */
+
+  invalid_escape = "Invalid escape",
+  bad_url = "Bad URL",
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+  /* mdext */
+
+  mdext_unexpected_close = "Unexpected close for Block of mdext",
+  /* Link */
+  //jjjj TOCLEANUP
+  // unrecognizable_linkdest = "The link destination is unrecognizable.",
 }
 /*80--------------------------------------------------------------------------*/

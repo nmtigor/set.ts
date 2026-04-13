@@ -321,7 +321,7 @@ export class Pale {
   // //   {
   // //     let pale0;
   // //     let valve = 100+1;
-  // //     while( name0 && --valve )
+  // //     while( name0 && valve-- )
   // //     {
   // //       pale0 = Pale.get( name0 );
   // //       ret.push( pale0 );
@@ -369,7 +369,7 @@ export class Pale {
   // //   {
   // //     let pale0;
   // //     let valve = 100+1;
-  // //     while( name0 && --valve )
+  // //     while( name0 && valve-- )
   // //     {
   // //       pale0 = Pale.get( name0 );
   // //       ++this.depth_;
@@ -420,7 +420,7 @@ export class Pale {
   // //   const MAXDEPTH = 30;
   // //   let palename = b_x;
   // //   let valve = MAXDEPTH+1;
-  // //   while( palename && palename !== this.name && --valve )
+  // //   while( palename && palename !== this.name && valve-- )
   // //   {
   // //     palename = Pale.get(palename).basename;
   // //   }

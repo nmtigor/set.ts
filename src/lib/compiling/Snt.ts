@@ -35,6 +35,7 @@ export class SortedSnt_id<T extends Snt = Snt> extends SortedIdo<T> {
 }
 /*64----------------------------------------------------------*/
 
+/** syntax node or token */
 export abstract class Snt {
   static #ID = 0 as Id_t;
   readonly id = ++Snt.#ID as Id_t;

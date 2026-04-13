@@ -266,7 +266,7 @@ export class Ran {
   }
 
   /**
-   * ! Do not `strtLoc$.correct()` or `stopLoc$.correct()`
+   * !Do not `strtLoc$.correct()` or `stopLoc$.correct()`
    */
   get length_1(): loff_t {
     let ln = this.frstLine;
@@ -276,7 +276,7 @@ export class Ran {
     let ret = ln.uchrLen - this.strtLoff;
     const VALVE = 1_000;
     let valve = VALVE;
-    while (ln.nextLine !== ln_1 && --valve) {
+    while (ln.nextLine !== ln_1 && valve--) {
       ln = ln.nextLine!;
       ret += ln.uchrLen;
     }
@@ -346,7 +346,7 @@ export class Ran {
       ln_ = ln_.nextLine;
       const VALVE = LnumMAX;
       let valve = VALVE;
-      while (ln_ && ln_ !== ln_1 && --valve) {
+      while (ln_ && ln_ !== ln_1 && valve--) {
         ret.push(ln_.text);
         ln_ = ln_.nextLine;
       }
@@ -402,7 +402,7 @@ export class Ran {
     this.stopLoc$.toRanval(ret_x, Endpt.focus);
     return ret_x;
   }
-  get _rv() {
+  get rv() {
     return this.toRanval();
   }
 

@@ -7,7 +7,7 @@ import { BaseTok } from "../BaseTok.ts";
 /*80--------------------------------------------------------------------------*/
 
 enum MdextTok_ {
-  chunk = 400, // Need to further `lex()` and `paz()` context-relatedly
+  chunk = 700, // Need to further `lex()` and `paz()` context-relatedly
 
   bracket_open, // [
   // angle_bracket_open, // <
@@ -64,7 +64,7 @@ enum MdextTok_ {
 
   _max,
 }
-console.assert(MdextTok_._max <= 500);
+console.assert(MdextTok_._max <= 800);
 
 export type MdextTok = BaseTok | MdextTok_;
 export const MdextTok = { ...BaseTok, ...MdextTok_ };

@@ -73,7 +73,7 @@ export abstract class BinaryOp extends SetSN {
     }
     this.#children = undefined;
 
-    this.invalidateBdry();
+    this.invalBdry();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

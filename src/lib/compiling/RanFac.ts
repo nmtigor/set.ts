@@ -21,6 +21,10 @@ class RanFac_ extends Factory<Ran> {
     this.#bufr = _x;
     return this;
   }
+
+  constructor() {
+    super(10_000);
+  }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @implement */
@@ -34,8 +38,8 @@ class RanFac_ extends Factory<Ran> {
     return new Ran(new Loc(this.#bufr.frstLine_$, 0));
   }
 
-  protected override reuseVal$(i_x: uint) {
-    return this.get(i_x).reset_Ran(this.#bufr);
+  protected override reuseVal$(v_x: Ran): void {
+    v_x.reset_Ran(this.#bufr);
   }
 
   /**

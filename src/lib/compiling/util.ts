@@ -63,15 +63,22 @@ export const frstNon = (
   }
   let i_ = strt_x;
   if (Is.func(ucod_x)) {
-    for (; i_ < stop_x; ++i_) {
+    for (; i_ < stop_x; i_++) {
       if (!ucod_x(ln_x.ucodAt(i_))) break;
     }
   } else if (Is.array(ucod_x)) {
-    for (; i_ < stop_x; ++i_) {
+    //jjjj TOCLEANUP
+    // const LEN = ucod_x.length;
+    for (; i_ < stop_x; i_++) {
       if (!ucod_x.includes(ln_x.ucodAt(i_))) break;
+      //jjjj TOCLEANUP
+      // const ucod = ln_x.ucodAt(i_);
+      // let j_ = 0;
+      // for (; j_ < LEN && ucod !== ucod_x[j_]; j_++);
+      // if (j_ === LEN) break;
     }
   } else {
-    for (; i_ < stop_x; ++i_) {
+    for (; i_ < stop_x; i_++) {
       if (ln_x.ucodAt(i_) !== ucod_x) break;
     }
   }
@@ -96,15 +103,22 @@ export const lastNon = (
   }
   let i_ = stop_x - 1;
   if (Is.func(ucod_x)) {
-    for (; i_ >= strt_x; --i_) {
+    for (; i_ >= strt_x; i_--) {
       if (!ucod_x(ln_x.ucodAt(i_))) break;
     }
   } else if (Is.array(ucod_x)) {
-    for (; i_ >= strt_x; --i_) {
+    //jjjj TOCLEANUP
+    // const LEN = ucod_x.length;
+    for (; i_ >= strt_x; i_--) {
       if (!ucod_x.includes(ln_x.ucodAt(i_))) break;
+      //jjjj TOCLEANUP
+      // const ucod = ln_x.ucodAt(i_);
+      // let j_ = 0;
+      // for (; j_ < LEN && ucod !== ucod_x[j_]; j_++);
+      // if (j_ === LEN) break;
     }
   } else {
-    for (; i_ >= strt_x; --i_) {
+    for (; i_ >= strt_x; i_--) {
       if (ln_x.ucodAt(i_) !== ucod_x) break;
     }
   }

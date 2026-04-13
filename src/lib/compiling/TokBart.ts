@@ -16,7 +16,7 @@ import type { Tok } from "./alias.ts";
 /**
  * Bufr part, a continuous part of a Bufr
  *
- * ! Readonly (for the moment)
+ * !Readonly (for the moment)
  *
  * @final
  */

@@ -206,7 +206,7 @@ export abstract class TreeNode<T> {
 
     const VALVE = 100;
     let valve = VALVE;
-    for (let pa = this.parent_$; pa && --valve; pa = pa.parent_$) {
+    for (let pa = this.parent_$; pa && valve--; pa = pa.parent_$) {
       depth_ += 1;
     }
     assert(valve, `Loop ${VALVE}±1 times`);
@@ -580,7 +580,7 @@ export class TreePlat<T> extends Array<TreeNode<T>> {
   //   let tp_: TreePlat<T> = this;
   //   const VALVE = 100;
   //   let valve = VALVE;
-  //   for (; !tp_.tree_$ && --valve; tp_ = tp_.host!.ctnr!);
+  //   for (; !tp_.tree_$ && valve--; tp_ = tp_.host!.ctnr!);
   //   assert(valve, `Loop ${VALVE}±1 times`);
   //   return tp_.tree_$!;
   // }
@@ -1111,7 +1111,7 @@ export class Tree<T> {
 
     const VALVE = 100;
     let valve = VALVE;
-    for (let tp_ = this.root_$[0].plat_$; tp_ && --valve; tp_ = tp_[0].plat_$) {
+    for (let tp_ = this.root_$[0].plat_$; tp_ && valve--; tp_ = tp_[0].plat_$) {
       depth_ += 1;
     }
     assert(valve, `Loop ${VALVE}±1 times`);
@@ -1136,7 +1136,7 @@ export class Tree<T> {
     let tn_: PayloadTn<T> | undefined = this.frst;
     const VALVE = this.size_1 * 2;
     let valve = VALVE;
-    while (tn_ && --valve) {
+    while (tn_ && valve--) {
       ret.push(`${tn_.payload}`);
       tn_ = tn_.next;
     }
@@ -1152,7 +1152,7 @@ export class Tree<T> {
     let tn_: PayloadTn<T> | undefined = this.last;
     const VALVE = this.size_1 * 2;
     let valve = VALVE;
-    while (tn_ && --valve) {
+    while (tn_ && valve--) {
       ret.push(`${tn_.payload}`);
       tn_ = tn_.prev;
     }

@@ -50,7 +50,7 @@ export class Bufr {
     return this.dir_mo.val;
   }
 
-  #onDir = (n_x: BufrDir): void => {
+  readonly #moDir = (n_x: BufrDir): void => {
     // const rv_a = this.eslr_sa.map((edtr_y) =>
     //   (edtr_y as EdtrBaseScrolr).mainCaret.ranval
     // );
@@ -310,6 +310,8 @@ export class Bufr {
   /* repl_mo */
   readonly repl_mo = new Moo({ val: BufrReplState.idle });
 
+  readonly #moRepl = (n_x: BufrReplState): void => this.repl_actr.to(n_x);
+
   //jjjj TOCLEANUP
   // #onReplStateChange:
   //   | ((newval: BufrReplState, oldval: BufrReplState) => void)
@@ -356,7 +358,7 @@ export class Bufr {
 
     const VALVE = 30;
     let valve = VALVE;
-    while (!(ret & this.#sigPool) && --valve) ret <<= 1;
+    while (!(ret & this.#sigPool) && valve--) ret <<= 1;
     assert(valve, `Loop ${VALVE}±1 times`);
 
     this.#sigPool &= ~ret;
@@ -419,7 +421,7 @@ export class Bufr {
     fh_x?: FileSystemFileHandle,
   ) {
     this.dir_mo.set_Moo(dir_x)
-      .registHandler(this.#onDir, { i: LastCb_i });
+      .registHandler(this.#moDir, { i: LastCb_i });
 
     this.frstLine_$ = this.createLine();
     this.lineTree = new LineTree(this.frstLine_$);
@@ -428,7 +430,7 @@ export class Bufr {
     this.lastLine_$ = this.frstLine_$;
     if (text_x) this.setLines(text_x);
 
-    this.repl_mo.registHandler((n_y) => this.repl_actr.to(n_y));
+    this.repl_mo.registHandler(this.#moRepl);
 
     this.#filehandle = fh_x;
 
@@ -451,13 +453,13 @@ export class Bufr {
   })
   reset_Bufr(): this {
     this.dir_mo.reset_Moo()
-      .registHandler(this.#onDir, { i: LastCb_i });
+      .registHandler(this.#moDir, { i: LastCb_i });
 
     //jjjj TOCLEANUP
     // let ln_: Line | undefined = this.lastLine;
     // const VALVE = LnumMAX;
     // let valve = VALVE;
-    // while (ln_ && ln_ !== this.frstLine_$ && --valve) {
+    // while (ln_ && ln_ !== this.frstLine_$ && valve--) {
     //   const ln_1: Line | undefined = ln_.prevLine;
     //   ln_.rmvSelf_$();
     //   ln_ = ln_1;
@@ -478,7 +480,8 @@ export class Bufr {
     this.canUndo_mo.reset_Moo();
     this.canRedo_mo.reset_Moo();
 
-    this.repl_mo.reset_Moo();
+    this.repl_mo.reset_Moo()
+      .registHandler(this.#moRepl);
     //jjjj TOCLEANUP
     // this.#onReplStateChange = undefined;
     this.repl_actr.fina();
@@ -695,7 +698,7 @@ export class Bufr {
     let ln: Line | undefined = this.frstLine;
     const VALVE = LnumMAX;
     let valve = VALVE;
-    while (ln && --valve) {
+    while (ln && valve--) {
       ret.push(ln.text);
       sz += ln.uchrLen;
       if (szMAX_x !== undefined && sz > szMAX_x) {
@@ -830,7 +833,7 @@ export class Bufr {
   //   do {
   //     lineId_a.push(line.id);
   //     line = line.nextLine!;
-  //   } while (line && --valve);
+  //   } while (line && valve--);
   //   assert(valve);
 
   //   return `[#${lineId_a.join(", ")}]`;

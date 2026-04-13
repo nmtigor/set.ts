@@ -104,7 +104,7 @@ export class Rel extends SetSN {
     }
     this.#children = undefined;
 
-    this.invalidateBdry();
+    this.invalBdry();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

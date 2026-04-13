@@ -5,8 +5,8 @@
 
 import type { Line } from "@fe-cpl/Line.ts";
 import { CYPRESS, INOUT } from "../../preNs.ts";
-import type { loff_t, uint } from "../alias.ts";
-import type { Id_t, ldt_t } from "../alias_v.ts";
+import type { ldt_t, loff_t, uint } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
 import type { BaseTok } from "@fe-cpl/BaseTok.ts";
 import type { Stnode } from "@fe-cpl/Stnode.ts";
 import type { Token } from "@fe-cpl/Token.ts";

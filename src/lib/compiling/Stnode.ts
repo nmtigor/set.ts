@@ -39,7 +39,11 @@ export type CalcCommonO_ = {
 /** >=1 */
 const FilterDepth_ = 2;
 
-/** primaryconst: const exclude `#depth`, `frstToken$`, `lastToken$` */
+/**
+ * syntax node
+ *
+ * primaryconst: const exclude `#depth`, `frstToken$`, `lastToken$`
+ */
 export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /* parent_$ */
   parent_$: Stnode<T> | undefined;
@@ -56,7 +60,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     let ret: Stnode<T> = this;
     const VALVE = 1_000;
     let valve = VALVE;
-    while (ret.parent_$ && --valve) ret = ret.parent_$;
+    while (ret.parent_$ && valve--) ret = ret.parent_$;
     assert(valve, `Loop ${VALVE}±1 times`);
     return ret;
   }
@@ -67,7 +71,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   isAncestorOf(sn_x?: Stnode<T>) {
     const VALVE = 1_000;
     let valve = VALVE;
-    while (sn_x && --valve) {
+    while (sn_x && valve--) {
       if (sn_x === this) return true;
       sn_x = sn_x.parent_$;
     }
@@ -182,7 +186,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     let pa_ = this.parent_$;
     const VALVE = 1_000;
     let valve = VALVE;
-    while (pa_ && --valve) {
+    while (pa_ && valve--) {
       ret++;
       if (pa_.#depth >= 0) {
         ret += pa_.#depth;
@@ -233,7 +237,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     let ret: Stnode<T> = this;
     const VALVE = 1_000;
     let valve = VALVE;
-    while (ret.isErr && ret.parent_$ && --valve) ret = ret.parent_$;
+    while (ret.isErr && ret.parent_$ && valve--) ret = ret.parent_$;
     assert(valve, `Loop ${VALVE}±1 times`);
     return ret;
   }
@@ -309,7 +313,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
    *  `Pazr.pazmrk_$()()`.
    * @final
    */
-  invalidateBdry(): this {
+  invalBdry(): this {
     if (this.frstToken$?.stnod_$ === this) {
       this.frstToken$.stnod_$ = undefined;
     }
@@ -594,7 +598,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     };
 
     let floatupTailCalled = false;
-    L_0: while (sn_sa_x.length > 1 && --valve) {
+    L_0: while (sn_sa_x.length > 1 && valve--) {
       const de_0 = sn_sa_x.at(-1)!.depth;
       for (let i = sn_sa_x.length - 1; i--;) {
         const de_i = sn_sa_x[i].depth;
@@ -708,7 +712,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
 //   {
 //     ret = ret.parent_$;
 //     let valve = 1000+1;
-//     while( ret && !ret.isBeg() && --valve ) ret = ret.parent_$;
+//     while( ret && !ret.isBeg() && valve-- ) ret = ret.parent_$;
 //     assert(valve);
 //   }
 //   out(ret); return ret;

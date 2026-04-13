@@ -246,7 +246,7 @@ export class ERan {
         stopBofs = 0;
         bln = bln.nextLine!;
         eln = elnO_x.eline(bln.lidx_1);
-      } while (bln !== lastBln && --valve);
+      } while (bln !== lastBln && valve--);
       assert(valve, `Loop ${VALVE}±1 times`);
     }
 
@@ -388,12 +388,10 @@ class ERanFac_ extends Factory<ERan> {
     return new ERan(new ELoc(document, 0));
   }
 
-  protected override resetVal$(i_x: uint) {
-    const ret = this.get(i_x);
-    ret.focusEloc.ctnr_$ = document;
-    ret.focusEloc.offs_$ = 0;
-    ret.collapse_$();
-    return ret;
+  protected override resetVal$(v_x: ERan): void {
+    v_x.focusEloc.ctnr_$ = document;
+    v_x.focusEloc.offs_$ = 0;
+    v_x.collapse_$();
   }
 }
 export const g_eran_fac = new ERanFac_();
@@ -405,10 +403,8 @@ class RangeFac_ extends Factory<Range> {
     return new Range();
   }
 
-  protected override resetVal$(i_x: number) {
-    const ret = this.val_a$[i_x];
-    ret.reset();
-    return ret;
+  protected override resetVal$(v_x: Range): void {
+    v_x.reset();
   }
 }
 const range_fac_ = new RangeFac_();

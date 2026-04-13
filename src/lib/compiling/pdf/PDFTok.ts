@@ -7,11 +7,11 @@ import { BaseTok } from "../BaseTok.ts";
 /*80--------------------------------------------------------------------------*/
 
 enum PDFTok_ {
-  _ = 500,
+  _ = 1000,
 
   _max,
 }
-console.assert(PDFTok_._max <= 600);
+console.assert(PDFTok_._max <= 1100);
 
 export type PDFTok = BaseTok | PDFTok_;
 export const PDFTok = { ...BaseTok, ...PDFTok_ };

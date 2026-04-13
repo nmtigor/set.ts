@@ -226,7 +226,7 @@ export class Line implements Bidir {
 
   /** @final */
   get empty(): boolean {
-    return !this.text.length;
+    return this.text.length === 0;
   }
   /* ~ */
 
@@ -506,7 +506,7 @@ export class Line implements Bidir {
   //   let tseg = strtTSeg;
   //   const VALVE = 100;
   //   let valve = VALVE;
-  //   while (tseg !== tseg_x && tseg !== stopTSeg && --valve) {
+  //   while (tseg !== tseg_x && tseg !== stopTSeg && valve--) {
   //     tseg = tseg.nextTSeg_$!;
   //   }
   //   assert(valve, `Loop ${VALVE}±1 times`);
@@ -824,7 +824,7 @@ export class Line implements Bidir {
   //       }
 
   //       tseg = tseg.nextTSeg_$;
-  //     } while (tseg && tseg !== this.lastTSegBy_$ && --valve);
+  //     } while (tseg && tseg !== this.lastTSegBy_$ && valve--);
   //     assert(valve);
   //   }
   //   return ret;

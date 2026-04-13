@@ -5,7 +5,7 @@
 
 import { _TRACE, INOUT } from "../../preNs.ts";
 import { LnumMAX } from "../alias.ts";
-import type { Id_t, Ts_t } from "../alias_v.ts";
+import type { Id_t } from "../alias_v.ts";
 import { assert, fail } from "../util.ts";
 import * as Is from "../util/is.ts";
 import { type Less, SortedArray } from "../util/SortedArray.ts";
@@ -161,7 +161,7 @@ export class Repl {
 
     const VALVE = LnumMAX;
     let valve = VALVE;
-    while (srcLn && srcLn !== srcLastLn && --valve) {
+    while (srcLn && srcLn !== srcLastLn && valve--) {
       if (i_ === 0) {
         outTxt_a_x[0] = srcLn.text.slice(srcStrtLoff);
         srcLn.splice_$(srcStrtLoff, srcLn.uchrLen, inTxt_a_x[0]);
@@ -183,7 +183,7 @@ export class Repl {
     let srcFrstLn = inRan_x.frstLine;
     if (i_ === tgtN) {
       //jjjj TOCLEANUP
-      // while (srcLn && srcLn !== srcLastLn && --valve) {
+      // while (srcLn && srcLn !== srcLastLn && valve--) {
       //   outTxt_a_x[i_++] = srcLn.text;
 
       //   const ln_ = srcLn.nextLine;
@@ -256,9 +256,7 @@ export class Repl {
         outRan_x.stopLoc.set_Loc(srcLastLn, inTxt_a_x[i_].length);
       }
     } else {
-      /*#static*/ if (INOUT) {
-        fail("Should not run here!");
-      }
+      fail("Should not run here!");
     }
     outRan_x.strtLoc.set_Loc(srcFrstLn, srcStrtLoff);
 

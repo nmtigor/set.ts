@@ -27,14 +27,17 @@ const init_ = (text_x?: string | string[]) => {
   lexr.reset_Lexr();
   pazr.reset_Pazr();
   bufr.repl_actr.init(lexr, pazr);
-  bufr.repl_mo.registHandler((n_y) => bufr.repl_actr.to(n_y));
 
   if (text_x) repl(rv(0, 0), text_x);
 };
 
-afterEach(() => {
+const fina_ = () => {
   bufr.reset_Bufr();
   lexr.destructor();
+};
+
+afterEach(() => {
+  fina_();
   assertEquals(g_count.newToken, g_count.oldToken);
 });
 
@@ -47,7 +50,7 @@ after(() => {
 });
 
 describe("SetPazr.paz_impl$()", () => {
-  it("pazKey_$()", () => {
+  it("#pazKey()", () => {
     init_();
 
     repl(rv(0, 0), "abc");
@@ -88,7 +91,7 @@ describe("SetPazr.paz_impl$()", () => {
     ]]);
   });
 
-  it("pazRel_$()", () => {
+  it("#pazRelKey()", () => {
     init_();
     let r_: Rel;
 
@@ -105,7 +108,7 @@ describe("SetPazr.paz_impl$()", () => {
       tgt: undefined,
     }]]);
 
-    repl(ran(0)._rv, "?");
+    repl(ran(0).rv, "?");
     /*
     >?
     */
@@ -124,7 +127,7 @@ describe("SetPazr.paz_impl$()", () => {
       tgt: undefined,
     }]]);
 
-    repl(ran(0)._rv, "?");
+    repl(ran(0).rv, "?");
     /*
     >??
     */
@@ -226,7 +229,7 @@ describe("SetPazr.paz_impl$()", () => {
     assertStrictEquals(pazr.takldSn_sa_$.at(0), r_._c_(0));
   });
 
-  it("pazSet_$() without parentheses", () => {
+  it("_pazSet() without parentheses", () => {
     init_();
     let b_: BinaryOp, b_1: BinaryOp;
 
@@ -243,7 +246,7 @@ describe("SetPazr.paz_impl$()", () => {
     }]]);
     assertEquals(pazr.unrelSn_sa_$._repr_(), []);
 
-    repl(ran(0)._rv, "2");
+    repl(ran(0).rv, "2");
     /*
     1∩2
     */
@@ -262,7 +265,7 @@ describe("SetPazr.paz_impl$()", () => {
     b_ = (pazr.root as Set)._c_(0) as BinaryOp;
     assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c_(0));
 
-    repl(ran(0)._rv, "\\");
+    repl(ran(0).rv, "\\");
     /*
     1∩2\
     */
@@ -295,7 +298,7 @@ describe("SetPazr.paz_impl$()", () => {
     assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c_(0));
     assertStrictEquals(pazr.takldSn_sa_$.at(1), b_._c_(1)?._c_(0)?._c_(0));
 
-    repl(ran(0)._rv, "3");
+    repl(ran(0).rv, "3");
     /*
     1∩2\3
     */
@@ -324,7 +327,7 @@ describe("SetPazr.paz_impl$()", () => {
     assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c_(0));
     assertStrictEquals(pazr.takldSn_sa_$.at(1), b_._c_(1)?._c_(0)?._c_(0));
 
-    repl(ran(0)._rv, "∪");
+    repl(ran(0).rv, "∪");
     /*
     1∩2\3∪
     */
@@ -367,7 +370,7 @@ describe("SetPazr.paz_impl$()", () => {
     assertStrictEquals(pazr.takldSn_sa_$.at(1), b_1._c_(1)?._c_(0)?._c_(0));
     assertStrictEquals(pazr.takldSn_sa_$.at(2), b_1._c_(1)?._c_(0)?._c_(1));
 
-    repl(ran(0)._rv, "4");
+    repl(ran(0).rv, "4");
     /*
     1∩2\3∪4
     */
@@ -397,11 +400,53 @@ describe("SetPazr.paz_impl$()", () => {
     assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c_(0));
   });
 
-  it("pazSet_$() with paren_open", () => {
+  it("_pazSet() with paren_open", () => {
     init_();
     let b_: BinaryOp;
 
-    repl(rv(0, 0), "(∩1");
+    repl(rv(0, 0), "(");
+    assertEquals(pazr._err_, [
+      ["Set,0", [
+        `${Err.set_unexpected_token}: paren_open[0-0,0-1)`,
+        Err.set_no_cloz_paren,
+      ]],
+    ]);
+    assertEquals(
+      pazr.root?._newInfo_,
+      "Set,0 [ paren_open[0-0,0-1) ]",
+    );
+    assertEquals(pazr.root?._repr_(), ["Set,0", "paren_open[0-0,0-1)"]);
+    assertEquals(pazr.unrelSn_sa_$._repr_(), []);
+
+    repl(ran(0).rv, "(");
+    /*
+    ((
+    */
+    assertEquals(pazr._err_, [
+      ["Set,2", [
+        `${Err.set_unexpected_token}: paren_open[0-0,0-1)`,
+        Err.set_no_cloz_paren,
+      ]],
+      ["BinaryErr,1", [
+        `${Err.set_invalid_binary_op}: paren_open[0-1,0-2)`,
+        Err.set_binaryerr_no_rhs,
+      ]],
+    ]);
+    assertEquals(
+      pazr.root?._newInfo_,
+      "Set,0 [ paren_open[0-0,0-1), paren_open[0-1,0-2) ]",
+    );
+    assertEquals(pazr.root?._repr_(), ["Set,0", ["BinaryErr,1", {
+      lhs: ["Set,2", "paren_open[0-0,0-1)"],
+      op: "paren_open[0-1,0-2)",
+      rhs: undefined,
+    }]]);
+    assertEquals(pazr.unrelSn_sa_$._repr_(), []);
+
+    repl(rv(0, 1, 0, 2), "∩1");
+    /*
+    (n1
+    */
     assertEquals(pazr._err_, [
       ["Set,2", [`${Err.set_unexpected_token}: intersect[0-1,0-2)`]],
       ["BinaryErr,1", [
@@ -491,7 +536,7 @@ describe("SetPazr.paz_impl$()", () => {
     assertStrictEquals(pazr.takldSn_sa_$.at(1), b_._c_(0)?._c_(0));
     assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c_(1));
 
-    repl(ran(0)._rv, ")");
+    repl(ran(0).rv, ")");
     /*
     (((0)∩1)
     */
@@ -519,8 +564,8 @@ describe("SetPazr.paz_impl$()", () => {
     assertStrictEquals(pazr.takldSn_sa_$.at(1), b_._c_(0)?._c_(0));
     assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c_(1));
 
-    /* This is a rare case that FildterDepth_ shows its restriction. */
-    repl(ran(0)._rv, ")");
+    /* This is a rare case that FilterDepth_ shows its restriction. */
+    repl(ran(0).rv, ")");
     /*
     (((0)∩1))
     */
@@ -540,11 +585,11 @@ describe("SetPazr.paz_impl$()", () => {
     assertEquals(pazr.takldSn_sa_$._repr_(), []);
   });
 
-  it("pazSet_$() with paren_cloz", () => {
+  it("_pazSet() with paren_cloz", () => {
     init_();
     let b_: BinaryOp;
 
-    repl(ran(0)._rv, "1)");
+    repl(ran(0).rv, "1)");
     assertEquals(pazr._err_, [["Set,0", [Err.set_no_open_paren]]]);
     assertEquals(
       pazr.root?._newInfo_,
@@ -580,7 +625,7 @@ describe("SetPazr.paz_impl$()", () => {
     b_ = (pazr.root as Set)._c_(0) as BinaryOp;
     assertStrictEquals(pazr.takldSn_sa_$.at(0), b_._c_(1)?._c_(0));
 
-    repl(ran(0)._rv, ")");
+    repl(ran(0).rv, ")");
     /*
     0)∩1))
     */

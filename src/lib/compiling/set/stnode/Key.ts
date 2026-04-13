@@ -47,7 +47,7 @@ export class Key extends SetSN {
       c_a.splice(i_, 1, newSn_x as FuzykeySeq | QuotkeySeq);
     }
 
-    if (i_ === 0 || i_ === c_a.length - 1) this.invalidateBdry();
+    if (i_ === 0 || i_ === c_a.length - 1) this.invalBdry();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

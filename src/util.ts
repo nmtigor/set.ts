@@ -31,7 +31,7 @@ export function isClick(
 export const HoldDuration = 1_000;
 /*64----------------------------------------------------------*/
 
-/** In milliseconds */
+/** in milliseconds */
 export const SpeedGran = 200;
 
 export const SwipeValve = .08;

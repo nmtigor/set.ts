@@ -8,6 +8,7 @@ import type {
   BufrDir,
   int,
   lcol_t,
+  ldt_t,
   lnum_t,
   loff_t,
   UChr,
@@ -15,7 +16,7 @@ import type {
 } from "../alias.ts";
 import { Endpt } from "../alias.ts";
 import type { Id_t, UInt16 } from "../alias_v.ts";
-import type { Bidi, Bidir } from "../Bidi.ts";
+import type { Bidi } from "../Bidi.ts";
 import { assert } from "../util.ts";
 import { Factory } from "../util/Factory.ts";
 import { g_count } from "../util/performance.ts";
@@ -33,7 +34,8 @@ export type LocInfo = {
   isSurTral: boolean;
 };
 
-export const enum LocCompared {
+/** Loc compared */
+export const enum LocCfd {
   yes = 0b0_0001,
   /** no but at the same `Line` */
   no_sameline = 0b0_0010,
@@ -41,7 +43,7 @@ export const enum LocCompared {
   no_othrline = 0b0_0100,
   /** no and not in the same `Bufr` */
   no_othrBufr = 0b0_1000,
-  /* just use `!== LocCompared.yes` */
+  /* just use `!== LocCfd.yes` */
   // no = no_sameline | no_othrline | no_othrBufr,
 }
 
@@ -236,7 +238,7 @@ export class Loc {
   }
 
   /**
-   * `in( this.loff_$ >= 0 )`
+   * `in( this.loff_$ >= 0)`
    * @const
    */
   get uchr(): UChr {
@@ -361,19 +363,19 @@ export class Loc {
     return this;
   }
 
-  /** @primaryconst */
+  /** @const */
   peek_uchr(n_x: int, inline_x?: "inline"): UChr {
-    using loc = this.usingDup();
-    if (n_x >= 0) loc.forwn(n_x, inline_x);
-    else loc.backn(-n_x, inline_x);
-    return loc.uchr;
+    using loc_u = this.usingDup();
+    if (n_x >= 0) loc_u.forwn(n_x, inline_x);
+    else loc_u.backn(-n_x, inline_x);
+    return loc_u.uchr;
   }
-  /** @primaryconst */
+  /** @const */
   peek_ucod(n_x: int, inline_x?: "inline"): UInt16 {
-    using loc = this.usingDup();
-    if (n_x >= 0) loc.forwn(n_x, inline_x);
-    else loc.backn(-n_x, inline_x);
-    return loc.ucod;
+    using loc_u = this.usingDup();
+    if (n_x >= 0) loc_u.forwn(n_x, inline_x);
+    else loc_u.backn(-n_x, inline_x);
+    return loc_u.ucod;
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
   /* comparison */
@@ -384,13 +386,13 @@ export class Loc {
    * @primaryconst @param line_x
    * @const @param loff_x
    */
-  #locS(line_x: Line, loff_x: loff_t): LocCompared {
-    if (this.bufr !== line_x.bufr) return LocCompared.no_othrBufr;
+  #locS(line_x: Line, loff_x: loff_t): LocCfd {
+    if (this.bufr !== line_x.bufr) return LocCfd.no_othrBufr;
     if (this.line_$ === line_x && this.loff_$ >= loff_x) {
-      return LocCompared.no_sameline;
+      return LocCfd.no_sameline;
     }
-    if (this.lidx_1 > line_x.lidx_1) return LocCompared.no_othrline;
-    return LocCompared.yes;
+    if (this.lidx_1 > line_x.lidx_1) return LocCfd.no_othrline;
+    return LocCfd.yes;
   }
   /** @see {@linkcode #locS()} */
   #posS(line_x: Line, loff_x: loff_t): boolean {
@@ -399,13 +401,13 @@ export class Loc {
         this.lidx_1 < line_x.lidx_1);
   }
   /** @see {@linkcode #locS()} */
-  #locGE(line_x: Line, loff_x: loff_t): LocCompared {
-    if (this.bufr !== line_x.bufr) return LocCompared.no_othrBufr;
+  #locGE(line_x: Line, loff_x: loff_t): LocCfd {
+    if (this.bufr !== line_x.bufr) return LocCfd.no_othrBufr;
     if (this.line_$ === line_x && this.loff_$ < loff_x) {
-      return LocCompared.no_sameline;
+      return LocCfd.no_sameline;
     }
-    if (this.lidx_1 < line_x.lidx_1) return LocCompared.no_othrline;
-    return LocCompared.yes;
+    if (this.lidx_1 < line_x.lidx_1) return LocCfd.no_othrline;
+    return LocCfd.yes;
   }
   /** @see {@linkcode #locS()} */
   #posGE(line_x: Line, loff_x: loff_t): boolean {
@@ -414,13 +416,13 @@ export class Loc {
         this.lidx_1 > line_x.lidx_1);
   }
   /** @see {@linkcode #locS()} */
-  #locSE(line_x: Line, loff_x: loff_t): LocCompared {
-    if (this.bufr !== line_x.bufr) return LocCompared.no_othrBufr;
+  #locSE(line_x: Line, loff_x: loff_t): LocCfd {
+    if (this.bufr !== line_x.bufr) return LocCfd.no_othrBufr;
     if (this.line_$ === line_x && this.loff_$ > loff_x) {
-      return LocCompared.no_sameline;
+      return LocCfd.no_sameline;
     }
-    if (this.lidx_1 > line_x.lidx_1) return LocCompared.no_othrline;
-    return LocCompared.yes;
+    if (this.lidx_1 > line_x.lidx_1) return LocCfd.no_othrline;
+    return LocCfd.yes;
   }
   /** @see {@linkcode #locS()} */
   #posSE(line_x: Line, loff_x: loff_t): boolean {
@@ -429,13 +431,13 @@ export class Loc {
         this.lidx_1 < line_x.lidx_1);
   }
   /** @see {@linkcode #locS()} */
-  #locG(line_x: Line, loff_x: loff_t): LocCompared {
-    if (this.bufr !== line_x.bufr) return LocCompared.no_othrBufr;
+  #locG(line_x: Line, loff_x: loff_t): LocCfd {
+    if (this.bufr !== line_x.bufr) return LocCfd.no_othrBufr;
     if (this.line_$ === line_x && this.loff_$ <= loff_x) {
-      return LocCompared.no_sameline;
+      return LocCfd.no_sameline;
     }
-    if (this.lidx_1 < line_x.lidx_1) return LocCompared.no_othrline;
-    return LocCompared.yes;
+    if (this.lidx_1 < line_x.lidx_1) return LocCfd.no_othrline;
+    return LocCfd.yes;
   }
   /** @see {@linkcode #locS()} */
   #posG(line_x: Line, loff_x: loff_t): boolean {
@@ -449,11 +451,11 @@ export class Loc {
    * @const @param line_x
    * @const @param loff_x
    */
-  #locE(line_x: Line, loff_x: loff_t): LocCompared {
-    if (this.bufr !== line_x.bufr) return LocCompared.no_othrBufr;
-    if (this.line_$ !== line_x) return LocCompared.no_othrline;
-    if (this.loff_$ !== loff_x) return LocCompared.no_sameline;
-    return LocCompared.yes;
+  #locE(line_x: Line, loff_x: loff_t): LocCfd {
+    if (this.bufr !== line_x.bufr) return LocCfd.no_othrBufr;
+    if (this.line_$ !== line_x) return LocCfd.no_othrline;
+    if (this.loff_$ !== loff_x) return LocCfd.no_sameline;
+    return LocCfd.yes;
   }
   /** @see {@linkcode #locE()} */
   #posE(line_x: Line, loff_x: loff_t): boolean {
@@ -466,7 +468,7 @@ export class Loc {
    * @primaryconst
    * @primaryconst @param rhs_x
    */
-  locS(rhs_x: Loc): LocCompared {
+  locS(rhs_x: Loc): LocCfd {
     return this.#locS(rhs_x.line_$, rhs_x.loff_$);
   }
   /** @see {@linkcode locS()} */
@@ -475,10 +477,10 @@ export class Loc {
   }
   /** @see {@linkcode locS()} */
   posS_inline(rhs_x: Loc): boolean {
-    return this.locGE(rhs_x) === LocCompared.no_sameline;
+    return this.locGE(rhs_x) === LocCfd.no_sameline;
   }
   /** @see {@linkcode locS()} */
-  locGE(rhs_x: Loc): LocCompared {
+  locGE(rhs_x: Loc): LocCfd {
     return this.#locGE(rhs_x.line_$, rhs_x.loff_$);
   }
   /** @see {@linkcode locS()} */
@@ -486,7 +488,7 @@ export class Loc {
     return this.#posGE(rhs_x.line_$, rhs_x.loff_$);
   }
   /** @see {@linkcode locS()} */
-  locSE(rhs_x: Loc): LocCompared {
+  locSE(rhs_x: Loc): LocCfd {
     return this.#locSE(rhs_x.line_$, rhs_x.loff_$);
   }
   /** @see {@linkcode locS()} */
@@ -494,7 +496,7 @@ export class Loc {
     return this.#posSE(rhs_x.line_$, rhs_x.loff_$);
   }
   /** @see {@linkcode locS()} */
-  locG(rhs_x: Loc): LocCompared {
+  locG(rhs_x: Loc): LocCfd {
     return this.#locG(rhs_x.line_$, rhs_x.loff_$);
   }
   /** @see {@linkcode locS()} */
@@ -505,13 +507,28 @@ export class Loc {
    * @final
    * @const
    * @const @param rhs_x
+   * @const @param n_x
    */
-  locE(rhs_x: Loc): LocCompared {
-    return this.#locE(rhs_x.line_$, rhs_x.loff_$);
+  locE(rhs_x: Loc, n_x?: ldt_t): LocCfd {
+    if (n_x === undefined || n_x === 0) {
+      return this.#locE(rhs_x.line_$, rhs_x.loff_$);
+    }
+
+    using rhs_u = rhs_x.usingDup();
+    if (n_x > 0) rhs_u.forwn(n_x);
+    else rhs_u.backn(-n_x);
+    return this.locE(rhs_u);
   }
   /** @see {@linkcode locE()} */
-  posE(rhs_x: Loc): boolean {
-    return this.#posE(rhs_x.line_$, rhs_x.loff_$);
+  posE(rhs_x: Loc, n_x?: int): boolean {
+    if (n_x === undefined || n_x === 0) {
+      return this.#posE(rhs_x.line_$, rhs_x.loff_$);
+    }
+
+    using rhs_u = rhs_x.usingDup();
+    if (n_x > 0) rhs_u.forwn(n_x);
+    else rhs_u.backn(-n_x);
+    return this.posE(rhs_u);
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -750,8 +767,8 @@ class LocFac_ extends Factory<Loc> {
     return new Loc(this.#line, 0);
   }
 
-  protected override reuseVal$(i_x: uint) {
-    return this.get(i_x).set_Loc(this.#line, 0);
+  protected override reuseVal$(v_x: Loc): void {
+    v_x.set_Loc(this.#line, 0);
   }
 }
 export const g_loc_fac = new LocFac_();

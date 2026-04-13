@@ -30,7 +30,7 @@ import { assert, bind, fail } from "./util.ts";
 import { trace, traceOut } from "./util/trace.ts";
 /*80--------------------------------------------------------------------------*/
 
-/** In milliseconds */
+/** in milliseconds */
 const ScronrRefresh_to_ = 500;
 
 /** Scroll container */
@@ -906,7 +906,7 @@ class ScrodicatrI_<C extends Coo> extends Scrodicatr_<C> {
 }
 /*64----------------------------------------------------------*/
 
-/** In milliseconds */
+/** in milliseconds */
 export const ScrobarHide_to = 1_000;
 
 /** Scrollbar */

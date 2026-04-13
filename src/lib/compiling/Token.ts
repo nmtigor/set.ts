@@ -11,6 +11,7 @@ import { assert, out } from "../util.ts";
 import { g_count } from "../util/performance.ts";
 import type { Err, Tok } from "./alias.ts";
 import { BaseTok } from "./BaseTok.ts";
+import { CSSTok } from "./css/CSSTok.ts";
 import { HTMLTok } from "./html/HTMLTok.ts";
 import { JSLangTok } from "./jslang/JSLangTok.ts";
 import type { LexdInfo } from "./Lexr.ts";
@@ -23,7 +24,8 @@ import { g_ran_fac } from "./RanFac.ts";
 import { Ranval } from "./Ranval.ts";
 import { RMLTok } from "./rml/RMLTok.ts";
 import { SetTok } from "./set/SetTok.ts";
-import { type _OldInfo_, Snt } from "./Snt.ts";
+import type { _OldInfo_ } from "./Snt.ts";
+import { Snt } from "./Snt.ts";
 import { Stnode } from "./Stnode.ts";
 import type { TokLine } from "./TokLine.ts";
 import type { TokRan } from "./TokRan.ts";
@@ -34,11 +36,11 @@ type NErr_ = 2;
 const NErr_ = 2;
 console.assert(NErr_ >= 1);
 
-type ResetTokenP_<T extends Tok> = {
-  value?: T;
-  strtLoc?: Loc;
-  stopLoc?: Loc;
-};
+// type ResetTokenP_<T extends Tok> = {
+//   value?: T;
+//   strtLoc?: Loc;
+//   stopLoc?: Loc;
+// };
 
 /** @final */
 export class Token<T extends Tok = BaseTok> extends Snt {
@@ -97,7 +99,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     return this.ran_$.strtLoc;
   }
   /**
-   * @borrow @const @param loc_x
+   * @headborrow @const @param loc_x
    * @const @param tok_x
    */
   setStrt(loc_x: Loc, tok_x?: T): this {
@@ -128,7 +130,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     return this.ran_$.stopLoc;
   }
   /**
-   * @borrow @const @param loc_x
+   * @headborrow @const @param loc_x
    * @const @param tok_x
    */
   setStop(loc_x: Loc, tok_x?: T): this {
@@ -192,24 +194,17 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   set value(_x: T) {
     this.#value = _x;
     /*#static*/ if (DEBUG) {
-      (this as any)._valvename_ = _x <= BaseTok._max
-        ? BaseTok[_x]
-        : _x <= PlainTok._max
-        ? PlainTok[_x]
-        : _x <= SetTok._max
-        ? SetTok[_x]
-        : _x <= URITok._max
-        ? URITok[_x]
-        : _x <= MdextTok._max
-        ? MdextTok[_x]
-        : _x <= PDFTok._max
-        ? PDFTok[_x]
-        : _x <= RMLTok._max
-        ? RMLTok[_x]
-        : _x <= JSLangTok._max
-        ? JSLangTok[_x]
-        : _x <= HTMLTok._max
-        ? HTMLTok[_x]
+      /* deno-fmt-ignore */ (this as any)._valvename_ =
+          _x <= BaseTok._max   ? BaseTok[_x]
+        : _x <= PlainTok._max  ? PlainTok[_x]
+        : _x <= SetTok._max    ? SetTok[_x]
+        : _x <= URITok._max    ? URITok[_x]
+        : _x <= CSSTok._max    ? CSSTok[_x]
+        : _x <= HTMLTok._max   ? HTMLTok[_x]
+        : _x <= RMLTok._max    ? RMLTok[_x]
+        : _x <= MdextTok._max  ? MdextTok[_x]
+        : _x <= JSLangTok._max ? JSLangTok[_x]
+        : _x <= PDFTok._max    ? PDFTok[_x]
         : "unknown";
     }
   }
@@ -559,7 +554,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //   if( !tk11 )
   //   {
   //     let tk = this;
-  //     while( --valve
+  //     while( valve--
   //         && tk.nextToken_$
   //         && tk.nextToken_$.stopLine === stopLine
   //     ) {
@@ -571,7 +566,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //   if( !tk00 )
   //   {
   //     let tk = this;
-  //     while( --valve
+  //     while( valve--
   //         && tk.prevToken_$
   //         && tk.prevToken_$.strtLine === strtLine
   //     ) {
@@ -585,7 +580,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //   //   let tk = stopLine.stopToken_$(this.lexr_$);
   //   //   if( tk.value !== Tok.stopBdry )
   //   //   {
-  //   //     while( tk.nextToken_$  && --valve ) tk = tk.nextToken_$;
+  //   //     while( tk.nextToken_$  && valve-- ) tk = tk.nextToken_$;
   //   //     assert(valve);
   //   //     if(tk.value!==Tok.stopBdry)console.log(tk.value);
   //   //     assert( tk.value === Tok.stopBdry );
@@ -596,14 +591,14 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //   //   let tk = strtLine.strtToken(this.lexr_$);
   //   //   if( tk.value !== Tok.strtBdry )
   //   //   {
-  //   //     while( tk.prevToken_$  && --valve ) tk = tk.prevToken_$;
+  //   //     while( tk.prevToken_$  && valve-- ) tk = tk.prevToken_$;
   //   //     assert(valve);
   //   //     if(tk.value!==Tok.strtBdry)console.log(tk.value);
   //   //     assert( tk.value === Tok.strtBdry );
   //   //   }
   //   // }
   // }
-  /** Correct `frstLine.#frstToken_m` */
+  /** Correct `sntFrstLine.#frstToken_m` */
   #correct_line_frstToken(): TokLine<T> {
     const retLn = this.sntFrstLine;
     retLn.delFrstTokenBy_$(this.lexr_$);
@@ -611,7 +606,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     let tk_: Token<T> = this;
     const VALVE = 1_000;
     let valve = VALVE;
-    while (tk_.prevToken_$?.sntFrstLine === retLn && --valve) {
+    while (tk_.prevToken_$?.sntFrstLine === retLn && valve--) {
       tk_ = tk_.prevToken_$;
     }
     assert(valve, `Loop ${VALVE}±1 times`);
@@ -622,7 +617,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     ) retLn.setFrstToken_$(tk_);
     return retLn;
   }
-  /** Correct `lastLine.#lastToken_m` */
+  /** Correct `sntLastLine.#lastToken_m` */
   #correct_line_lastToken(): TokLine<T> {
     const retLn = this.sntLastLine;
     retLn.delLastTokenBy_$(this.lexr_$);
@@ -630,7 +625,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     let tk_: Token<T> = this;
     const VALVE = 1_000;
     let valve = VALVE;
-    while (tk_.nextToken_$?.sntLastLine === retLn && --valve) {
+    while (tk_.nextToken_$?.sntLastLine === retLn && valve--) {
       tk_ = tk_.nextToken_$;
     }
     assert(valve, `Loop ${VALVE}±1 times`);
@@ -706,7 +701,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     return retTk_x;
   }
   /**
-   * ! `retTk_x.nextToken_$` will be untouched. (cf. {@linkcode insNext()})
+   * !`retTk_x.nextToken_$` will be untouched. (cf. {@linkcode insNext()})\
    * `stnod_$`s do not change.
    * @headconst @param retTk_x
    */
@@ -836,11 +831,13 @@ export class Token<T extends Tok = BaseTok> extends Snt {
       PlainTok[this.value] ??
       SetTok[this.value] ??
       URITok[this.value] ??
-      MdextTok[this.value] ??
-      PDFTok[this.value] ??
+      CSSTok[this.value] ??
+      HTMLTok[this.value] ??
       RMLTok[this.value] ??
+      MdextTok[this.value] ??
       JSLangTok[this.value] ??
-      HTMLTok[this.value] ?? "unknown";
+      PDFTok[this.value] ??
+      "unknown";
   }
 
   override toString() {
@@ -902,6 +899,10 @@ export type PlainTk = Token<PlainTok>;
 export type SetTk = Token<SetTok>;
 export type URITk = Token<URITok>;
 
+export type CSSTk = Token<CSSTok>;
+export type HTMLTk = Token<HTMLTok>;
+export type RMLTk = Token<RMLTok>;
+
 /** `frstLine === lastLine` */
 export type MdextTk = Token<MdextTok>;
 //jjjj TOCLEANUP
@@ -922,10 +923,8 @@ export type MdextTk = Token<MdextTok>;
 //   }
 // }
 
-export type PDFTk = Token<PDFTok>;
-export type RMLTk = Token<RMLTok>;
 export type JSLangTk = Token<JSLangTok>;
-export type HTMLTk = Token<HTMLTok>;
+export type PDFTk = Token<PDFTok>;
 /*80--------------------------------------------------------------------------*/
 
 //kkkk Use a `TokenFac` (ref. `TSegFac`).

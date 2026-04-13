@@ -171,7 +171,7 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
 
   //     line = line.nextLine;
   //     i++;
-  //   } while (line && --valve);
+  //   } while (line && valve--);
   //   assert(valve, `Loop ${VALVE}±1 times`);
 
   //   return i === n;
@@ -221,7 +221,7 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
 //   let tk_0 = ln_.frstTokenBy(lexr_x);
 //   const VALVE = LnumMAX * 10;
 //   let valve = VALVE;
-//   while (!tk_0 && ln_.nextLine && --valve) {
+//   while (!tk_0 && ln_.nextLine && valve--) {
 //     ln_ = ln_.nextLine;
 //     tk_0 = ln_.frstTokenBy(lexr_x);
 //   }
@@ -231,13 +231,13 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
 //   if (tk_0.strtLoc.posG(loc_0)) {
 //     do {
 //       tk_0 = tk_0.prevToken_$!;
-//     } while (tk_0.strtLoc.posG(loc_0) && --valve);
+//     } while (tk_0.strtLoc.posG(loc_0) && valve--);
 //     assert(valve, `Loop ${VALVE}±1 times`);
 //   } else {
 //     while (
 //       (tk_0.stopLoc.posS(loc_0) ||
 //         tk_0.strtLoc.posS(tk_0.stopLoc) && tk_0.stopLoc.posSE(loc_0)) &&
-//       tk_0.nextToken_$ && --valve
+//       tk_0.nextToken_$ && valve--
 //     ) {
 //       tk_0 = tk_0.nextToken_$;
 //     }
@@ -248,7 +248,7 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
 //   const ln_1 = loc_1.line;
 //   ln_ = ln_1;
 //   let tk_1 = ln_.lastTokenBy(lexr_x);
-//   while (!tk_1 && ln_.prevLine && --valve) {
+//   while (!tk_1 && ln_.prevLine && valve--) {
 //     ln_ = ln_.prevLine;
 //     tk_1 = ln_.lastTokenBy(lexr_x);
 //   }
@@ -258,12 +258,12 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
 //   if (tk_1.stopLoc.posS(loc_1)) {
 //     do {
 //       tk_1 = tk_1.nextToken_$!;
-//     } while (tk_1.stopLoc.posS(loc_1) && --valve);
+//     } while (tk_1.stopLoc.posS(loc_1) && valve--);
 //     assert(valve, `Loop ${VALVE}±1 times`);
 //   } else {
 //     while (
 //       tk_1.strtLoc.posGE(loc_1) &&
-//       tk_1.prevToken_$ && --valve
+//       tk_1.prevToken_$ && valve--
 //     ) {
 //       tk_1 = tk_1.prevToken_$;
 //     }
@@ -277,7 +277,7 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
 //       tk_.bakeRanval_$();
 //       if (tk_ === tk_1) break;
 //       tk_ = tk_.nextToken_$!;
-//     } while (--valve);
+//     } while (valve--);
 //     assert(valve, `Loop ${VALVE}±1 times`);
 //   }
 // };

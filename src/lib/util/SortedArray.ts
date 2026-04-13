@@ -46,7 +46,7 @@ export class SortedArray<T> extends Array<T> {
   }
 
   /**
-   * `[0, this.length]`\
+   * `[ 0, this.length ]`\
    * Helper. Set by `includes()`
    */
   #index: uint = 0;
