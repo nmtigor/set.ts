@@ -12,7 +12,6 @@ import { assert, fail } from "../util.ts";
 import { Factory } from "../util/Factory.ts";
 import { ELineBase } from "./ELineBase.ts";
 import { ELoc } from "./ELoc.ts";
-import type { EdtrBaseScrolr } from "./EdtrBase.ts";
 import type { Pos } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
 

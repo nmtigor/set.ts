@@ -56,10 +56,10 @@ describe("SetPazr.paz_impl$()", () => {
     repl(rv(0, 0), "abc");
     assertEquals(pazr.root?.hasErr_1, false);
     assertEquals(pazr.root?._newInfo_, "Set,0 [ fuzykey[0-0,0-3) ]");
-    assertEquals(
-      pazr.root?.toString(),
-      "Set,0 ( Key,1 ( FuzykeySeq,2 ( fuzykey[0-0,0-3))))",
-    );
+    assertEquals(pazr.root?._repr_(), ["Set,0", [
+      "Key,1",
+      "FuzykeySeq,2 ( fuzykey[0-0,0-3))",
+    ]]);
 
     repl(rv(0, 1), " ");
     /*
@@ -185,7 +185,7 @@ describe("SetPazr.paz_impl$()", () => {
     \>>(>?
     */
     assertEquals(pazr._err_, [
-      ["Rel,1", [`${Err.set_rel_unexpected_token}: paren_open[0-3,0-4)`]],
+      ["Rel,1", [`${Err.set_rel_unexp_token}: paren_open[0-3,0-4)`]],
     ]);
     assertEquals(
       pazr.root?._newInfo_,
@@ -407,7 +407,7 @@ describe("SetPazr.paz_impl$()", () => {
     repl(rv(0, 0), "(");
     assertEquals(pazr._err_, [
       ["Set,0", [
-        `${Err.set_unexpected_token}: paren_open[0-0,0-1)`,
+        `${Err.set_unexp_token}: paren_open[0-0,0-1)`,
         Err.set_no_cloz_paren,
       ]],
     ]);
@@ -424,11 +424,11 @@ describe("SetPazr.paz_impl$()", () => {
     */
     assertEquals(pazr._err_, [
       ["Set,2", [
-        `${Err.set_unexpected_token}: paren_open[0-0,0-1)`,
+        `${Err.set_unexp_token}: paren_open[0-0,0-1)`,
         Err.set_no_cloz_paren,
       ]],
       ["BinaryErr,1", [
-        `${Err.set_invalid_binary_op}: paren_open[0-1,0-2)`,
+        `${Err.set_inval_binary_op}: paren_open[0-1,0-2)`,
         Err.set_binaryerr_no_rhs,
       ]],
     ]);
@@ -448,9 +448,9 @@ describe("SetPazr.paz_impl$()", () => {
     (n1
     */
     assertEquals(pazr._err_, [
-      ["Set,2", [`${Err.set_unexpected_token}: intersect[0-1,0-2)`]],
+      ["Set,2", [`${Err.set_unexp_token}: intersect[0-1,0-2)`]],
       ["BinaryErr,1", [
-        `${Err.set_invalid_binary_op}: fuzykey[0-2,0-3)`,
+        `${Err.set_inval_binary_op}: fuzykey[0-2,0-3)`,
         Err.set_binaryerr_no_rhs,
       ]],
       ["Set,0", [Err.set_no_cloz_paren]],
@@ -472,7 +472,7 @@ describe("SetPazr.paz_impl$()", () => {
     */
     assertEquals(pazr._err_, [
       ["Set,2", [
-        `${Err.set_unexpected_token}: paren_cloz[0-1,0-2)`,
+        `${Err.set_unexp_token}: paren_cloz[0-1,0-2)`,
       ]],
       ["Set,0", [Err.set_no_cloz_paren]],
     ]);
@@ -681,8 +681,8 @@ describe("SetPazr.paz_impl$()", () => {
   });
 });
 
-describe("SetSN.replaceChild()", () => {
-  it("visit FuzykeySeq, QuotkeySeq; Key.replaceChild()", () => {
+describe("SetSn.replaceChild()", () => {
+  it("#visitDrtSn() FuzykeySeq, QuotkeySeq; Key.replaceChild()", () => {
     init_("a b");
 
     repl(rv(0, 1), "0");
@@ -728,7 +728,7 @@ describe("SetSN.replaceChild()", () => {
     assertEquals(pazr.takldSn_sa_$._repr_(), []);
   });
 
-  it("visit Key; Rel.replaceChild()", () => {
+  it("#visitDrtSn() Key; Rel.replaceChild()", () => {
     init_('a>b"d" c>?');
     let r_: Rel;
 
@@ -800,7 +800,7 @@ describe("SetSN.replaceChild()", () => {
     assertStrictEquals(pazr.takldSn_sa_$.at(1), r_._c_(1)?._c_(2));
   });
 
-  it("visit Set; BinaryOp.replaceChild()", () => {
+  it("#visitDrtSn() Set; BinaryOp.replaceChild()", () => {
     init_("(a)\\b");
     let b_: BinaryOp;
 

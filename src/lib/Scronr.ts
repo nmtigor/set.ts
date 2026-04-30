@@ -26,12 +26,13 @@ import type { Cssc } from "./color/alias.ts";
 import type { Coo } from "./cv.ts";
 import { HTMLVuu } from "./cv.ts";
 import { div } from "./dom.ts";
-import { assert, bind, fail } from "./util.ts";
+import { assert, bind, fail, warn } from "./util.ts";
 import { trace, traceOut } from "./util/trace.ts";
 /*80--------------------------------------------------------------------------*/
 
-/** in milliseconds */
-const ScronrRefresh_to_ = 500;
+//jjjj TOCLEANUP
+// /** in milliseconds */
+// const ScronrRefresh_to_ = 500;
 
 /** Scroll container */
 export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
@@ -748,6 +749,13 @@ export abstract class Scrolr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   scrollTo(options: ScrollToOptions): void {
     //jjjj TOCLEANUP
     // this.preScrollTo$(options);
+    //kkkk
+    const extent = Math.max(options.left ?? 0, options.top ?? 0);
+    if (extent > 30_000_000) {
+      warn(
+        `extent (${extent}) larger than 30_000_000 (https://share.google/aimode/TCfls9Fe72v07wgKd)`,
+      );
+    }
     this.el$.scrollTo(options);
     this.sufScroll$();
   }

@@ -22,6 +22,8 @@ import {
   b64FromB64url,
   b64FromU8ary,
   b64urlFromB64,
+  isSurLead,
+  isSurTral,
   u8aryFromB64,
 } from "./util/string.ts";
 /*80--------------------------------------------------------------------------*/
@@ -267,9 +269,9 @@ Array.sparse = <T>(len_x: uint32, val_x?: T) => {
 declare global {
   interface String {
     /** surrogate leading */
-    isSurLeadAt(i_x?: uint): boolean;
+    isSurLead(i_x?: uint): boolean;
     /** surrogate trailing */
-    isSurTralAt(i_x?: uint): boolean;
+    isSurTral(i_x?: uint): boolean;
     /**
      * Ref. "lone surrogate" in [UTF-16 characters...](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String#utf-16_characters_unicode_code_points_and_grapheme_clusters)
      * @const @param i_x Same as `charCodeAt()`'s parameter.
@@ -278,22 +280,19 @@ declare global {
   }
 }
 
-Reflect.defineProperty(String.prototype, "isSurLeadAt", {
+Reflect.defineProperty(String.prototype, "isSurLead", {
   value(this: string, i_x?: uint) {
-    const cc_ = this.charCodeAt(i_x ?? 0);
-    return cc_ !== undefined && (0x0_D800 <= cc_ && cc_ <= 0x0_DBFF);
+    return isSurLead(this.charCodeAt(i_x ?? 0));
   },
 });
-Reflect.defineProperty(String.prototype, "isSurTralAt", {
+Reflect.defineProperty(String.prototype, "isSurTral", {
   value(this: string, i_x?: uint) {
-    const cc_ = this.charCodeAt(i_x ?? 0);
-    return cc_ !== undefined && (0x0_DC00 <= cc_ && cc_ <= 0x0_DFFF);
+    return isSurTral(this.charCodeAt(i_x ?? 0));
   },
 });
 Reflect.defineProperty(String.prototype, "isWellAt", {
   value(this: string, i_x?: uint) {
-    const cc_ = this.charCodeAt(i_x ?? 0);
-    return cc_ !== undefined && !(0x0_DC00 <= cc_ && cc_ <= 0x0_DFFF);
+    return !isSurTral(this.charCodeAt(i_x ?? 0));
   },
 });
 /*80--------------------------------------------------------------------------*/
@@ -617,11 +616,11 @@ Reflect.defineProperty(Float64Array.prototype, "eql", {
 /*80--------------------------------------------------------------------------*/
 /* JSON */
 
-//#region Stringified_<>
+//#region Stringified<>
 /* Ref. https://youtu.be/z7pDvyVhUnE */
 
 declare const $brand_: unique symbol;
-type Stringified_<T> = string & { [$brand_]: T };
+export type Stringified<T> = string & { [$brand_]: T };
 
 type JsonifiedValue_<T> = T extends string | number | boolean | null ? T
   : T extends { toJSON(): infer R } ? R
@@ -640,9 +639,10 @@ declare global {
       value: T,
       replacer?: null | undefined,
       space?: string | number,
-    ): Stringified_<T>;
+    ): Stringified<T>;
+    /*jjjj not easy to handle `JsonifiedObject_<T>`, need to improve */
     parse<T>(
-      text: Stringified_<T>,
+      text: Stringified<T>,
       reviver?: null | undefined,
     ): JsonifiedObject_<T>;
   }

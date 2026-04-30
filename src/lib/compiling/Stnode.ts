@@ -6,12 +6,15 @@
 import { INOUT } from "../../preNs.ts";
 import type { int, loff_t, TupleOf, uint } from "../alias.ts";
 import { assert, fail, out } from "../util.ts";
-import { type Less, SortedArray } from "../util/SortedArray.ts";
+import type { Less } from "../util/SortedArray.ts";
+import { SortedArray } from "../util/SortedArray.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import type { Loc } from "./Loc.ts";
-import { type _OldInfo_, Snt, SortedSnt_id } from "./Snt.ts";
+import { Snt } from "./Snt.ts";
 import type { Token } from "./Token.ts";
 import type { Tok } from "./alias.ts";
+import type { _OldInfo_ } from "./util.ts";
+import { SortedSn_id } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
 type Depth_ = uint | -1;
@@ -27,11 +30,8 @@ export class SortedStnod_depth extends SortedArray<Stnode<any>> {
   }
 }
 
-/** @final */
-export class SortedStnod_id extends SortedSnt_id<Stnode<any>> {}
-
 export type CalcCommonO_ = {
-  unrelSn_sa?: SortedStnod_id;
+  unrelSn_sa?: SortedSn_id;
   unrelSn_a?: Stnode<any>[];
   debug?: { a?: Stnode<any>[]; f?: Stnode<any>[][] };
 };
@@ -46,6 +46,7 @@ const FilterDepth_ = 2;
  */
 export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /* parent_$ */
+  /** @final */
   parent_$: Stnode<T> | undefined;
   get parent() {
     return this.parent_$;
@@ -86,6 +87,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     // return fail("jjjj Not implemented");
     return undefined;
   }
+  /** @final */
   _c_(i_x: int) {
     return this.children?.at(i_x);
   }
@@ -243,9 +245,10 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   }
 
   /* frstToken$ */
+  /** @final */
   protected frstToken$: Token<T> | undefined;
   /**
-   * ! Do not call in `Pazr.pazmrk_$()`
+   **! Do not call in `Pazr.pazmrk_$()`
    * @primaryconst
    */
   get frstToken(): Token<T> {
@@ -276,9 +279,10 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /* ~ */
 
   /* lastToken$ */
+  /** @final */
   protected lastToken$: Token<T> | undefined;
   /**
-   * ! Do not call in `Pazr.pazmrk_$()`
+   **! Do not call in `Pazr.pazmrk_$()`
    * @primaryconst
    */
   get lastToken(): Token<T> {
@@ -309,7 +313,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /* ~ */
 
   /**
-   * ! Do not use `frstToken` and `lastToken`, because this will be called in
+   **!Do not use `frstToken` and `lastToken`, because this will be called in
    *  `Pazr.pazmrk_$()()`.
    * @final
    */
@@ -326,18 +330,18 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   }
 
   /** @final */
-  ensureBdry(): this {
+  ensureBdries(): this {
     this.frstBdryTk;
     this.lastBdryTk;
     return this;
   }
   /** @final */
-  ensureAllBdry(): this {
+  ensureAllBdries(): this {
     const c_a = this.children;
     if (c_a) {
-      for (const sn of c_a) sn.ensureAllBdry();
+      for (const sn of c_a) sn.ensureAllBdries();
     }
-    return this.ensureBdry();
+    return this.ensureBdries();
   }
 
   /** @final */
@@ -524,7 +528,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     sn_sa_x.resort();
     if (debug) debug.a = sn_sa_x.slice();
 
-    const sn2del_sa = unrelSn_sa ? new SortedStnod_id(sn_sa_x) : undefined;
+    const sn2del_sa = unrelSn_sa ? new SortedSn_id(sn_sa_x) : undefined;
     sn2del_sa?.resort()
       .slice()
       .forEach((sn) => {

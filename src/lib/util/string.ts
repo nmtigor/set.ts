@@ -3,7 +3,8 @@
  * @license MIT
  ******************************************************************************/
 
-import type { TypedArray, uint16 } from "../alias.ts";
+import type { TypedArray, uint, uint16 } from "../alias.ts";
+import type { UInt16 } from "../alias_v.ts";
 import { validateBinaryLike } from "./general_cf.ts";
 import * as Is from "./is.ts";
 import { MurmurHash3_64 } from "./murmurhash3.ts";
@@ -21,55 +22,56 @@ export const linesOf = (text_x: string) => text_x.split(lt_re_);
 // console.log(linesOf("abc\n\n123\n"));
 /*80--------------------------------------------------------------------------*/
 
-/**
- * @const @param _x the UTF-16 code unit value returned by `String.charCodeAt()`
- */
-export const isSpaceOrTab = (_x: uint16): boolean =>
+/** @const @param _x */
+export const isSpaceOrTab = (_x: uint): boolean =>
   _x === /* " " */ 0x20 || _x === /* "\t" */ 9;
 
-/** @see {@linkcode isSpaceOrTab()} */
-export const isLFOr0 = (_x: uint16): boolean =>
-  _x === /* "\n" */ 0xA || _x === 0;
+/** @const @param _x */
+export const isLFOr0 = (_x: uint): boolean => _x === /* "\n" */ 0xA || _x === 0;
 
-/** @see {@linkcode isSpaceOrTab()} */
-export const isDecimalDigit = (_x: uint16): boolean => 0x30 <= _x && _x <= 0x39;
-/** @see {@linkcode isSpaceOrTab()} */
-export const isHexDigit = (_x: uint16): boolean =>
+/** @const @param _x */
+export const isDecimalDigit = (_x: uint): boolean => 0x30 <= _x && _x <= 0x39;
+/** @const @param _x */
+export const isHexDigit = (_x: uint): boolean =>
   (0x30 <= _x && _x <= 0x39) || // 0..9
   (0x41 <= _x && _x <= 0x46) || // A..F
   (0x61 <= _x && _x <= 0x66); // a..f
-/** @see {@linkcode isSpaceOrTab()} */
-export const isOctalDigit = (_x: uint16): boolean => (0x30 <= _x && _x <= 0x37); // 0..7
+/** @const @param _x */
+export const isOctalDigit = (_x: uint): boolean => (0x30 <= _x && _x <= 0x37); // 0..7
 
-/** @see {@linkcode isSpaceOrTab()} */
-export const isASCIIUpLetter = (
-  _x: uint16,
-): boolean => (0x41 <= _x && _x <= 0x5A); // A..Z
-/** @see {@linkcode isSpaceOrTab()} */
-export const isASCIILoLetter = (
-  _x: uint16,
-): boolean => (0x61 <= _x && _x <= 0x7A); // a..z
+/**
+ * A..Z
+ * @const @param _x
+ */
+export const isASCIIUpLetter = (_x: uint): boolean => 0x41 <= _x && _x <= 0x5A;
+/**
+ * a..z
+ * @const @param _x
+ */
+export const isASCIILoLetter = (_x: uint): boolean => 0x61 <= _x && _x <= 0x7A;
 /** @see {@linkcode isSpaceOrTab()} */
 export const isASCIILetter = (_x: uint16): boolean =>
   isASCIIUpLetter(_x) || isASCIILoLetter(_x);
 
-/** @see {@linkcode isSpaceOrTab()} */
-export const isWordLetter = (_x: uint16): boolean =>
+/** @const @param _x */
+export const isWordLetter = (_x: uint): boolean =>
   isDecimalDigit(_x) || isASCIILetter(_x) || _x === /* "_" */ 0x5F;
 
-/** @see {@linkcode isSpaceOrTab()} */
-export const isASCIIControl = (_x: uint16): boolean =>
+/** @const @param _x */
+export const isASCIIControl = (_x: uint): boolean =>
   0 <= _x && _x <= 0x1F || _x === 0x7F;
-/** @see {@linkcode isSpaceOrTab()} */
-export const isASCIINonprint = (_x: uint16): boolean =>
+/**
+ * [non-printable code point](https://www.w3.org/TR/css-syntax-3/#non-printable-code-point)
+ * @const @param _x
+ */
+export const isASCIINonprint = (_x: uint): boolean =>
   isASCIIControl(_x) &&
   (_x !== /* "\t" */ 9 && _x !== /* "\n" */ 0xA && _x !== 0xC && _x !== 0xD);
 
-// deno-fmt-ignore
 /**
  * [White space](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#white_space)
  */
-export const ws_a = [
+export const ws_a = /* deno-fmt-ignore */ [
   0x9, 0xB, 0xC, 0x20, 0xA0,
   0x0_1680,
   0x0_2000, 0x0_2001, 0x0_2002, 0x0_2003, 0x0_2004, 0x0_2005, 
@@ -77,17 +79,41 @@ export const ws_a = [
   0x0_202F, 0x0_205F,
   0x0_3000,
   0x0_FEFF,
-] as uint16[];
+] as UInt16[];
 /**
  * whitespace
- * @see {@linkcode isSpaceOrTab()}
+ * @const @param _x
+ * @const @param a_x
  */
-export const isWs = (_x: uint16, a_x: uint16[] = ws_a) => a_x.indexOf(_x) >= 0;
+export const isWs = (_x: uint, a_x: uint16[] = ws_a) => a_x.indexOf(_x) >= 0;
+
+export const ASCIIWs_a = /* deno-fmt-ignore */ [
+  /* "\t" */ 9, /* "\n" */ 0xA, 0xC, /* 0xD, */ /* " " */ 0x20
+] as UInt16[];
+/**
+ * Including line terminators, and no `0xB`\
+ * Mostly used in HTML/CSS parsers
+ * @const @param _x
+ */
+export const isASCIIWs = (_x: uint): boolean => isWs(_x, ASCIIWs_a);
 
 // /* Not sure if js impls use regexp interning like string. So. */
 // const ws_re_ = /^\s+$/;
 // /** */
 // export const isWhitespace = (_x: string) => ws_re_.test(_x);
+
+/**
+ * surrogate leading
+ * @const @param _x
+ */
+export const isSurLead = (_x: uint | bigint) =>
+  0x0_D800 <= _x && _x <= 0x0_DBFF;
+/**
+ * surrogate trailing
+ * @const @param _x
+ */
+export const isSurTral = (_x: uint | bigint) =>
+  0x0_DC00 <= _x && _x <= 0x0_DFFF;
 /*80--------------------------------------------------------------------------*/
 
 const textEncoder_ = new TextEncoder();

@@ -24,7 +24,7 @@ export class Subtract extends BinaryOp {
       this.setErr(Err.set_subtract_no_rhs);
     }
 
-    this.ensureBdry();
+    this.ensureBdries();
   }
 }
 /*80--------------------------------------------------------------------------*/

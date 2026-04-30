@@ -7,7 +7,11 @@ import { BaseTok } from "../BaseTok.ts";
 /*80--------------------------------------------------------------------------*/
 
 enum HTMLTok_ {
-  _ = 500,
+  DOCTYPE = 500,
+  tag,
+  comment,
+  character,
+  chrref, // &lt; | &#60; | &#x3C;
 
   _max,
 }

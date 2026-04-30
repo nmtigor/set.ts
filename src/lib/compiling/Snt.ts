@@ -5,35 +5,10 @@
 
 import type { lnum_t, loff_t } from "../alias.ts";
 import type { Id_t } from "../alias_v.ts";
-import { SortedIdo } from "../util/SortedArray.ts";
-import type { Locval } from "./alias.ts";
 import type { Line } from "./Line.ts";
 import type { Loc } from "./Loc.ts";
+import type { _OldInfo_ } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
-
-export type _OldInfo_ = {
-  sort: Locval;
-  info: string;
-};
-
-export class SortedSnt_id<T extends Snt = Snt> extends SortedIdo<T> {
-  _repr_(): string[] {
-    const ret: _OldInfo_[] = [];
-    for (const v of this) ret.push(v._oldInfo_);
-    return ret.sort((a_y, b_y) => {
-      const lv_a = a_y.sort;
-      const lv_b = b_y.sort;
-      return lv_a[0] < lv_b[0]
-        ? -1
-        : lv_a[0] === lv_b[0] && lv_a[1] < lv_b[1]
-        ? -1
-        : lv_a[1] === lv_b[1]
-        ? 0
-        : 1;
-    }).map((_y) => _y.info);
-  }
-}
-/*64----------------------------------------------------------*/
 
 /** syntax node or token */
 export abstract class Snt {

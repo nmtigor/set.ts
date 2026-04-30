@@ -8,7 +8,11 @@ import type { loff_t, unum } from "../alias.ts";
 import type { Id_t, UInt16 } from "../alias_v.ts";
 import { assert } from "../util.ts";
 import * as Is from "../util/is.ts";
+import { SortedIdo } from "../util/SortedArray.ts";
+import type { Locval, Tok } from "./alias.ts";
 import type { Line } from "./Line.ts";
+import type { Snt } from "./Snt.ts";
+import { Stnode } from "./Stnode.ts";
 import type { Token } from "./Token.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -44,7 +48,7 @@ export const lineLastTkO = (_x: LineData) => _x[1] ??= {};
 
 export const lineBSizeO = (_x: LineData) => _x[2] ??= {};
 // export const lineFsrecaO = (_x: LineData) => _x[5] ??= {};
-/*80--------------------------------------------------------------------------*/
+/*64----------------------------------------------------------*/
 
 /**
  * @const @param ucod_x
@@ -84,7 +88,6 @@ export const frstNon = (
   }
   return i_;
 };
-/*64----------------------------------------------------------*/
 
 /**
  * @const @param ucod_x
@@ -124,4 +127,58 @@ export const lastNon = (
   }
   return i_;
 };
+/*80--------------------------------------------------------------------------*/
+
+export abstract class LexdInfo {
+  static #ID = 0 as Id_t;
+  readonly id = ++LexdInfo.#ID as Id_t;
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
+  destructor(): void {}
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
+  //jjjj TOCLEANUP
+  // /** @const */
+  // become(li_x: LexdInfo) {}
+
+  toString(): string {
+    return "";
+  }
+}
+/*80--------------------------------------------------------------------------*/
+
+export const sntFrstTk = <T extends Tok>(
+  snt_x: Stnode<T> | Token<T>,
+): Token<T> => snt_x instanceof Stnode ? snt_x.frstToken : snt_x;
+
+export const sntLastTk = <T extends Tok>(
+  snt_x: Stnode<T> | Token<T>,
+): Token<T> => snt_x instanceof Stnode ? snt_x.lastToken : snt_x;
+/*80--------------------------------------------------------------------------*/
+
+export type _OldInfo_ = {
+  sort: Locval;
+  info: string;
+};
+
+export class SortedSnt_id<T extends Snt = Snt> extends SortedIdo<T> {
+  _repr_(): string[] {
+    const ret: _OldInfo_[] = [];
+    for (const v of this) ret.push(v._oldInfo_);
+    return ret.sort((a_y, b_y) => {
+      const lv_a = a_y.sort;
+      const lv_b = b_y.sort;
+      return lv_a[0] < lv_b[0]
+        ? -1
+        : lv_a[0] === lv_b[0] && lv_a[1] < lv_b[1]
+        ? -1
+        : lv_a[1] === lv_b[1]
+        ? 0
+        : 1;
+    }).map((_y) => _y.info);
+  }
+}
+
+/** @final */
+export class SortedSn_id extends SortedSnt_id<Stnode<any>> {}
 /*80--------------------------------------------------------------------------*/

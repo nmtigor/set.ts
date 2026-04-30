@@ -29,23 +29,23 @@ enum MdextTok_ {
   // cdata_section_cloz, // ]]>
 
   /* Leaf block tokens */
-  thematic_break, // ***, ---, ___
+  thematic_break, // *** | --- | ___
   atx_heading, // ##
-  setext_heading, // ==, --
-  code_fence, // ```, ~~~
+  setext_heading, // == | --
+  code_fence, // ``` | ~~~
   // html_block_head, // <pre, <!--, <?, <!a, <![CDATA[, <table>, <a>
   // html_block_tail, // /pre>, -->, ?>, >, ]]>
   /* ~ */
 
   /* Container block tokens */
   block_quote_marker, // >
-  bullet_list_marker, // -, +, *
-  ordered_list_marker, // 1., 1)
+  bullet_list_marker, // - | + | *
+  ordered_list_marker, // 1. | 1)
   /* ~ */
 
   /* Inline tokens */
   backtick_string, // ``
-  emphasis_delimiter, // _, *
+  emphasis_delimiter, // _ | *
   bracket_colon, // ]:
   bracket_paren, // ](
   link_dest_head, // <

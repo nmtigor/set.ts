@@ -27,8 +27,8 @@ enum CSSTok_ {
   colon, // : | <colon-token>
   semicolon, // ; | <semicolon-token>
   at_keyword, // @agc | <at-keyword-token>
-  square_open, // <[-token>
-  square_cloz, // <]-token>
+  squar_open, // <[-token>
+  squar_cloz, // <]-token>
   curly_open, // <{-token>
   curly_cloz, // <}-token>
 

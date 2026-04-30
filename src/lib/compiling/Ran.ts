@@ -256,13 +256,24 @@ export class Ran {
     return this.strtLoc$.posE(this.stopLoc$);
   }
 
-  /** Change `strtLoc$`, keep `stopLoc$` */
-  collapse(): this {
-    this.strtLoc$.become_Loc(this.stopLoc$);
+  /**
+   * @final
+   * @const @param endpt_x
+   */
+  collapseTo(endpt_x: Endpt): this {
+    /* final switch */ ({
+      [Endpt.focus]: () => this.strtLoc$.become_Loc(this.stopLoc$),
+      [Endpt.anchr]: () => this.stopLoc$.become_Loc(this.strtLoc$),
+    }[endpt_x])();
 
+    //jjjj TOCLEANUP
     // this.syncRanval_$();
 
     return this;
+  }
+  /** @final */
+  collapse(): this {
+    return this.collapseTo(Endpt.focus);
   }
 
   /**

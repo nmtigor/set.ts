@@ -287,8 +287,8 @@ export class Loc {
       const i_ = this.loff_$;
       this.#info.ucod = t_.charCodeAt(i_) as UInt16;
       this.#info.codp = t_.codePointAt(i_)!;
-      this.#info.isSurLead = t_.isSurLeadAt(i_);
-      this.#info.isSurTral = t_.isSurTralAt(i_);
+      this.#info.isSurLead = t_.isSurLead(i_);
+      this.#info.isSurTral = t_.isSurTral(i_);
     }
     return this.#info;
   }

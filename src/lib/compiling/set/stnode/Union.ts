@@ -24,7 +24,7 @@ export class Union extends BinaryOp {
       this.setErr(Err.set_union_no_rhs);
     }
 
-    this.ensureBdry();
+    this.ensureBdries();
   }
 }
 /*80--------------------------------------------------------------------------*/

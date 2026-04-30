@@ -1,5 +1,5 @@
 /** 80**************************************************************************
- * @module lib/compiling/set/SetSN
+ * @module lib/compiling/set/stnode/SetSn
  * @license MIT
  ******************************************************************************/
 
@@ -7,5 +7,5 @@ import { Stnode } from "../../Stnode.ts";
 import type { SetTok } from "../SetTok.ts";
 /*80--------------------------------------------------------------------------*/
 
-export abstract class SetSN extends Stnode<SetTok> {}
+export abstract class SetSn extends Stnode<SetTok> {}
 /*80--------------------------------------------------------------------------*/

@@ -10,13 +10,13 @@ import type { Id_t, UInt16 } from "../alias_v.ts";
 import "../jslang.ts";
 import { assert, fail, out } from "../util.ts";
 import { SortedIdo } from "../util/SortedArray.ts";
-import { isWs, ws_a } from "../util/string.ts";
+import { ASCIIWs_a, isWs, ws_a } from "../util/string.ts";
 import { trace, traceOut } from "../util/trace.ts";
 import type { Err, Locval, Tok } from "./alias.ts";
 import { BaseTok } from "./BaseTok.ts";
+import type { Loc } from "./Loc.ts";
 import { LocCfd } from "./Loc.ts";
 import { g_ran_fac } from "./RanFac.ts";
-import { SortedSnt_id } from "./Snt.ts";
 import type { Stnode } from "./Stnode.ts";
 import type { TokBart } from "./TokBart.ts";
 import type { TokBufr } from "./TokBufr.ts";
@@ -24,7 +24,7 @@ import { Token } from "./Token.ts";
 import type { TokLine } from "./TokLine.ts";
 import type { TokLoc } from "./TokLoc.ts";
 import { TokRan } from "./TokRan.ts";
-import { frstNon } from "./util.ts";
+import { frstNon, SortedSnt_id } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
 export abstract class Lexr<T extends Tok = BaseTok> {
@@ -99,7 +99,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   }
 
   /** @final */
-  protected enlrgBdriesUm$() {
+  protected enlrgBdries$() {
     this.enlrgStrtTk$();
     if (this.stopLexTk$!.sntStrtLoc.posE(this.strtLexTk$.sntStopLoc)) {
       this.enlrgStopTk$();
@@ -181,7 +181,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   get _err_() {
     const ret: [string, string[]][] = [];
     for (const tk of this.#errTk_sa) {
-      ret.push([tk.toString(), tk._err_]);
+      ret.push([`${tk}`, tk._err_]);
     }
     return ret;
   }
@@ -886,7 +886,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    * @headborrow @primaryconst @param loc_x
    * @const @param n_x
    */
-  protected reachLexBdry$(loc_x = this.curLoc$, n_x?: ldt_t): boolean {
+  protected reachLexBdry$(loc_x: Loc = this.curLoc$, n_x?: ldt_t): boolean {
     if (n_x === undefined || n_x === 0) {
       return loc_x.posGE(this.stopLexTk$.sntStrtLoc);
     }
@@ -972,6 +972,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     // } else if (retTk_x instanceof Token) {
     //   retTk_x.setStrt(this.curLoc$);
     // }
+    this.outTk$ = undefined;
     return this.scan_impl$();
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
@@ -996,12 +997,13 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   /**
    * whitespace\
    * `in( !this.reachLexBdry$())`
+   * @fianl
    * @const @param ws_a_x
    * @const @param VALVE_x
    * @return `true` if continue; `false` if `reachLexBdry$()`.\
    *  Whatever `true` or `false`, `curLoc$` will be at the right place.
    */
-  protected skipWs$(ws_a_x = ws_a as UInt16[], VALVE_x = 10_000): boolean {
+  protected skipWs$(ws_a_x = ws_a, VALVE_x = 10_000): boolean {
     /*#static*/ if (INOUT) {
       assert(isWs(this.curLoc$.ucod, ws_a_x));
     }
@@ -1032,6 +1034,13 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     } while (valve--);
     assert(valve, `Loop ${VALVE_x}±1 times`);
     return ret;
+  }
+  /**
+   * @final
+   * @const @param VALVE_x
+   */
+  protected skipASCIIWs$(VALVE_x = 10_000): boolean {
+    return this.skipWs$(ASCIIWs_a, VALVE_x);
   }
 
   /**
@@ -1153,7 +1162,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   /** For testing only */
   toString() {
     let tk_ = this.frstLexTk;
-    const ret_a: string[] = [tk_.toString()];
+    const ret_a: string[] = [`${tk_}`];
 
     let curlidx = tk_.sntFrstLine.lidx_1;
     const lastTk = this.lastLexTk;
@@ -1168,7 +1177,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
         ret_a.push("\n");
         curlidx = lidx;
       }
-      ret_a.push(tk_.toString());
+      ret_a.push(`${tk_}`);
     } while (!tk_.posE(lastTk) && valve--);
     assert(valve, `Loop ${VALVE}±1 times`);
 
@@ -1190,23 +1199,21 @@ export abstract class Lexr<T extends Tok = BaseTok> {
 
     return ret_a;
   }
-}
-/*80--------------------------------------------------------------------------*/
 
-export abstract class LexdInfo {
-  static #ID = 0 as Id_t;
-  readonly id = ++LexdInfo.#ID as Id_t;
-  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+  get _repr_(): unknown {
+    let tk_ = this.frstLexTk;
+    const ret_a = [tk_._repr_];
 
-  destructor(): void {}
-  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+    const lastTk = this.lastLexTk;
+    const VALVE = 1_000;
+    let valve = VALVE;
+    do {
+      tk_ = tk_.nextToken_$!;
+      ret_a.push(tk_._repr_);
+    } while (!tk_.posE(lastTk) && valve--);
+    assert(valve, `Loop ${VALVE}±1 times`);
 
-  //jjjj TOCLEANUP
-  // /** @const */
-  // become(li_x: LexdInfo) {}
-
-  toString(): string {
-    return "";
+    return ret_a;
   }
 }
 /*80--------------------------------------------------------------------------*/

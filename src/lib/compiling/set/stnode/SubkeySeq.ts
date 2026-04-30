@@ -6,10 +6,10 @@
 import { assert } from "@fe-lib/util.ts";
 import { INOUT } from "@fe-src/preNs.ts";
 import type { SetTk } from "../../Token.ts";
-import { SetSN } from "./SetSN.ts";
+import { SetSn } from "./SetSn.ts";
 /*80--------------------------------------------------------------------------*/
 
-export abstract class SubkeySeq extends SetSN {
+export abstract class SubkeySeq extends SetSn {
   readonly tk_a;
 
   override get frstToken(): SetTk {
@@ -26,7 +26,7 @@ export abstract class SubkeySeq extends SetSN {
     super();
     this.tk_a = tk_a;
 
-    this.ensureBdry();
+    this.ensureBdries();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

@@ -24,7 +24,7 @@ export class Intersect extends BinaryOp {
       this.setErr(Err.set_intersect_no_rhs);
     }
 
-    this.ensureBdry();
+    this.ensureBdries();
   }
 }
 /*80--------------------------------------------------------------------------*/

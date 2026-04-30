@@ -9,11 +9,11 @@ import type { SetTk } from "../../Token.ts";
 import { Token } from "../../Token.ts";
 import { Err } from "../../alias.ts";
 import { Key } from "./Key.ts";
-import { SetSN } from "./SetSN.ts";
+import { SetSn } from "./SetSn.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
-export class Rel extends SetSN {
+export class Rel extends SetSn {
   /** If `undefined`, must `hasErr`. */
   #src: Key | SetTk | undefined;
   get src() {
@@ -82,11 +82,11 @@ export class Rel extends SetSN {
     if (tgt_x instanceof Key) tgt_x.parent_$ = this;
     if (!src_x && !rel_x && !tgt_x) this.setErr(Err.set_rel_no_srt);
 
-    this.ensureBdry();
+    this.ensureBdries();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  override replaceChild(oldSn_x: SetSN, newSn_x: SetSN) {
+  override replaceChild(oldSn_x: SetSn, newSn_x: SetSn) {
     /*#static*/ if (INOUT) {
       assert(newSn_x instanceof Key);
     }

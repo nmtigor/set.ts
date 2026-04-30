@@ -8,11 +8,11 @@ import { INOUT } from "@fe-src/preNs.ts";
 import type { SetTk } from "../../Token.ts";
 import { FuzykeySeq } from "./FuzykeySeq.ts";
 import { QuotkeySeq } from "./QuotkeySeq.ts";
-import { SetSN } from "./SetSN.ts";
+import { SetSn } from "./SetSn.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
-export class Key extends SetSN {
+export class Key extends SetSn {
   #children;
   override get children(): (FuzykeySeq | QuotkeySeq)[] {
     return this.#children;
@@ -36,7 +36,7 @@ export class Key extends SetSN {
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  override replaceChild(oldSn_x: SetSN, newSn_x: SetSN) {
+  override replaceChild(oldSn_x: SetSn, newSn_x: SetSn) {
     /*#static*/ if (INOUT) {
       assert(newSn_x instanceof FuzykeySeq || newSn_x instanceof QuotkeySeq);
     }

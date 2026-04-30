@@ -117,7 +117,6 @@ export class SetLexr extends Lexr<SetTok> {
 
   /** @implement */
   protected scan_impl$(): SetTk | undefined {
-    this.outTk$ = undefined;
     let ucod = this.curLoc$.ucod;
     if (isWs(this.curLoc$.ucod) && !this.skipWs$()) return;
 

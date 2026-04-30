@@ -8,12 +8,13 @@ import type { Id_t } from "../alias_v.ts";
 import { assert, out } from "../util.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import type { Lexr } from "./Lexr.ts";
-import { SortedStnod_id, Stnode } from "./Stnode.ts";
+import { Stnode } from "./Stnode.ts";
 import type { TokBart } from "./TokBart.ts";
 import type { TokBufr } from "./TokBufr.ts";
 import { type Token } from "./Token.ts";
 import type { Tok } from "./alias.ts";
 import type { PlainTok } from "./plain/PlainTok.ts";
+import { SortedSn_id } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
 export abstract class Pazr<T extends Tok = BaseTok> {
@@ -76,7 +77,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   /* ~ */
 
   /* errSn_sa$ */
-  protected readonly errSn_sa$ = new SortedStnod_id();
+  protected readonly errSn_sa$ = new SortedSn_id();
   get hasErr() {
     return !!this.errSn_sa$.length;
   }
@@ -91,11 +92,14 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   /* ~ */
 
   /** @final */
-  readonly unrelSn_sa_$ = new SortedStnod_id();
-  /** reused, or partially reuesed, or abandoned */
-  /** @final */
-  readonly takldSn_sa_$ = new SortedStnod_id();
+  readonly unrelSn_sa_$ = new SortedSn_id();
+  /**
+   * reused, or partially reuesed, or abandoned
+   * @final
+   */
+  readonly takldSn_sa_$ = new SortedSn_id();
 
+  /* strtPazTk$ */
   /** @final */
   protected strtPazTk$!: Token<T>;
   /** @final */
@@ -103,6 +107,17 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     return this.strtPazTk$;
   }
   // get _curtk() { return this.strtPazTk$; }
+
+  /** @final */
+  protected forceForw$(): void {
+    this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
+  }
+  // /** @final */
+  // protected forceForwn$(n_x: uint): void {
+  //   ///
+  // }
+  /* ~ */
+
   /** @final */
   protected stopPazTk$!: Token<T>;
   /** @final */
@@ -161,7 +176,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   }
 
   /** Helper */
-  #tmpSn_sa = new SortedStnod_id();
+  #tmpSn_sa = new SortedSn_id();
   /**
    * Invalidate "(strtPazTk$, stopPazTk$).stnod_$" (if any) and their parents up
    * to `drtSn_$` (excluded)\
@@ -362,9 +377,14 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   //   this.#enlrgBdries(origStrtTk, origStopTk);
   // }
 
-  /** @final */
-  protected reachPazBdry$(): boolean {
-    return this.strtPazTk$.posGE(this.stopPazTk$);
+  /**
+   * @final
+   * @primaryconst
+   *    @const if `tk_x !== this.strtPazTk$ || n_x`
+   * @headborrow @primaryconst @param tk_x
+   */
+  protected reachPazBdry$(tk_x: Token<T> = this.strtPazTk$): boolean {
+    return tk_x.posGE(this.stopPazTk$);
   }
   //jjjj TOCLEANUP
   // /** @final */
@@ -377,7 +397,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     assert(self.strtPazTk$ === self.stopPazTk$);
   })
   paz() {
-    this.strtPazTk$ = this.strtPazTk$.nextToken_$!;
+    this.forceForw$();
     if (this.reachPazBdry$()) {
       this.newSn_$ = undefined;
     } else {

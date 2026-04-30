@@ -3,24 +3,16 @@
  * @license MIT
  ******************************************************************************/
 
-import { SetSN } from "./SetSN.ts";
+import type { SetTk } from "../../Token.ts";
+import { Token } from "../../Token.ts";
 import { Err } from "../../alias.ts";
 import { SetTok } from "../SetTok.ts";
-import type { Paren } from "../alias.ts";
-import type { BinaryErr } from "./BinaryOp.ts";
-import type { Intersect } from "./Intersect.ts";
-import type { Key } from "./Key.ts";
-import type { Rel } from "./Rel.ts";
-import type { Subtract } from "./Subtract.ts";
-import { Token } from "../../Token.ts";
-import type { SetTk } from "../../Token.ts";
-import type { Union } from "./Union.ts";
+import type { Paren, UnparenSet } from "../alias.ts";
+import { SetSn } from "./SetSn.ts";
 /*80--------------------------------------------------------------------------*/
 
-export type UnparenSet = Intersect | Subtract | Union | BinaryErr | Rel | Key;
-
 /** @final */
-export class Set extends SetSN {
+export class Set extends SetSn {
   /** If `this.#unpanenSet instanceof SetTk`, must `hasErr`. */
   #unpanenSet: UnparenSet | SetTk;
   get unpanenSet() {
@@ -37,7 +29,7 @@ export class Set extends SetSN {
     this.#paren = _x;
 
     this.invalBdry();
-    this.ensureBdry();
+    this.ensureBdries();
   }
 
   #children: UnparenSet[] | undefined;
@@ -82,12 +74,12 @@ export class Set extends SetSN {
     this.#paren = paren_x;
 
     if (unparnSet_x instanceof Token) {
-      this.setErr(`${Err.set_unexpected_token}: ${unparnSet_x}`);
+      this.setErr(`${Err.set_unexp_token}: ${unparnSet_x}`);
     } else {
       unparnSet_x.parent_$ = this;
     }
 
-    this.ensureBdry();
+    this.ensureBdries();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

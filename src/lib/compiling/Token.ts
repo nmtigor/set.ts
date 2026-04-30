@@ -5,7 +5,7 @@
 
 import * as v from "@valibot/valibot";
 import { DEBUG, INOUT, PRF } from "../../preNs.ts";
-import type { lnum_t, loff_t, TupleOf, uint } from "../alias.ts";
+import type { lnum_t, loff_t, uint } from "../alias.ts";
 import { vuint } from "../alias_v.ts";
 import { assert, out } from "../util.ts";
 import { g_count } from "../util/performance.ts";
@@ -14,7 +14,6 @@ import { BaseTok } from "./BaseTok.ts";
 import { CSSTok } from "./css/CSSTok.ts";
 import { HTMLTok } from "./html/HTMLTok.ts";
 import { JSLangTok } from "./jslang/JSLangTok.ts";
-import type { LexdInfo } from "./Lexr.ts";
 import { Lexr } from "./Lexr.ts";
 import type { Loc } from "./Loc.ts";
 import { MdextTok } from "./mdext/MdextTok.ts";
@@ -24,12 +23,12 @@ import { g_ran_fac } from "./RanFac.ts";
 import { Ranval } from "./Ranval.ts";
 import { RMLTok } from "./rml/RMLTok.ts";
 import { SetTok } from "./set/SetTok.ts";
-import type { _OldInfo_ } from "./Snt.ts";
 import { Snt } from "./Snt.ts";
 import { Stnode } from "./Stnode.ts";
 import type { TokLine } from "./TokLine.ts";
 import type { TokRan } from "./TokRan.ts";
 import { URITok } from "./uri/URITok.ts";
+import type { _OldInfo_, LexdInfo } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
 type NErr_ = 2;
@@ -42,7 +41,10 @@ console.assert(NErr_ >= 1);
 //   stopLoc?: Loc;
 // };
 
-/** @final */
+/**
+ * @primaryfinal final exclude `NErr$`, `isErr`, `clrErr()`
+ * @using
+ */
 export class Token<T extends Tok = BaseTok> extends Snt {
   readonly lexr_$: Lexr<T>;
 
@@ -222,8 +224,10 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   }
   /* ~ */
 
+  protected NErr$ = NErr_;
+
   /* #errMsg_a */
-  readonly #errMsg_a = new Array(NErr_).fill("") as TupleOf<Err | "", NErr_>;
+  readonly #errMsg_a = new Array(this.NErr$).fill("") as (Err | "")[];
   get isErr() {
     return !!this.#errMsg_a[0];
   }
@@ -233,7 +237,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
 
   /** @const @param errMsg_x */
   setErr(errMsg_x: Err): this {
-    for (let i = 0; i < NErr_; ++i) {
+    for (let i = 0; i < this.NErr$; ++i) {
       if (!this.#errMsg_a[i]) {
         this.#errMsg_a[i] = errMsg_x;
         break;
@@ -317,7 +321,9 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     if (this.#destroyed) return;
 
     this.ran_$[Symbol.dispose]();
+    this.clrErr(); //! called before `lexdInfo = null`
     this.lexdInfo = null;
+    this.stnod_$ = undefined;
 
     /*#static*/ if (PRF) {
       g_count.oldToken += 1;
@@ -852,13 +858,15 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     };
   }
 
-  /**
-   * @deprecated
-   * @const @param rhs_x
-   */
-  _toString_eq(rhs_x: string) {
-    console.assert(this.toString() === rhs_x);
-    return this;
+  //jjjj TOCLEANUP
+  // /** @const @param rhs_x */
+  // _toString_eq(rhs_x: string) {
+  //   console.assert(this.toString() === rhs_x);
+  //   return this;
+  // }
+
+  get _repr_(): unknown {
+    return `${this}`;
   }
 
   _Repr_(prevN_x?: uint, nextN_x?: uint): [string[], string, string[]] {
@@ -872,26 +880,18 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     prevN_x ??= 100;
     for (let i = prevN_x; i--;) {
       if (!tk_) break;
-      prev_a.unshift(tk_.toString());
+      prev_a.unshift(`${tk_}`);
       tk_ = tk_.prevToken_$;
     }
     tk_ = this.nextToken_$;
     nextN_x ??= 100;
     for (let i = nextN_x; i--;) {
       if (!tk_) break;
-      next_a.push(tk_.toString());
+      next_a.push(`${tk_}`);
       tk_ = tk_.nextToken_$;
     }
-    return [prev_a, this.toString(), next_a];
+    return [prev_a, `${this}`, next_a];
   }
-
-  // get _repr_(): [string | undefined, string, string | undefined] {
-  //   return [
-  //     this.prevToken_$?.toString(),
-  //     this.toString(),
-  //     this.nextToken_$?.toString(),
-  //   ];
-  // }
 }
 /*64----------------------------------------------------------*/
 
@@ -900,7 +900,8 @@ export type SetTk = Token<SetTok>;
 export type URITk = Token<URITok>;
 
 export type CSSTk = Token<CSSTok>;
-export type HTMLTk = Token<HTMLTok>;
+/* html/HTMLTk */
+// export class HTMLTk extends Token<HTMLTok> {}
 export type RMLTk = Token<RMLTok>;
 
 /** `frstLine === lastLine` */

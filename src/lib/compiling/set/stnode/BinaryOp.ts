@@ -10,10 +10,10 @@ import { Err } from "../../alias.ts";
 import { SetTok } from "../SetTok.ts";
 import { Oprec } from "../alias.ts";
 import { Set } from "./Set.ts";
-import { SetSN } from "./SetSN.ts";
+import { SetSn } from "./SetSn.ts";
 /*80--------------------------------------------------------------------------*/
 
-export abstract class BinaryOp extends SetSN {
+export abstract class BinaryOp extends SetSn {
   readonly op: string = "?";
   static readonly oprec: Oprec;
 
@@ -57,7 +57,7 @@ export abstract class BinaryOp extends SetSN {
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  override replaceChild(oldSn_x: SetSN, newSn_x: SetSN) {
+  override replaceChild(oldSn_x: SetSn, newSn_x: SetSn) {
     /*#static*/ if (INOUT) {
       assert(newSn_x instanceof Set);
     }
@@ -104,7 +104,7 @@ export class BinaryErr extends BinaryOp {
       );
     }
     super(lhs_x, opTk_x);
-    this.setErr(`${Err.set_invalid_binary_op}: ${opTk_x}`);
+    this.setErr(`${Err.set_inval_binary_op}: ${opTk_x}`);
     if (rhs_x) {
       rhs_x.parent_$ = this;
       this.rhs$ = rhs_x;
@@ -112,7 +112,7 @@ export class BinaryErr extends BinaryOp {
       this.setErr(Err.set_binaryerr_no_rhs);
     }
 
-    this.ensureBdry();
+    this.ensureBdries();
   }
 }
 /*80--------------------------------------------------------------------------*/
