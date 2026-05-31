@@ -6,10 +6,10 @@
 import { INOUT } from "@fe-src/preNs.ts";
 import { assert, out } from "../../util.ts";
 import { isWs } from "../../util/string.ts";
+import { ScanR } from "../alias.ts";
 import { Lexr } from "../Lexr.ts";
-import { LocCfd } from "../Loc.ts";
 import type { SetTk } from "../Token.ts";
-import { Err } from "../alias.ts";
+import { ErrMsg } from "../util.ts";
 import { SetTok } from "./SetTok.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -49,7 +49,7 @@ export class SetLexr extends Lexr<SetTok> {
     do {
       const ucod = this.curLoc$.forw_ucod();
       if (this.reachLexBdry$()) {
-        this.outTk$!.setErr(Err.quoted_string_open)
+        this.outTk$!.setErr(ErrMsg.quoted_string_open)
           .setStop(this.curLoc$, SetTok.quotkey);
         break;
       }
@@ -59,7 +59,7 @@ export class SetLexr extends Lexr<SetTok> {
       ) {
         this.curLoc$.forw();
         if (this.reachLexBdry$()) {
-          this.outTk$!.setErr(Err.quoted_string_open)
+          this.outTk$!.setErr(ErrMsg.quoted_string_open)
             .setStop(this.curLoc$, SetTok.quotkey);
           break;
         }
@@ -69,7 +69,7 @@ export class SetLexr extends Lexr<SetTok> {
         this.outTk$!.setStop(this.curLoc$.forw(), SetTok.quotkey);
         break;
       }
-    } while (valve--);
+    } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
   }
 
@@ -111,14 +111,14 @@ export class SetLexr extends Lexr<SetTok> {
           this.curLoc$.forw();
           break;
       }
-    } while (valve--);
+    } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
   }
 
   /** @implement */
   protected scan_impl$(): SetTk | undefined {
     let ucod = this.curLoc$.ucod;
-    if (isWs(this.curLoc$.ucod) && !this.skipWs$()) return;
+    if (isWs(this.curLoc$.ucod) && this.skipWs$() === ScanR.reachBdry) return;
 
     this.outTk_1$;
     ucod = this.curLoc$.ucod;

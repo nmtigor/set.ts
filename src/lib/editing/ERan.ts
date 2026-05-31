@@ -1,5 +1,5 @@
 /** 80**************************************************************************
- * @module lib/editor/ERan
+ * @module lib/editing/ERan
  * @license MIT
  ******************************************************************************/
 
@@ -245,7 +245,7 @@ export class ERan {
         stopBofs = 0;
         bln = bln.nextLine!;
         eln = elnO_x.eline(bln.lidx_1);
-      } while (bln !== lastBln && valve--);
+      } while (bln !== lastBln && --valve);
       assert(valve, `Loop ${VALVE}±1 times`);
     }
 

@@ -7,7 +7,7 @@ import { assert } from "@fe-lib/util.ts";
 import { INOUT } from "@fe-src/preNs.ts";
 import type { SetTk } from "../../Token.ts";
 import { Token } from "../../Token.ts";
-import { Err } from "../../alias.ts";
+import { ErrMsg } from "../../util.ts";
 import { Key } from "./Key.ts";
 import { SetSn } from "./SetSn.ts";
 /*80--------------------------------------------------------------------------*/
@@ -78,9 +78,9 @@ export class Rel extends SetSn {
 
     if (src_x instanceof Key) src_x.parent_$ = this;
     if (rel_x instanceof Key) rel_x.parent_$ = this;
-    if (!jnr_2_x) this.setErr(Err.set_rel_no_2nd);
+    if (!jnr_2_x) this.setErr(ErrMsg.set_rel_no_2nd);
     if (tgt_x instanceof Key) tgt_x.parent_$ = this;
-    if (!src_x && !rel_x && !tgt_x) this.setErr(Err.set_rel_no_srt);
+    if (!src_x && !rel_x && !tgt_x) this.setErr(ErrMsg.set_rel_no_srt);
 
     this.ensureBdries();
   }

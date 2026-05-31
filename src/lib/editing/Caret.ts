@@ -1,10 +1,10 @@
 /** 80**************************************************************************
- * @module lib/editor/Caret
+ * @module lib/editing/Caret
  * @license MIT
  ******************************************************************************/
 
 import type { Ranpo } from "@fe-cpl/Ran.ts";
-import { g_ranval_fac, Ranval, RanvalMo } from "@fe-cpl/Ranval.ts";
+import { Ranval, RanvalMo } from "@fe-cpl/Ranval.ts";
 import { _TRACE, CYPRESS, DEBUG, EDTR } from "../../preNs.ts";
 import type { int } from "../alias.ts";
 import { WritingDir } from "../alias.ts";
@@ -594,8 +594,10 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     if (eslr.strtLidx <= rv_.focusLidx && rv_.focusLidx < eslr.stopLidx) {
       this.focusVisible$ = true;
       this.#focusEloc = eslr.getEFocusOf_$(rv_, this.#focusEloc);
-      using fat_rv = g_ranval_fac.oneMore()
-        .set_Ranval(rv_.focusLidx, rv_.focusLoff);
+      //jjjj TOCLEANUP
+      // using fat_rv = g_ranval_fac.oneMore()
+      //   .set_Ranval(rv_.focusLidx, rv_.focusLoff);
+      const fat_rv = new Ranval(rv_.focusLidx, rv_.focusLoff);
       fat_rv.focusLoff += 1;
       this.#fat_eran = eslr.getERanOf_$(fat_rv, this.#fat_eran);
 
@@ -686,22 +688,24 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     }
 
     const eslr = this.eslr;
-    using rv_u = rv_.usingDup();
-    if (rv_u.order < 0) rv_u.reverse();
-    if (rv_u.focusLidx < eslr.strtLidx || eslr.stopLidx <= rv_u.anchrLidx) {
+    //jjjj TOCLEANUP
+    // using rv_u = rv_.usingDup();
+    const rv_1 = rv_.dup_Ranval();
+    if (rv_1.order < 0) rv_1.reverse();
+    if (rv_1.focusLidx < eslr.strtLidx || eslr.stopLidx <= rv_1.anchrLidx) {
       // this.#selecVisible = false;
       this.#hideSelec();
       return;
     }
 
     // this.#selecVisible = true;
-    if (rv_u.anchrLidx < eslr.strtLidx) {
-      rv_u.setAnchr(eslr.strtLidx, 0);
+    if (rv_1.anchrLidx < eslr.strtLidx) {
+      rv_1.setAnchr(eslr.strtLidx, 0);
     }
-    if (eslr.stopLidx <= rv_u.focusLidx) {
-      rv_u.setFocus(eslr.stopLidx - 1, Number.MAX_SAFE_INTEGER);
+    if (eslr.stopLidx <= rv_1.focusLidx) {
+      rv_1.setFocus(eslr.stopLidx - 1, Number.MAX_SAFE_INTEGER);
     }
-    this.#selec_eran = eslr.getERanOf_$(rv_u, this.#selec_eran);
+    this.#selec_eran = eslr.getERanOf_$(rv_1, this.#selec_eran);
 
     const rec_a = this.#selec_eran.getRecA_$(eslr, eslr.pbPos);
     this.#selec_fac.isMain_$ = this.isMain$;

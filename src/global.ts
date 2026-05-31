@@ -16,8 +16,11 @@ export const global = new class {
   /** @deprecated Use preprocessor */
   testing = false;
 
+  /** @deprecated */
   readonly LASTUPDATE_NOT = "2020-07-10 22:17:59 +0200";
+  /** @deprecated */
   readonly LASTUPDATE_DATNI = "2020-07-24 01:59:51 +0200";
+  /** @deprecated */
   readonly LASTUPDATE_DEV = "2021-05-22 05:04:21 +0200";
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

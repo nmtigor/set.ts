@@ -7,5 +7,6 @@ import { Stnode } from "../../Stnode.ts";
 import type { SetTok } from "../SetTok.ts";
 /*80--------------------------------------------------------------------------*/
 
-export abstract class SetSn extends Stnode<SetTok> {}
+export abstract class SetSn extends Stnode<SetTok> {
+}
 /*80--------------------------------------------------------------------------*/

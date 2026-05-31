@@ -40,6 +40,10 @@ export const rv = (
   focusLoff_x?: loff_t,
 ) => new Ranval(anchrLidx_x, anchrLoff_x, focusLidx_x, focusLoff_x);
 
+/**
+ * @const @param rv
+ * @const @param txt
+ */
 export const repl = (rv: Ranval, txt: string | string[]) =>
   test_o.bufr.Do({ rv, txt });
 export const repla = (replin: Replin[]) => test_o.bufr.Do(replin);

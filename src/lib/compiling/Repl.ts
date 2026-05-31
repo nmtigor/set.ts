@@ -3,12 +3,13 @@
  * @license MIT
  ******************************************************************************/
 
-import { _TRACE, INOUT } from "../../preNs.ts";
+import { _TRACE, DEBUG, INOUT } from "../../preNs.ts";
 import { LnumMAX } from "../alias.ts";
 import type { Id_t } from "../alias_v.ts";
 import { assert, fail } from "../util.ts";
 import * as Is from "../util/is.ts";
-import { type Less, SortedArray } from "../util/SortedArray.ts";
+import type { Cf } from "../util/SortedSet.ts";
+import { SortedSet } from "../util/SortedSet.ts";
 import { linesOf } from "../util/string.ts";
 import { trace, traceOut } from "../util/trace.ts";
 import { BufrReplState } from "./alias.ts";
@@ -24,8 +25,8 @@ export type Replin = {
   txt: string | string[];
 };
 
-class SortedReplin_ extends SortedArray<Replin> {
-  static #less: Less<Replin> = (a_y, b_y) =>
+class SortedReplin_ extends SortedSet<Replin> {
+  static #less: Cf<Replin> = (a_y, b_y) =>
     Ranval.posSE(a_y.rv[2], a_y.rv[3], b_y.rv[2], b_y.rv[3]);
 
   constructor(val_a_x?: Replin[]) {
@@ -161,7 +162,7 @@ export class Repl {
 
     const VALVE = LnumMAX;
     let valve = VALVE;
-    while (srcLn && srcLn !== srcLastLn && valve--) {
+    while (srcLn && srcLn !== srcLastLn && --valve) {
       if (i_ === 0) {
         outTxt_a_x[0] = srcLn.text.slice(srcStrtLoff);
         srcLn.splice_$(srcStrtLoff, srcLn.uchrLen, inTxt_a_x[0]);
@@ -183,7 +184,7 @@ export class Repl {
     let srcFrstLn = inRan_x.frstLine;
     if (i_ === tgtN) {
       //jjjj TOCLEANUP
-      // while (srcLn && srcLn !== srcLastLn && valve--) {
+      // while (srcLn && srcLn !== srcLastLn && --valve) {
       //   outTxt_a_x[i_++] = srcLn.text;
 
       //   const ln_ = srcLn.nextLine;
@@ -256,7 +257,7 @@ export class Repl {
         outRan_x.stopLoc.set_Loc(srcLastLn, inTxt_a_x[i_].length);
       }
     } else {
-      fail("Should not run here!");
+      /*#static*/ DEBUG ? fail("Should not run here!") : {};
     }
     outRan_x.strtLoc.set_Loc(srcFrstLn, srcStrtLoff);
 

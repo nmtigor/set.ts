@@ -8,9 +8,10 @@ import { trace, traceOut } from "@fe-lib/util/trace.ts";
 import { _TRACE, INOUT } from "@fe-src/preNs.ts";
 import type { uint } from "../../alias.ts";
 import { Pazr } from "../Pazr.ts";
+import { Ranval } from "../Ranval.ts";
 import type { SetTk } from "../Token.ts";
 import { Token } from "../Token.ts";
-import { Err } from "../alias.ts";
+import { ErrMsg } from "../util.ts";
 import { SetTok } from "./SetTok.ts";
 import type { Paren, UnparenSet } from "./alias.ts";
 import { Oprec } from "./alias.ts";
@@ -120,7 +121,11 @@ export class SetPazr extends Pazr<SetTok> {
     if (this.reachPazBdry$()) {
       retSn = new Rel(srcSn, jnr_1);
       for (const tk of unexpTk_a) {
-        retSn.setErr(`${Err.set_rel_unexp_token}: ${tk}`);
+        retSn.setErr([
+          ErrMsg.set_rel_unexp_tk,
+          Ranval.fromRan(tk.ran_$),
+          tk.name,
+        ]);
       }
       this.errSn_sa$.add(retSn);
       return retSn;
@@ -148,7 +153,11 @@ export class SetPazr extends Pazr<SetTok> {
     if (this.reachPazBdry$()) {
       retSn = new Rel(srcSn, jnr_1, relSn, jnr_2);
       for (const tk of unexpTk_a) {
-        retSn.setErr(`${Err.set_rel_unexp_token}: ${tk}`);
+        retSn.setErr([
+          ErrMsg.set_rel_unexp_tk,
+          Ranval.fromRan(tk.ran_$),
+          tk.name,
+        ]);
       }
       this.errSn_sa$.add(retSn);
       return retSn;
@@ -162,7 +171,11 @@ export class SetPazr extends Pazr<SetTok> {
       if (this.reachPazBdry$()) {
         retSn = new Rel(srcSn, jnr_1, relSn, jnr_2, undefined);
         for (const tk of unexpTk_a) {
-          retSn.setErr(`${Err.set_rel_unexp_token}: ${tk}`);
+          retSn.setErr([
+            ErrMsg.set_rel_unexp_tk,
+            Ranval.fromRan(tk.ran_$),
+            tk.name,
+          ]);
         }
         if (retSn.isErr) this.errSn_sa$.add(retSn);
         return retSn;
@@ -186,7 +199,11 @@ export class SetPazr extends Pazr<SetTok> {
     }
     retSn = new Rel(srcSn, jnr_1, relSn, jnr_2, tgtSn);
     for (const tk of unexpTk_a) {
-      retSn.setErr(`${Err.set_rel_unexp_token}: ${tk}`);
+      retSn.setErr([
+        ErrMsg.set_rel_unexp_tk,
+        Ranval.fromRan(tk.ran_$),
+        tk.name,
+      ]);
     }
     if (retSn.isErr) this.errSn_sa$.add(retSn);
     return retSn;
@@ -228,7 +245,7 @@ export class SetPazr extends Pazr<SetTok> {
         this.strtPazTk$.value !== SetTok.fuzykey &&
           this.strtPazTk$.value !== SetTok.quotkey
       ) break;
-    } while (valve--);
+    } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
     return new Key(sn_a);
   }
@@ -261,7 +278,7 @@ export class SetPazr extends Pazr<SetTok> {
       if (this.reachPazBdry$() || this.strtPazTk$.value !== SetTok.fuzykey) {
         break;
       }
-    } while (valve--);
+    } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
     return new FuzykeySeq(tk_a);
   }
@@ -294,7 +311,7 @@ export class SetPazr extends Pazr<SetTok> {
       if (this.reachPazBdry$() || this.strtPazTk$.value !== SetTok.quotkey) {
         break;
       }
-    } while (valve--);
+    } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
     return new QuotkeySeq(tk_a);
   }
@@ -386,7 +403,7 @@ export class SetPazr extends Pazr<SetTok> {
         this.forceForw$();
         if (this.reachPazBdry$()) {
           _x.lhs = new Set(tk_0, 0);
-          _x.lhs.setErr(Err.set_no_cloz_paren);
+          _x.lhs.setErr(ErrMsg.set_no_cloz_paren);
 
           _x.selfParen = 0;
           this.strtPazTk$ = tk_0.nextToken_$!;
@@ -410,7 +427,7 @@ export class SetPazr extends Pazr<SetTok> {
     _x.lhs = new Set(snt, _x.selfParen);
     if (this.reachPazBdry$()) {
       if (_x.selfParen) {
-        _x.lhs.setErr(Err.set_no_cloz_paren);
+        _x.lhs.setErr(ErrMsg.set_no_cloz_paren);
       }
     }
   }
@@ -459,7 +476,7 @@ export class SetPazr extends Pazr<SetTok> {
     _x.lhs = new Set(sn_, _x.selfParen);
     if (this.reachPazBdry$()) {
       if (_x.selfParen) {
-        _x.lhs.setErr(Err.set_no_cloz_paren);
+        _x.lhs.setErr(ErrMsg.set_no_cloz_paren);
       }
     }
   }
@@ -520,12 +537,12 @@ export class SetPazr extends Pazr<SetTok> {
       }
     } else if (paren_1) {
       lhs.paren_$ = lhs.paren + paren_1;
-      lhs.setErr(Err.set_no_open_paren);
+      lhs.setErr(ErrMsg.set_no_open_paren);
     }
     if (this.reachPazBdry$()) {
       if (retParen) {
         lhs.paren_$ = lhs.paren + retParen;
-        lhs.setErr(Err.set_no_cloz_paren);
+        lhs.setErr(ErrMsg.set_no_cloz_paren);
       }
       return undefined;
     }

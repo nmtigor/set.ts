@@ -29,7 +29,7 @@
     "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@^0.1.48",
     "@fe-3rd/": "./src/3rd/",
     "@fe-cpl/": "./src/lib/compiling/",
-    "@fe-edt/": "./src/lib/editor/",
+    "@fe-edt/": "./src/lib/editing/",
     "@fe-gen/": "./gen/",
     "@fe-lib/": "./src/lib/",
     "@fe-pdf.ts-src/": "./src/pdf/pdf.ts-src/",

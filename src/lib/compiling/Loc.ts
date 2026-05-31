@@ -741,7 +741,10 @@ export class Loc {
     return ret_x;
   }
 
-  /** For testing only */
+  /**
+   * For testing only
+   * @primaryconst
+   */
   toString() {
     return `${this.lidx_1}-${this.loff_$}`;
   }

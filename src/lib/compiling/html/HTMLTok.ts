@@ -7,11 +7,17 @@ import { BaseTok } from "../BaseTok.ts";
 /*80--------------------------------------------------------------------------*/
 
 enum HTMLTok_ {
-  DOCTYPE = 500,
+  doctype = 500,
   tag,
   comment,
   character,
   chrref, // &lt; | &#60; | &#x3C;
+
+  /**
+   * By spec, some bogus tags are not tokenized to any spec token (e.g. "<z\r"),
+   * so add this to keep `HTMLTk`s concatenated.
+   */
+  bogusTag,
 
   _max,
 }

@@ -6,7 +6,6 @@
 import type { MooEq } from "../Moo.ts";
 import { Moo } from "../Moo.ts";
 import type { lnum_t, loff_t } from "../alias.ts";
-import { Factory } from "../util/Factory.ts";
 import type { Bufr } from "./Bufr.ts";
 import type { Loc } from "./Loc.ts";
 import type { Ran } from "./Ran.ts";
@@ -58,17 +57,53 @@ export class Ranval extends Array<lnum_t | loff_t> {
     return this;
   }
 
-  constructor(_2: lnum_t, _3: loff_t, _0?: lnum_t, _1?: loff_t) {
+  /**
+   * @const @param anchrLidx_x
+   * @const @param anchrLoff_x
+   * @const @param focusLidx_x
+   * @const @param focusLoff
+   */
+  constructor(
+    anchrLidx_x: lnum_t,
+    anchrLoff_x: loff_t,
+    focusLidx_x?: lnum_t,
+    focusLoff?: loff_t,
+  ) {
     super(4);
 
-    this.set_Ranval(_2, _3, _0, _1);
+    this.set_Ranval(anchrLidx_x, anchrLoff_x, focusLidx_x, focusLoff);
   }
 
-  set_Ranval(_2: lnum_t, _3: loff_t, _0?: lnum_t, _1?: loff_t): this {
-    this[2] = _2;
-    this[3] = _3;
-    this[0] = _0 === undefined ? _2 : _0;
-    this[1] = _1 === undefined ? _3 : _1;
+  /** @primaryconst @param ran_x */
+  static fromRan(ran_x: Ran): Ranval {
+    return new Ranval(
+      ran_x.frstLine.lidx_1,
+      ran_x.strtLoff,
+      ran_x.lastLine.lidx_1,
+      ran_x.stopLoff,
+    );
+  }
+  /** @primaryconst @param loc_x */
+  static fromLoc(loc_x: Loc): Ranval {
+    return new Ranval(loc_x.line_$.lidx_1, loc_x.loff_$);
+  }
+
+  /**
+   * @const @param anchrLidx_x
+   * @const @param anchrLoff_x
+   * @const @param focusLidx_x
+   * @const @param focusLoff
+   */
+  set_Ranval(
+    anchrLidx_x: lnum_t,
+    anchrLoff_x: loff_t,
+    focusLidx_x?: lnum_t,
+    focusLoff?: loff_t,
+  ): this {
+    this[2] = anchrLidx_x;
+    this[3] = anchrLoff_x;
+    this[0] = focusLidx_x === undefined ? anchrLidx_x : focusLidx_x;
+    this[1] = focusLoff === undefined ? anchrLoff_x : focusLoff;
     return this;
   }
   /** @primaryconst @param ran_x */
@@ -100,17 +135,19 @@ export class Ranval extends Array<lnum_t | loff_t> {
     return new Ranval(this[2], this[3], this[0], this[1]);
   }
 
-  [Symbol.dispose]() {
-    g_ranval_fac.revoke(this);
-  }
+  //jjjj TOCLEANUP
+  // [Symbol.dispose]() {
+  //   g_ranval_fac.revoke(this);
+  // }
 
-  /**
-   * @final
-   * @const
-   */
-  usingDup() {
-    return g_ranval_fac.oneMore().become_Array(this);
-  }
+  //jjjj TOCLEANUP
+  // /**
+  //  * @final
+  //  * @const
+  //  */
+  // usingDup() {
+  //   return g_ranval_fac.oneMore().become_Array(this);
+  // }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @const */
@@ -153,13 +190,57 @@ export class Ranval extends Array<lnum_t | loff_t> {
     return this;
   }
 
+  /**
+   * @const @param lidx_0_x
+   * @const @param loff_0_x
+   * @const @param lidx_1_x
+   * @const @param loff_1_x
+   */
   static posSE(
-    lidx_0_x: number,
-    loff_0_x: number,
-    lidx_1_x: number,
-    loff_1_x: number,
+    lidx_0_x: lnum_t,
+    loff_0_x: loff_t,
+    lidx_1_x: lnum_t,
+    loff_1_x: loff_t,
   ) {
     return lidx_0_x < lidx_1_x || lidx_0_x === lidx_1_x && loff_0_x <= loff_1_x;
+  }
+  /**
+   * @const @param lidx_0_x
+   * @const @param loff_0_x
+   * @const @param lidx_1_x
+   * @const @param loff_1_x
+   */
+  static posS(
+    lidx_0_x: lnum_t,
+    loff_0_x: loff_t,
+    lidx_1_x: lnum_t,
+    loff_1_x: loff_t,
+  ) {
+    return lidx_0_x < lidx_1_x || lidx_0_x === lidx_1_x && loff_0_x < loff_1_x;
+  }
+  /**
+   * @const
+   * @const @param rhs_x
+   */
+  posSE(rhs_x: Ranval): boolean {
+    return Ranval.posSE(
+      this.anchrLidx,
+      this.anchrLoff,
+      rhs_x.anchrLidx,
+      rhs_x.anchrLoff,
+    );
+  }
+  /**
+   * @const
+   * @const @param rhs_x
+   */
+  posS(rhs_x: Ranval): boolean {
+    return Ranval.posS(
+      this.anchrLidx,
+      this.anchrLoff,
+      rhs_x.anchrLidx,
+      rhs_x.anchrLoff,
+    );
   }
   /**
    * @const
@@ -218,7 +299,7 @@ export class RanvalMo extends Moo<Ranval> {
 }
 /*64----------------------------------------------------------*/
 
-// export class SortedRanval extends SortedArray<Ranval> {
+// export class SortedRanval extends SortedSet<Ranval> {
 //   static #less(endpt_x: Endpt): Less<Ranval> {
 //     return endpt_x === Endpt.anchr
 //       ? (a_y, b_y) => Ranval.posSE(a_y[2], a_y[3], b_y[2], b_y[3])
@@ -232,17 +313,18 @@ export class RanvalMo extends Moo<Ranval> {
 // }
 /*64----------------------------------------------------------*/
 
-class RanvalFac_ extends Factory<Ranval> {
-  /** @implement */
-  protected createVal$() {
-    // /*#static*/ if (PRF) {
-    //   console.log(
-    //     `%c# of cached Ranval instances: ${this.val_a$.length + 1}`,
-    //     `color:${LOG_cssc.performance}`,
-    //   );
-    // }
-    return new Ranval(0, 0);
-  }
-}
-export const g_ranval_fac = new RanvalFac_();
+//jjjj TOCLEANUP
+// class RanvalFac_ extends Factory<Ranval> {
+//   /** @implement */
+//   protected createVal$() {
+//     // /*#static*/ if (PRF) {
+//     //   console.log(
+//     //     `%c# of cached Ranval instances: ${this.val_a$.length + 1}`,
+//     //     `color:${LOG_cssc.performance}`,
+//     //   );
+//     // }
+//     return new Ranval(0, 0);
+//   }
+// }
+// export const g_ranval_fac = new RanvalFac_();
 /*80--------------------------------------------------------------------------*/

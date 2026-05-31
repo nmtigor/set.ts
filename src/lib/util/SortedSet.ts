@@ -1,5 +1,5 @@
 /** 80**************************************************************************
- * @module lib/util/SortedArray
+ * @module lib/util/SortedSet
  * @license MIT
  ******************************************************************************/
 
@@ -10,31 +10,34 @@ import "../jslang.ts";
 import { assert, fail } from "../util.ts";
 /*80--------------------------------------------------------------------------*/
 
-export type Less<T> = (a: T, b: T) => boolean;
+export type Cf<T> = (a: T, b: T) => boolean;
 
-//kkkk SortedArray: consider using B-tree, ref. https://youtu.be/K1a2Bk8NrYQ
+//kkkk SortedSet: consider using B-tree, ref. https://youtu.be/K1a2Bk8NrYQ
 /**
  * Completely ordered array without duplicate.
  *
  * primaryconst: const exclude `#sorted`, `#tmp_a`
  */
-export class SortedArray<T> extends Array<T> {
+export class SortedSet<T> extends Array<T> {
   static #ID = 0 as id_t;
-  readonly id = ++SortedArray.#ID as id_t;
+  readonly id = ++SortedSet.#ID as id_t;
   /** @final */
   get _class_id_() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  #less: Less<T>;
-  setLess(_x: Less<T>): this {
+  #less: Cf<T>;
+  setLess(_x: Cf<T>): this {
     if (_x === this.#less) return this;
 
     this.#less = _x;
     this.#sorted = false;
     return this;
   }
+
+  /** Without `#eq`, equality is `!#less(a,b) && !#less(b,a)` */
+  #eq: Cf<T> | undefined;
 
   #tmp_a: (T | undefined)[] | undefined;
   protected get tmp_a$() {
@@ -64,11 +67,12 @@ export class SortedArray<T> extends Array<T> {
   }
 
   /**
-   * @headconst @param less_x
+   * @const @param less_x
    * @headconst @param val_a_x Not handled yet. Could `resort()` later
+   * @const @param eq_x
    */
   // deno-lint-ignore constructor-super
-  constructor(less_x: Less<T>, val_a_x?: T[]) {
+  constructor(less_x: Cf<T>, val_a_x?: T[], eq_x?: Cf<T>) {
     if (val_a_x) {
       if (val_a_x.length === 1) {
         super(1);
@@ -83,6 +87,7 @@ export class SortedArray<T> extends Array<T> {
       this.#sorted = true;
     }
     this.#less = less_x;
+    this.#eq = eq_x;
   }
 
   reset_SortedArray(): this {
@@ -168,28 +173,28 @@ export class SortedArray<T> extends Array<T> {
    * @const @param len_x
    */
   #find_j(val_x: T, jdx_x: uint, len_x: uint): boolean {
-    let ret = false;
+    let found = false;
     if (len_x === 1) {
       if (this.#less(this[jdx_x], val_x)) {
         this.#index = jdx_x + 1;
       } else if (this.#less(val_x, this[jdx_x])) {
         this.#index = jdx_x;
       } else {
-        this.#index = jdx_x;
-        ret = true;
+        found = this.#eq?.(val_x, this[jdx_x]) ?? true;
+        this.#index = found ? jdx_x : jdx_x + 1;
       }
     } else if (len_x > 1) {
       const m = Math.floor(len_x / 2);
       if (this.#less(val_x, this[jdx_x + m])) {
-        ret = this.#find_j(val_x, jdx_x, m);
+        found = this.#find_j(val_x, jdx_x, m);
       } else if (this.#less(this[jdx_x + m], val_x)) {
-        ret = this.#find_j(val_x, jdx_x + m, len_x - m);
+        found = this.#find_j(val_x, jdx_x + m, len_x - m);
       } else {
-        this.#index = jdx_x + m;
-        ret = true;
+        found = this.#eq?.(val_x, this[jdx_x + m]) ?? true;
+        this.#index = found ? jdx_x + m : jdx_x + m + 1;
       }
     }
-    return ret;
+    return found;
   }
 
   /**
@@ -424,8 +429,8 @@ export class SortedArray<T> extends Array<T> {
 /*64----------------------------------------------------------*/
 
 export class SortedIdo<T extends { id: id_t } = { id: id_t }>
-  extends SortedArray<T> {
-  static #less: Less<{ id: id_t }> = (a, b) => a.id < b.id;
+  extends SortedSet<T> {
+  static #less: Cf<{ id: id_t }> = (a, b) => a.id < b.id;
 
   constructor(val_a_x?: T[]) {
     super(SortedIdo.#less, val_a_x);

@@ -1,16 +1,16 @@
 /** 80**************************************************************************
- * @module lib/editor/ELineBase
+ * @module lib/editing/ELineBase
  * @license MIT
  ******************************************************************************/
 
+import type { Line } from "@fe-cpl/Line.ts";
+import { Ranval } from "@fe-cpl/Ranval.ts";
 import { _TRACE, CYPRESS, DEBUG, INOUT } from "../../preNs.ts";
 import type { lnum_t, loff_t, unum } from "../alias.ts";
 import { WritingDir, WritingMode } from "../alias.ts";
 import type { Id_t } from "../alias_v.ts";
-import { Bidi } from "../Bidi.ts";
 import type { Bidir } from "../Bidi.ts";
-import type { Line } from "@fe-cpl/Line.ts";
-import { g_ranval_fac } from "@fe-cpl/Ranval.ts";
+import { Bidi } from "../Bidi.ts";
 import { HTMLVuu, Vuu } from "../cv.ts";
 import { div, textnode } from "../dom.ts";
 import "../jslang.ts";
@@ -263,19 +263,21 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     this.#wrap_a.length = 0;
     const edtr = this.coo$;
     if (edtr._scrolr.wrap) {
-      using rv_u = g_ranval_fac.oneMore().set_Ranval(bln.lidx_1, 0);
+      //jjjj TOCLEANUP
+      // using rv_u = g_ranval_fac.oneMore().set_Ranval(bln.lidx_1, 0);
+      const rv_ = new Ranval(bln.lidx_1, 0);
       const elnBcr = this.bcr_1;
-      let fsrec = edtr._scrolr.anchrRecOf_$(rv_u, elnBcr);
+      let fsrec = edtr._scrolr.anchrRecOf_$(rv_, elnBcr);
       const impl_ = (blockOf_y: BlockOf, samerow_y: SameRow) => {
         let block_0 = blockOf_y(fsrec.fat);
         // const _a_ = [];
         for (let i = 1; i < LEN; ++i) {
-          rv_u.anchrLoff = i;
-          fsrec = edtr._scrolr.anchrRecOf_$(rv_u, elnBcr);
+          rv_.anchrLoff = i;
+          fsrec = edtr._scrolr.anchrRecOf_$(rv_, elnBcr);
           // _a_.push(fsrec.top.fixTo(1));
           if (samerow_y(fsrec.fat, block_0)) continue;
 
-          this.#wrap_a.push(rv_u.anchrLoff);
+          this.#wrap_a.push(rv_.anchrLoff);
           block_0 = blockOf_y(fsrec.fat);
         }
       };

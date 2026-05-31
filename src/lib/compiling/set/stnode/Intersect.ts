@@ -4,7 +4,7 @@
  ******************************************************************************/
 
 import type { SetTk } from "../../Token.ts";
-import { Err } from "../../alias.ts";
+import { ErrMsg } from "../../util.ts";
 import { Oprec } from "../alias.ts";
 import { BinaryOp } from "./BinaryOp.ts";
 import type { Set } from "./Set.ts";
@@ -21,7 +21,7 @@ export class Intersect extends BinaryOp {
       rhs_x.parent_$ = this;
       this.rhs$ = rhs_x;
     } else {
-      this.setErr(Err.set_intersect_no_rhs);
+      this.setErr(ErrMsg.set_intersect_no_rhs);
     }
 
     this.ensureBdries();

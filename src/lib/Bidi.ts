@@ -1300,9 +1300,7 @@ export class Bidi {
     //     return vi > viI ? this.#text.length : this.#logal_a![vi];
     //   },
     //   [RSide_.unknown]: () => {
-    //     /*#static*/ if (DEBUG) {
-    //       fail("Should not run here!");
-    //     }
+    //     /*#static*/ DEBUG ? fail("Should not run here!") : {};
     //   },
     // }[this.#lastRSide])();
 

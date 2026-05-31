@@ -6,14 +6,14 @@
 import { INOUT } from "../../preNs.ts";
 import type { Id_t } from "../alias_v.ts";
 import { assert, out } from "../util.ts";
+import type { Tok } from "./alias.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import type { Lexr } from "./Lexr.ts";
+import type { PlainTok } from "./plain/PlainTok.ts";
 import { Stnode } from "./Stnode.ts";
 import type { TokBart } from "./TokBart.ts";
 import type { TokBufr } from "./TokBufr.ts";
 import { type Token } from "./Token.ts";
-import type { Tok } from "./alias.ts";
-import type { PlainTok } from "./plain/PlainTok.ts";
 import { SortedSn_id } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -78,12 +78,13 @@ export abstract class Pazr<T extends Tok = BaseTok> {
 
   /* errSn_sa$ */
   protected readonly errSn_sa$ = new SortedSn_id();
+  /** @final */
   get hasErr() {
     return !!this.errSn_sa$.length;
   }
 
-  get _err_() {
-    const ret: [string, string[]][] = [];
+  get _err_(): unknown {
+    const ret: [string, unknown[]][] = [];
     for (const sn of this.errSn_sa$) {
       ret.push([sn._info_, sn._err_]);
     }
@@ -188,7 +189,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     const VALVE = 1_000;
     let valve = VALVE;
     const invalUp_ = (sn_y: Stnode<T> | undefined) => {
-      while (sn_y && !this.#tmpSn_sa.includes(sn_y) && valve--) {
+      while (sn_y && !this.#tmpSn_sa.includes(sn_y) && --valve) {
         sn_y.invalBdry();
         this.#tmpSn_sa.add(sn_y);
         if (sn_y === this.drtSn_$) break;
@@ -198,7 +199,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     };
     for (
       let tk_ = this.strtPazTk$.nextToken_$;
-      tk_ && tk_ !== this.stopPazTk$ && valve--;
+      tk_ && tk_ !== this.stopPazTk$ && --valve;
       tk_ = tk_.nextToken_$
     ) {
       invalUp_(tk_.stnod_$);
@@ -267,7 +268,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     /* find boundary token backward */
     let snClrTk_0: Token<T> | undefined = strtLexTk;
     while (
-      !snClrTk_0.stnod_$ && (snClrTk_0 = snClrTk_0.prevToken_$) && valve--
+      !snClrTk_0.stnod_$ && (snClrTk_0 = snClrTk_0.prevToken_$) && --valve
     );
     assert(valve, `Loop ${VALVE}±1 times`);
 
@@ -279,14 +280,14 @@ export abstract class Pazr<T extends Tok = BaseTok> {
         sn_1 = sn_;
       } while (
         (sn_ = sn_.parent_$) && sn_.lastToken.posSE(strtLexTk) &&
-        valve--
+        --valve
       );
     }
 
     /* find boundary token forward */
     let snClrTk_1: Token<T> | undefined = stopLexTk;
     while (
-      !snClrTk_1.stnod_$ && (snClrTk_1 = snClrTk_1.nextToken_$) && valve--
+      !snClrTk_1.stnod_$ && (snClrTk_1 = snClrTk_1.nextToken_$) && --valve
     );
     assert(valve, `Loop ${VALVE}±1 times`);
 
@@ -298,7 +299,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
         sn_1 = sn_;
       } while (
         (sn_ = sn_.parent_$) && sn_.frstToken.posGE(stopLexTk) &&
-        valve--
+        --valve
       );
     }
 
@@ -307,7 +308,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
         .reset_SortedArray().messUp()
         .push(snClrTk_0.stnod_$!, snClrTk_1.stnod_$!);
       let tk_: Token<T> | undefined = snClrTk_0;
-      while ((tk_ = tk_.nextToken_$) && tk_ !== snClrTk_1 && valve--) {
+      while ((tk_ = tk_.nextToken_$) && tk_ !== snClrTk_1 && --valve) {
         if (tk_.stnod_$) Stnode.sn_sa.push(tk_.stnod_$);
       }
       assert(valve, `Loop ${VALVE}±1 times`);
@@ -318,12 +319,12 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     } else { // 1915
       if (snClrTk_0) {
         let sn_: Stnode<T> | undefined = snClrTk_0.stnod_$!;
-        while ((sn_ = sn_.prevStnod) && valve--) sn_.filterTo(unrelSn_a);
+        while ((sn_ = sn_.prevStnod) && --valve) sn_.filterTo(unrelSn_a);
         assert(valve, `Loop ${VALVE}±1 times`);
       }
       if (snClrTk_1) {
         let sn_: Stnode<T> | undefined = snClrTk_1.stnod_$!;
-        while ((sn_ = sn_.nextStnod) && valve--) sn_.filterTo(unrelSn_a);
+        while ((sn_ = sn_.nextStnod) && --valve) sn_.filterTo(unrelSn_a);
         assert(valve, `Loop ${VALVE}±1 times`);
       }
       this.unrelSn_sa_$.add_O(unrelSn_a);

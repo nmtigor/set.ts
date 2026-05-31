@@ -10,7 +10,7 @@ import type { BufrDir, lnum_t, uint, unum } from "../alias.ts";
 import { LnumMAX } from "../alias.ts";
 import type { Id_t, Ts_t } from "../alias_v.ts";
 import { assert, out } from "../util.ts";
-import { SortedIdo } from "../util/SortedArray.ts";
+import { SortedIdo } from "../util/SortedSet.ts";
 import { Unre } from "../util/Unre.ts";
 import * as Is from "../util/is.ts";
 import { linesOf } from "../util/string.ts";
@@ -358,7 +358,7 @@ export class Bufr {
 
     const VALVE = 30;
     let valve = VALVE;
-    while (!(ret & this.#sigPool) && valve--) ret <<= 1;
+    while (!(ret & this.#sigPool) && --valve) ret <<= 1;
     assert(valve, `Loop ${VALVE}±1 times`);
 
     this.#sigPool &= ~ret;
@@ -459,7 +459,7 @@ export class Bufr {
     // let ln_: Line | undefined = this.lastLine;
     // const VALVE = LnumMAX;
     // let valve = VALVE;
-    // while (ln_ && ln_ !== this.frstLine_$ && valve--) {
+    // while (ln_ && ln_ !== this.frstLine_$ && --valve) {
     //   const ln_1: Line | undefined = ln_.prevLine;
     //   ln_.rmvSelf_$();
     //   ln_ = ln_1;
@@ -698,7 +698,7 @@ export class Bufr {
     let ln: Line | undefined = this.frstLine;
     const VALVE = LnumMAX;
     let valve = VALVE;
-    while (ln && valve--) {
+    while (ln && --valve) {
       ret.push(ln.text);
       sz += ln.uchrLen;
       if (szMAX_x !== undefined && sz > szMAX_x) {
@@ -833,7 +833,7 @@ export class Bufr {
   //   do {
   //     lineId_a.push(line.id);
   //     line = line.nextLine!;
-  //   } while (line && valve--);
+  //   } while (line && --valve);
   //   assert(valve);
 
   //   return `[#${lineId_a.join(", ")}]`;

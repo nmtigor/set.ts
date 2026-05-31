@@ -13,7 +13,7 @@ import type { Bufr } from "./Bufr.ts";
 import type { Line } from "./Line.ts";
 import { Loc } from "./Loc.ts";
 import { g_ran_fac } from "./RanFac.ts";
-import { g_ranval_fac, Ranval } from "./Ranval.ts";
+import { Ranval } from "./Ranval.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @see {@linkcode Ran.calcRanp()} */
@@ -164,11 +164,7 @@ export class Ran {
         Loc.create(bufr_x, rv_x.focusLidx, rv_x.focusLoff),
       );
     } else {
-      using rv_u = g_ranval_fac.oneMore().set_Ranval(0, 0);
-      return new Ran(
-        Loc.create(bufr_x, rv_u.anchrLidx, rv_u.anchrLoff),
-        Loc.create(bufr_x, rv_u.focusLidx, rv_u.focusLoff),
-      );
+      return new Ran(Loc.create(bufr_x, 0, 0), Loc.create(bufr_x, 0, 0));
     }
   }
 
@@ -287,7 +283,7 @@ export class Ran {
     let ret = ln.uchrLen - this.strtLoff;
     const VALVE = 1_000;
     let valve = VALVE;
-    while (ln.nextLine !== ln_1 && valve--) {
+    while (ln.nextLine !== ln_1 && --valve) {
       ln = ln.nextLine!;
       ret += ln.uchrLen;
     }
@@ -330,7 +326,7 @@ export class Ran {
 
   /**
    * @const
-   *  ! Notice, if `text` get non-const-wise overloaded (e.g. TLine.text),
+   * *! Notice, if `text` get non-const-wise overloaded (e.g. TLine.text),
    *  then this is not no more const. \
    *  If `text` is non-const-wise overloaded, should also overload this without
    *  "@const".
@@ -357,7 +353,7 @@ export class Ran {
       ln_ = ln_.nextLine;
       const VALVE = LnumMAX;
       let valve = VALVE;
-      while (ln_ && ln_ !== ln_1 && valve--) {
+      while (ln_ && ln_ !== ln_1 && --valve) {
         ret.push(ln_.text);
         ln_ = ln_.nextLine;
       }
@@ -417,16 +413,19 @@ export class Ran {
     return this.toRanval();
   }
 
-  /** For testing only */
+  /**
+   * For testing only
+   * @primaryconst
+   */
   toString() {
     return this.collapsed
-      ? `[${this.strtLoc$.toString()})`
-      : `[${this.strtLoc$.toString()},${this.stopLoc$.toString()})`;
+      ? `[${this.strtLoc$})`
+      : `[${this.strtLoc$},${this.stopLoc$})`;
   }
 }
 /*64----------------------------------------------------------*/
 
-// export class SortedRan extends SortedArray<Ran> {
+// export class SortedRan extends SortedSet<Ran> {
 //   static #less: Less<Ran> = (a, b) => a.stopLoc.posS(b.strtLoc);
 
 //   constructor(val_a_x?: Ran[]) {

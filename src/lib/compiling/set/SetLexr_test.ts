@@ -5,13 +5,13 @@
 
 import { assertEquals, assertStrictEquals } from "@std/assert";
 import { after, afterEach, describe, it } from "@std/testing/bdd";
+import { g_count } from "../../util/performance.ts";
 import type { TestO } from "../_test.ts";
 import { ran, redo, repl, rv, test_o, undo } from "../_test.ts";
-import { Err } from "../alias.ts";
+import { g_ran_fac } from "../RanFac.ts";
+import { ErrMsg } from "../util.ts";
 import { SetBufr } from "./SetBufr.ts";
 import { SetLexr } from "./SetLexr.ts";
-import { g_count } from "../../util/performance.ts";
-import { g_ran_fac } from "../RanFac.ts";
 /*80--------------------------------------------------------------------------*/
 
 const bufr = new SetBufr();
@@ -134,7 +134,7 @@ describe("SetLexr.lex()", () => {
       ["quotkey[0-0,0-1)", "stopBdry[0-1)"],
     ]);
     assertEquals(lexr._err_, [
-      ["quotkey[0-0,0-1)", [Err.quoted_string_open]],
+      ["quotkey[0-0,0-1)", [ErrMsg.quoted_string_open]],
     ]);
     repl(rv(0, 0), '"');
     assertEquals(lexr.strtLexTk_$._Repr_(), [
@@ -200,7 +200,7 @@ describe("SetLexr.lex()", () => {
       ["quotkey[0-5,0-6)", "stopBdry[0-6)"],
     ]);
     assertEquals(lexr._err_, [["quotkey[0-5,0-6)", [
-      Err.quoted_string_open,
+      ErrMsg.quoted_string_open,
     ]]]);
   });
 

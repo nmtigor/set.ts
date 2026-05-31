@@ -18,7 +18,7 @@ export type MooHandler<T extends {} | null, D = any, I = any> = (
 ) => void;
 
 // type IndexedMooHandler< T > = [ uint, MooHandler<T> ];
-// type SortedIndexedMooHandler< T > = SortedArray< IndexedMooHandler<T> >;
+// type SortedIndexedMooHandler< T > = SortedSet< IndexedMooHandler<T> >;
 interface MooHandlerExt<T extends {} | null, D = any, I = any> {
   handler: MooHandler<T, D, I>;
   match_newval: T | undefined;

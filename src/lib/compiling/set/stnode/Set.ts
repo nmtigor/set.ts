@@ -3,9 +3,10 @@
  * @license MIT
  ******************************************************************************/
 
+import { Ranval } from "../../Ranval.ts";
 import type { SetTk } from "../../Token.ts";
 import { Token } from "../../Token.ts";
-import { Err } from "../../alias.ts";
+import { ErrMsg } from "../../util.ts";
 import { SetTok } from "../SetTok.ts";
 import type { Paren, UnparenSet } from "../alias.ts";
 import { SetSn } from "./SetSn.ts";
@@ -74,7 +75,11 @@ export class Set extends SetSn {
     this.#paren = paren_x;
 
     if (unparnSet_x instanceof Token) {
-      this.setErr(`${Err.set_unexp_token}: ${unparnSet_x}`);
+      this.setErr([
+        ErrMsg.set_unexp_tk,
+        Ranval.fromRan(unparnSet_x.ran_$),
+        unparnSet_x.name,
+      ]);
     } else {
       unparnSet_x.parent_$ = this;
     }

@@ -9,7 +9,7 @@ import type { uint } from "../alias.ts";
 import "../jslang.ts";
 import { fail } from "../util.ts";
 import * as Is from "../util/is.ts";
-import type { SortedArray } from "../util/SortedArray.ts";
+import type { SortedSet } from "../util/SortedSet.ts";
 import type { Cssc } from "./alias.ts";
 import type { Colr } from "./Colr.ts";
 import type { ColrStep, ColrStepRaw } from "./ColrStep.ts";
@@ -122,7 +122,7 @@ export class ColrFn extends Array<ColrStep> {
   // }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  /** @see {@linkcode SortedArray.splice()} */
+  /** @see {@linkcode SortedSet.splice()} */
   override splice(..._x: unknown[]): ColrStep[] {
     fail("Disabled");
   }

@@ -6,10 +6,11 @@
 import * as v from "@valibot/valibot";
 import { INOUT } from "../../preNs.ts";
 import { Boor, Runr } from "../Moo.ts";
-import type { Id_t } from "../alias_v.ts";
 import type { uint } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
 import { assert, warn } from "../util.ts";
-import { type Less, SortedArray } from "../util/SortedArray.ts";
+import type { Cf } from "../util/SortedSet.ts";
+import { SortedSet } from "../util/SortedSet.ts";
 import * as Is from "../util/is.ts";
 import { createColr, csscLess, csscname } from "./Colr.ts";
 import type { ColrFnRaw } from "./ColrFn.ts";
@@ -456,9 +457,9 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
 }
 
 /** @final */
-class SortedQM_ extends SortedArray<QM_> {
+class SortedQM_ extends SortedSet<QM_> {
   /** Regard `undefined` as volume `Infinity`, i.e., last element */
-  static #less: Less<QM_> = (a_x, b_x) => {
+  static #less: Cf<QM_> = (a_x, b_x) => {
     let vol_a_ = NaN, vol_b_ = NaN;
     if (
       a_x[0] === undefined && b_x[0] === undefined ||

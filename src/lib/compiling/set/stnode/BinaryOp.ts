@@ -5,8 +5,9 @@
 
 import { assert } from "@fe-lib/util.ts";
 import { INOUT } from "@fe-src/preNs.ts";
+import { Ranval } from "../../Ranval.ts";
 import type { SetTk } from "../../Token.ts";
-import { Err } from "../../alias.ts";
+import { ErrMsg } from "../../util.ts";
 import { SetTok } from "../SetTok.ts";
 import { Oprec } from "../alias.ts";
 import { Set } from "./Set.ts";
@@ -104,12 +105,16 @@ export class BinaryErr extends BinaryOp {
       );
     }
     super(lhs_x, opTk_x);
-    this.setErr(`${Err.set_inval_binary_op}: ${opTk_x}`);
+    this.setErr([
+      ErrMsg.set_inval_binary_op,
+      Ranval.fromRan(opTk_x.ran_$),
+      opTk_x.name,
+    ]);
     if (rhs_x) {
       rhs_x.parent_$ = this;
       this.rhs$ = rhs_x;
     } else {
-      this.setErr(Err.set_binaryerr_no_rhs);
+      this.setErr(ErrMsg.set_binaryerr_no_rhs);
     }
 
     this.ensureBdries();

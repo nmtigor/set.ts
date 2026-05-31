@@ -3,7 +3,7 @@
  * @license MIT
  ******************************************************************************/
 
-import { INOUT } from "../../preNs.ts";
+import { DEBUG, INOUT } from "../../preNs.ts";
 import type { Ratio, uint32, uint8 } from "../alias.ts";
 import type { Id_t } from "../alias_v.ts";
 import "../jslang.ts";
@@ -64,7 +64,7 @@ function normalizeCsscHex_(csschex: CsscHex): CsscHexNorm {
       } else ret = csschex;
       break;
     default:
-      fail("Should not run here!");
+      /*#static*/ DEBUG ? fail("Should not run here!") : {};
   }
   return ret;
 }
@@ -204,7 +204,7 @@ export class Colr {
         this.#alpha = (i_ & 0xFF) / 0xFF;
         break;
       default:
-        fail("Should not run here!");
+        /*#static*/ DEBUG ? fail("Should not run here!") : {};
     }
   }
 
@@ -389,7 +389,7 @@ export class Colr {
       this.#getHex(valve_x);
       this.#byHex();
     } else {
-      fail("Should not run here!");
+      /*#static*/ DEBUG ? fail("Should not run here!") : {};
     }
     return this.#red!;
   }
@@ -433,7 +433,7 @@ export class Colr {
       this.#getHex(valve_x);
       this.#byHex();
     } else {
-      fail("Should not run here!");
+      /*#static*/ DEBUG ? fail("Should not run here!") : {};
     }
     let ret = argbFromRgb(this.#red!, this.#green!, this.#blue!);
     if (this.#alpha !== undefined) {
@@ -1107,7 +1107,7 @@ export function csscLess(a_x: Cssc, b_x: Cssc) {
 //   case 1: r = 0;         g = 0;         b = hexstr[0]; break;
 //   case 2: r = 0;         g = hexstr[0]; b = hexstr[1]; break;
 //   case 3: r = hexstr[0]; g = hexstr[1]; b = hexstr[2]; break;
-//   default: fail("Should not run here!");
+//   default: /*#static*/ DEBUG ? fail("Should not run here!") : {};
 //   }
 //   return `#${r}${r}${g}${g}${b}${b}`;
 // }
