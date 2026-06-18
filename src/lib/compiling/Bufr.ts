@@ -51,17 +51,17 @@ export class Bufr {
   }
 
   readonly #moDir = (n_x: BufrDir): void => {
-    // const rv_a = this.eslr_sa.map((edtr_y) =>
+    // const rv_a = this.eslr_ss.map((edtr_y) =>
     //   (edtr_y as EdtrBaseScrolr).mainCaret.ranval
     // );
     // console.log(rv_a);
     this.refresh_Bufr();
-    /* Notice, `invalidate_bcr()` should be called firstly for all `eslr_sa`,
+    /* Notice, `invalidate_bcr()` should be called firstly for all `eslr_ss`,
     because setting `mc_.caretrvm![1]` in one `edslr` will impact other `edslr`s
     immediately. */
-    this.eslr_sa.forEach((edslr) => (edslr as EdtrBaseScrolr).invalidate_bcr());
-    for (let i = this.eslr_sa.length; i--;) {
-      const edslr_i = this.eslr_sa.at(i) as EdtrBaseScrolr;
+    this.eslr_ss.forEach((edslr) => (edslr as EdtrBaseScrolr).invalidate_bcr());
+    for (let i = this.eslr_ss.length; i--;) {
+      const edslr_i = this.eslr_ss.at(i) as EdtrBaseScrolr;
       edslr_i.coo.el.dir = n_x;
 
       const mc_ = edslr_i.mainCaret;
@@ -375,8 +375,8 @@ export class Bufr {
   }
   /* ~ */
 
-  /* eslr_sa */
-  readonly eslr_sa = new SortedIdo();
+  /* eslr_ss */
+  readonly eslr_ss = new SortedIdo();
   readonly #moEdtrActiv = (
     n_x: boolean,
     _o_x: unknown,
@@ -387,11 +387,11 @@ export class Bufr {
     else if (this.#curEdtrId === i_x!.id) this.#curEdtrId = 0 as Id_t;
   };
   addEslr(_x: EdtrBaseScrolr) {
-    this.eslr_sa.add(_x);
+    this.eslr_ss.add(_x);
     _x.edtrActiv_mo.registHandler(this.#moEdtrActiv);
   }
   rmvEslr(_x: EdtrBaseScrolr) {
-    this.eslr_sa.rmv(_x);
+    this.eslr_ss.rmv(_x);
     _x.eslrActiv = false; //!
     _x.edtrActiv_mo.removeHandler(this.#moEdtrActiv);
 
@@ -490,7 +490,7 @@ export class Bufr {
 
     /*#static*/ if (DEBUG) {
       assert(this.#sigPool === 0x7fff_ffff); //kkkk
-      assert(this.eslr_sa.length === 0); //kkkk
+      assert(this.eslr_ss.length === 0); //kkkk
     }
     return this;
   }

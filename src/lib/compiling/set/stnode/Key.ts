@@ -36,15 +36,15 @@ export class Key extends SetSn {
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  override replaceChild(oldSn_x: SetSn, newSn_x: SetSn) {
-    /*#static*/ if (INOUT) {
-      assert(newSn_x instanceof FuzykeySeq || newSn_x instanceof QuotkeySeq);
-    }
+  override replaceChild(
+    oldSn_x: FuzykeySeq | QuotkeySeq,
+    newSn_x: FuzykeySeq | QuotkeySeq,
+  ) {
     const c_a = this.children;
-    const i_ = c_a.indexOf(oldSn_x as FuzykeySeq | QuotkeySeq);
+    const i_ = c_a.indexOf(oldSn_x);
     if (i_ >= 0) {
       newSn_x.parent_$ = this;
-      c_a.splice(i_, 1, newSn_x as FuzykeySeq | QuotkeySeq);
+      c_a.splice(i_, 1, newSn_x);
     }
 
     if (i_ === 0 || i_ === c_a.length - 1) this.invalBdry();

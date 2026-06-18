@@ -894,8 +894,8 @@ WritableStream.prototype[Symbol.asyncDispose] = async function (this) {
 /*80--------------------------------------------------------------------------*/
 
 /**
- * class X extends mix( Y, Z )\
- * !Should always companion with an interface declaration
+ * `class X extends mix( Y, Z) {}`\
+ **! Should always companion with an interface declaration
  *
  * @param mixins_x
  *    Last element has the highest precedence, and so on.

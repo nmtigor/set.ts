@@ -322,7 +322,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //   this.lexdInfo = tk_x.lexdInfo;
 
   //   this.#oldRanval = tk_x.#oldRanval;
-  //   this.err_sa$.become(tk_x.err_sa$);
+  //   this.err_ss$.become(tk_x.err_ss$);
   //   this.stnod_$ = tk_x.stnod_$;
   //   return this;
   // }

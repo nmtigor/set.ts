@@ -1245,7 +1245,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       ? undefined
       : [this.mainCaret, new RanvalMo()] as CaretRvM;
     this.mainCaret.resetCaretRvM_$(crm);
-    for (const eslr of this.bufr$.eslr_sa) {
+    for (const eslr of this.bufr$.eslr_ss) {
       if (eslr === this) continue;
 
       (eslr as EdtrBaseScrolr<CI>).#setShadowCaret(crm);

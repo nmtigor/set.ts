@@ -18,7 +18,7 @@ import { MurmurHash3_64 } from "./murmurhash3.ts";
 // const lt_re_ = /\r\n|\n|\r|\u2028|\u2029/g;
 const lt_re_ = /\r\n|\n|\r/g;
 /** @const @param text_x */
-export const linesOf = (text_x: string) => text_x.split(lt_re_);
+export const linesOf = (text_x: string): string[] => text_x.split(lt_re_);
 // console.log(linesOf("abc\n\n123\n"));
 /*80--------------------------------------------------------------------------*/
 

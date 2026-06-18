@@ -10,6 +10,8 @@ enum SetTok_ {
   fuzykey = 200,
   quotkey,
 
+  priid, // #01JYJG7E7EHJ07RDT4QRE18AJX
+
   question, // ?
   joiner, // >
 

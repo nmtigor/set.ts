@@ -8,7 +8,7 @@
  * (2024-07-21)
  *
  * @module lib/color/color_utils
- * @license MIT
+ * @license Apache-2.0
  ******************************************************************************/
 
 import type { uint32, uint8 } from "../alias.ts";

@@ -38,27 +38,30 @@ export abstract class Snt {
   abstract get sntStrtLoff(): loff_t;
   abstract get sntStopLoff(): loff_t;
 
-  /* err_sa$ */
-  protected err_sa$?: SortedErr;
+  /* err_ss$ */
+  protected err_ss$?: SortedErr | undefined;
   private get _err_a() {
-    return this.err_sa$ ??= new SortedErr();
+    return this.err_ss$ ??= new SortedErr();
   }
 
   /** @const */
   get isErr(): boolean {
-    return !!this.err_sa$?.length;
+    return !!this.err_ss$?.length;
   }
   /**
    * @const
    * @const @param errMsg_x
    */
   onlyErr(err_x: Err): boolean {
-    return this.err_sa$?.at(0) === err_x && !this.err_sa$.at(1);
+    return this.err_ss$?.at(0) === err_x && !this.err_ss$.at(1);
   }
 
   protected NErr$ = NErr_;
 
-  /** @const @param err_x */
+  /**
+   * @final
+   * @const @param err_x
+   */
   setErr(err_x: Err): this {
     if (this._err_a.length < this.NErr$) {
       this._err_a.add(err_x);
@@ -66,7 +69,7 @@ export abstract class Snt {
     return this;
   }
   clrErr(): this {
-    this.err_sa$?.reset_SortedArray();
+    this.err_ss$?.reset_SortedArray();
     return this;
   }
 
@@ -76,8 +79,8 @@ export abstract class Snt {
    */
   tfrErr(tgtTk_x: Snt): this {
     /* in (non-reverse) order */
-    for (let i = 0, iI = this.err_sa$?.length ?? 0; i < iI; i++) {
-      tgtTk_x.setErr(this.err_sa$![i]);
+    for (let i = 0, iI = this.err_ss$?.length ?? 0; i < iI; i++) {
+      tgtTk_x.setErr(this.err_ss$![i]);
     }
     return this;
   }
@@ -85,8 +88,8 @@ export abstract class Snt {
   /** @const */
   get _err_(): unknown[] {
     const retA: unknown[] = [];
-    if (this.err_sa$) {
-      for (const err of this.err_sa$) {
+    if (this.err_ss$) {
+      for (const err of this.err_ss$) {
         if (Is.array(err)) {
           retA.push(err.map((_y) => `${_y}`));
         } else {

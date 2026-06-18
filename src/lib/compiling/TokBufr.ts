@@ -48,17 +48,17 @@ export class TokBufr<T extends Tok = BaseTok> extends Bufr {
 
     //jjjj TOCLEANUP
     // this.dir_mo.registHandler((n_y) => {
-    //   // const rv_a = this.eslr_sa.map((edtr_y) =>
+    //   // const rv_a = this.eslr_ss.map((edtr_y) =>
     //   //   (edtr_y as EdtrScrolr).mainCaret.ranval
     //   // );
     //   // console.log(rv_a);
     //   this.refresh();
-    //   /* Notice, `invalidate_bcr()` should be called firstly for all `eslr_sa`,
+    //   /* Notice, `invalidate_bcr()` should be called firstly for all `eslr_ss`,
     //   because setting `mc_.caretrvm![1]` in one `edslr` will impact other `edslr`s
     //   immediately. */
-    //   this.eslr_sa.forEach((edslr) => (edslr as EdtrScrolr).invalidate_bcr());
-    //   for (let i = this.eslr_sa.length; i--;) {
-    //     const edslr = this.eslr_sa.at(i) as EdtrScrolr;
+    //   this.eslr_ss.forEach((edslr) => (edslr as EdtrScrolr).invalidate_bcr());
+    //   for (let i = this.eslr_ss.length; i--;) {
+    //     const edslr = this.eslr_ss.at(i) as EdtrScrolr;
     //     const mc_ = edslr.mainCaret;
     //     if (mc_.shown) {
     //       // mc_.caretrvm![1].force().val = rv_a[i];

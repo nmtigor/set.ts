@@ -4,8 +4,11 @@
  ******************************************************************************/
 
 import { INOUT } from "@fe-src/preNs.ts";
+import * as v from "@valibot/valibot";
+import { vULID } from "../../alias_v.ts";
 import { assert, out } from "../../util.ts";
 import { isWs } from "../../util/string.ts";
+import { ULID_LEN } from "../../util/ulid.ts";
 import { ScanR } from "../alias.ts";
 import { Lexr } from "../Lexr.ts";
 import type { SetTk } from "../Token.ts";
@@ -14,8 +17,12 @@ import { SetTok } from "./SetTok.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** Fuzykey `UInt16` which needs to escape using `\` */
-const setEsc_a = [0x5C, 0x3E, 0x3F, 0x22, 0x28, 0x29]; // ["\\", ">", "?", '"', "(", ")"]
+const esc_a_ = /* deno-fmt-ignore */ [
+  /* '"' */ 0x22, /* "#" */0x23, /* "(" */ 0x28, /* ")" */ 0x29, 
+  /* "\\" */ 0x5C, /* ">" */ 0x3E, /* "?" */ 0x3F,
+];
 
+//llll limit `VALVE` editing according to compiling
 /** @final */
 export class SetLexr extends Lexr<SetTok> {
   /** Adjust `strtLexTk$`, `stopLexTk$`, and assign `curLoc$` */
@@ -27,12 +34,33 @@ export class SetLexr extends Lexr<SetTok> {
       this.stopLexTk$.value !== SetTok.stopBdry &&
       this.stopLexTk$.sntStrtLoc.peek_ucod(-1) === /* "\\" */ 0x5C
     ) {
-      this.drtenTk$(this.stopLexTk$);
-      this.stopLexTk$ = this.stopLexTk$.nextToken_$!;
+      this.enlrgStopTk$();
     }
     super.preLex$();
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
+  /** @const */
+  #strtSubtract(): boolean {
+    if (this.curLoc$.ucod !== /* "\\" */ 0x5C) return false;
+
+    using loc_u = this.curLoc$.usingDup().forw();
+    return this.reachLexBdry$(loc_u) || !esc_a_.includes(loc_u.ucod);
+  }
+
+  /** @const */
+  #strtULID(): boolean {
+    if (this.curLoc$.ucod !== /* "#" */ 0x23) return false;
+
+    using ran_u = this.outTk$!.ran_$.usingDup();
+    ran_u.strtLoc.become_Loc(this.curLoc$).forw();
+    ran_u.stopLoc.become_Loc(ran_u.strtLoc).forwn(ULID_LEN, "inline");
+    if (this.reachLexBdry$(ran_u.stopLoc, -1) || ran_u.stopLoc.overEol) {
+      return false;
+    }
+
+    return v.safeParse(vULID, ran_u.getText()).success;
+  }
 
   @out((self: SetLexr) => {
     assert(self.outTk$?.value === SetTok.quotkey);
@@ -83,7 +111,7 @@ export class SetLexr extends Lexr<SetTok> {
     const VALVE = 1_000;
     let valve = VALVE;
     L_0: do {
-      let ucod = this.curLoc$.ucod;
+      const ucod = this.curLoc$.ucod;
       if (this.reachLexBdry$() || isWs(ucod)) {
         this.outTk$!.setStop(this.curLoc$, SetTok.fuzykey);
         break;
@@ -99,14 +127,18 @@ export class SetLexr extends Lexr<SetTok> {
           this.outTk$!.setStop(this.curLoc$, SetTok.fuzykey);
           break L_0;
         case /* "\\" */ 0x5C:
-          ucod = this.curLoc$.forw_ucod();
-          if (this.reachLexBdry$() || !setEsc_a.includes(ucod)) {
-            /* "\\" is subtract */
-            this.outTk$!.setStop(this.curLoc$.back(), SetTok.fuzykey);
+          if (this.#strtSubtract()) {
+            this.outTk$!.setStop(this.curLoc$, SetTok.fuzykey);
             break L_0;
           }
-          this.curLoc$.forw();
+          this.curLoc$.forwn(2);
           break;
+        case /* "#" */ 0x23:
+          if (this.#strtULID()) {
+            this.outTk$!.setStop(this.curLoc$, SetTok.fuzykey);
+            break L_0;
+          }
+          /* falls through */
         default:
           this.curLoc$.forw();
           break;
@@ -133,14 +165,18 @@ export class SetLexr extends Lexr<SetTok> {
         this.outTk$!.setStop(this.curLoc$.forw(), SetTok.joiner);
         break;
       case /* "\\" */ 0x5C:
-        ucod = this.curLoc$.forw_ucod();
-        if (this.reachLexBdry$() || !setEsc_a.includes(ucod)) {
-          /* "\\" is subtract */
-          this.outTk$!.setStop(this.curLoc$, SetTok.subtract);
-          break;
+        if (this.#strtSubtract()) {
+          this.outTk$!.setStop(this.curLoc$.forw(), SetTok.subtract);
+        } else {
+          this.#scanFuzykey();
         }
-        this.curLoc$.back();
-        this.#scanFuzykey();
+        break;
+      case /* "#" */ 0x23:
+        if (this.#strtULID()) {
+          this.outTk$!.setStop(this.curLoc$.forwn(ULID_LEN + 1), SetTok.priid);
+        } else {
+          this.#scanFuzykey();
+        }
         break;
       case /* "∩" */ 0x0_2229:
         this.outTk$!.setStop(this.curLoc$.forw(), SetTok.intersect);
@@ -156,6 +192,7 @@ export class SetLexr extends Lexr<SetTok> {
         break;
       default:
         this.#scanFuzykey();
+        break;
     }
     return this.outTk$;
   }

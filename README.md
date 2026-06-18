@@ -4,15 +4,19 @@ This program implements a format for searching texts with the following grammar:
 Quotkey:
     " any string without `"` "
 QuotkeySeq:
-    (Quotkey \s*)? Quotkey
+    (Quotkey \s*)* Quotkey
 Fuzykey:
     nonempty trimed string which is not Set, has no white spaces, has no `"` pair
 FuzykeySeq:
-    (Fuzykey \s+)? Fuzykey
+    (Fuzykey \s+)* Fuzykey
 Key:
     (QuotkeySeq | FuzykeySeq)+
+Ids:
+    (priid \s*)* priid
 Rel:
-    (Key | \?)? \s* > \s* (Key | \?)? \s* > \s* (Key | \?)?
+    (Key | Ids | \* | \?) \s* > \s* 
+    (Key | Ids | \* | \?) \s* > \s* 
+    (Key | Ids | \* | \?)
 Substract:
     Set \s* \ \s* Set
 Intersect:
@@ -20,7 +24,7 @@ Intersect:
 Union:
     Set \s* ∪ \s* Set
 UnparenthesizedSet:
-    Intersect | Substract | Union | Rel | Key
+    Intersect | Substract | Union | Rel | Key | Ids
 ParenthesizedSet: 
     \( \s* UnparenthesizedSet \s* \)
 Set:
@@ -43,5 +47,5 @@ within the dirty node. So it is very efficient for editing.
 ```bash
 cd /path_to/set.ts
 # deno 2.7.9
-deno test # 2 passed (15 steps)
+deno test # 2 passed (17 steps)
 ```

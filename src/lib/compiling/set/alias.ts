@@ -5,6 +5,7 @@
 
 import type { uint } from "../../alias.ts";
 import type { BinaryErr } from "./stnode/BinaryOp.ts";
+import type { Ids } from "./stnode/Ids.ts";
 import type { Intersect } from "./stnode/Intersect.ts";
 import type { Key } from "./stnode/Key.ts";
 import type { Rel } from "./stnode/Rel.ts";
@@ -23,5 +24,12 @@ export const enum Oprec {
 
 export type Paren = uint;
 
-export type UnparenSet = Intersect | Subtract | Union | BinaryErr | Rel | Key;
+export type UnparenSet =
+  | Intersect
+  | Subtract
+  | Union
+  | BinaryErr
+  | Rel
+  | Key
+  | Ids;
 /*80--------------------------------------------------------------------------*/

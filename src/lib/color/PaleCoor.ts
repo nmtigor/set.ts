@@ -76,9 +76,9 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
   //jjjj TOCLEANUP
   // readonly qm_a: [ColranQ | undefined, Cssc | ColrFn][] = [];
   /** Nonempty array of ColranQ Map, sorted by descending priority */
-  readonly qm_sa = new SortedQM_();
+  readonly qm_ss = new SortedQM_();
   get nQM() {
-    return this.qm_sa.length;
+    return this.qm_ss.length;
   }
 
   readonly modified_br_PaleCoor = new Boor({
@@ -88,7 +88,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
   // /** For `qm_a` and `Cssc | ColrFn` part. Not for `ColranQ` part. */
   // #modified = false;
   // get modified() {
-  //   return this.#modified || this.qm_sa.qModified;
+  //   return this.#modified || this.qm_ss.qModified;
   // }
 
   /* #iQM, #iAx */
@@ -112,7 +112,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
     return this.axes[this.#iAx];
   }
   getColran(): Colran | undefined {
-    const q_ = this.qm_sa[this.#iQM][0];
+    const q_ = this.qm_ss[this.#iQM][0];
     return q_?.axis(this.#iAx);
   }
   /* ~ */
@@ -146,7 +146,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
       const qraw = qm[0] ?? undefined;
       if (qraw === undefined || this.dim === qraw.length) {
         const q_ = qraw ? new ColranQ(qraw) : undefined;
-        this.qm_sa.add([
+        this.qm_ss.add([
           q_,
           Is.array(qm[1])
             ? new ColrFn(qm[1].map((_y) => new ColrStep(_y)))
@@ -173,7 +173,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
 
   /** Not related to `#iAx` */
   getMapped(iQM_x = this.#iQM_1): Cssc | ColrFn {
-    return this.qm_sa[iQM_x][1];
+    return this.qm_ss[iQM_x][1];
   }
   setMapped(_x: Cssc | ColrFn) {
     if (isColrFn(_x) && this.dim !== 1) {
@@ -186,7 +186,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
       return;
     }
 
-    this.qm_sa[this.#iQM][1] = _x;
+    this.qm_ss[this.#iQM][1] = _x;
     // if (this.#iQM === this.#iQM) {
     //   this.mapped_c.setByCssc(_x);
     //   this.refresh();
@@ -218,10 +218,10 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
   //         this.#sampleMapped_c.setByColr(this.sample_c);
   //         sampleMapped_.get(this.#sampleMapped_c);
   //       } else {
-  //         this.#validateQM(this.qm_sa[this.#iQM]);
+  //         this.#validateQM(this.qm_ss[this.#iQM]);
   //       }
   //     } else {
-  //       this.#validateQM(this.qm_sa[this.#iQM]);
+  //       this.#validateQM(this.qm_ss[this.#iQM]);
   //     }
   //   } else {
   //     this.#sampleMapped_c.setByCssc(sampleMapped_);
@@ -238,13 +238,13 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
     if (this.dim === 0) {
       contain_0 = true;
       this.#iQM_1 = 0;
-      const qm_ = this.qm_sa[0];
+      const qm_ = this.qm_ss[0];
       if (isColrFn(qm_[1])) this.#validateQM(qm_);
       this.mapped_c.setByCssc(qm_[1] as Cssc);
     } else if (this.dim === 1) {
       this.#colr.setByCssc(Pale.get(this.axes[0]).cssc);
       for (let i = 0, iI = this.nQM; i < iI; ++i) {
-        const qm = this.qm_sa[i];
+        const qm = this.qm_ss[i];
         if (qm[0] === undefined || qm[0].axis(0).contain(this.#colr)) {
           contain_0 = true;
           this.#iQM_1 = i;
@@ -259,7 +259,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
       }
     } else {
       for (let i = 0, iI = this.nQM; i < iI; ++i) {
-        const qm_ = this.qm_sa[i];
+        const qm_ = this.qm_ss[i];
         if (qm_[0] === undefined) {
           contain_0 = true;
           this.#iQM_1 = i;
@@ -296,7 +296,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
       assert(0 <= iQM_x && iQM_x < this.nQM);
     }
     let resample_ = false;
-    const qm_ = this.qm_sa[iQM_x];
+    const qm_ = this.qm_ss[iQM_x];
     if (qm_[0]) {
       // ! qm_[0]` should not be shared, so no need to dismantle handlers
       qm_[0] = undefined;
@@ -325,7 +325,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
    */
   addQM(qraw_x: ColranQRaw | undefined, cssc_x: Cssc) {
     const q_ = qraw_x ? new ColranQ(qraw_x) : undefined;
-    const i_ = this.qm_sa.add([q_, cssc_x]);
+    const i_ = this.qm_ss.add([q_, cssc_x]);
     /*#static*/ if (INOUT) {
       assert(i_ >= 0);
     }
@@ -347,10 +347,10 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
     }
     let resample_ = false;
     // ! q_` should not be shared, so no need to dismantle handlers
-    // const q_ = this.qm_sa.get(iQM_x)[0];
+    // const q_ = this.qm_ss.get(iQM_x)[0];
     // q_?.off(q_, this.#upR);
     // q_?.modified_mo.off(true, this.#onQModified);
-    this.qm_sa.rmvByIndex(iQM_x);
+    this.qm_ss.rmvByIndex(iQM_x);
 
     if (iQM_x < this.#iQM) {
       this.#iQM -= 1;
@@ -396,7 +396,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
     let resample_ = false;
     this.axes.push(palename_x);
     Pale.get(palename_x).registCsscHandler(this.#upR);
-    for (const qm of this.qm_sa) {
+    for (const qm of this.qm_ss) {
       qm[0]?.addColran();
     }
 
@@ -422,9 +422,9 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
     }
     let resample_ = false;
     if (this.dim === 1) {
-      for (const qm of this.qm_sa) qm[0] = undefined;
+      for (const qm of this.qm_ss) qm[0] = undefined;
     } else {
-      for (const qm of this.qm_sa) qm[0]?.delColran(iAx_x);
+      for (const qm of this.qm_ss) qm[0]?.delColran(iAx_x);
     }
     Pale.get(this.axes[iAx_x]).removeCsscHandler(this.#upR);
     this.axes.splice(iAx_x, 1);
@@ -451,7 +451,7 @@ export class PaleCoor extends Runr<unknown, PaleCoor> {
     this.modified_br_PaleCoor.set_Boor(false); //!
     return {
       axes: this.axes.length ? this.axes : undefined,
-      qm_a: this.qm_sa as any,
+      qm_a: this.qm_ss as any,
     };
   }
 }

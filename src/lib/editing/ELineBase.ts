@@ -126,7 +126,7 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
       this.el$.hint = this._class_id_;
     }
     this.assignStylo({
-      /*llll It works not well for, say, 5000 individual tiny divs.
+      /* It works not well for, say, 5000 individual tiny divs.
       Ref. [Optimize `contenteditable` Performance](https://gemini.google.com/share/94ef1d448397)
        */
       // contentVisibility: "auto",

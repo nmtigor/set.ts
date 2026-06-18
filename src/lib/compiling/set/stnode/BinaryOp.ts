@@ -58,19 +58,16 @@ export abstract class BinaryOp extends SetSn {
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  override replaceChild(oldSn_x: SetSn, newSn_x: SetSn) {
-    /*#static*/ if (INOUT) {
-      assert(newSn_x instanceof Set);
-    }
+  override replaceChild(oldSn_x: Set, newSn_x: Set) {
     newSn_x.parent_$ = this;
 
     if (this.lhs$ === oldSn_x) {
-      this.lhs$ = newSn_x as Set;
+      this.lhs$ = newSn_x;
     } else {
       /*#static*/ if (INOUT) {
         assert(this.rhs$ === oldSn_x);
       }
-      this.rhs$ = newSn_x as Set;
+      this.rhs$ = newSn_x;
     }
     this.#children = undefined;
 

@@ -12,7 +12,7 @@ import type { uint } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
 
 const space_a_: (string | undefined)[] = [];
-export const space = (n_: uint) => {
+export const space = (n_: uint): string => {
   if (space_a_[n_] === undefined) {
     space_a_[n_] = new Array(n_).fill(" ").join("");
   }

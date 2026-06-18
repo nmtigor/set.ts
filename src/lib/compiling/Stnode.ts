@@ -29,7 +29,7 @@ export class SortedStnod_depth extends SortedSet<Stnode<any>> {
 }
 
 export type CalcCommonO_ = {
-  unrelSn_sa?: SortedSn_id;
+  unrelSn_ss?: SortedSn_id;
   unrelSn_a?: Stnode<any>[];
   debug?: { a?: Stnode<any>[]; f?: Stnode<any>[][] };
 };
@@ -52,6 +52,11 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /** @final */
   get isRoot() {
     return !this.parent_$;
+  }
+
+  detach(): this {
+    this.parent_$ = undefined;
+    return this;
   }
 
   /** @final */
@@ -469,24 +474,24 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** Helper */
-  static readonly sn_sa = new SortedStnod_depth();
+  static readonly sn_ss = new SortedStnod_depth();
   /**
-   * @out @param unrelSn_sa
+   * @out @param unrelSn_ss
    * @headconst @param unrelSn_a
    * @out @param debug
    * @headconst @param sn_sa_x
    * @return `sn_sa_x[0]`
    */
   @out((self: typeof Stnode<any>, _1, args) => {
-    const sn_sa = args[1] ?? self.sn_sa;
+    const sn_ss = args[1] ?? self.sn_ss;
     assert(
-      sn_sa.length === 1 && sn_sa[0] &&
-        (!sn_sa[0].isErr || sn_sa[0].isRoot),
+      sn_ss.length === 1 && sn_ss[0] &&
+        (!sn_ss[0].isErr || sn_ss[0].isRoot),
     );
   })
   static calcCommon(
-    { unrelSn_sa, unrelSn_a, debug }: CalcCommonO_ = {},
-    sn_sa_x = this.sn_sa,
+    { unrelSn_ss, unrelSn_a, debug }: CalcCommonO_ = {},
+    sn_sa_x = this.sn_ss,
   ): Stnode<any> {
     /*#static*/ if (INOUT) {
       assert(sn_sa_x.length);
@@ -499,13 +504,13 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     sn_sa_x.resort();
     if (debug) debug.a = sn_sa_x.slice();
 
-    const sn2del_sa = unrelSn_sa ? new SortedSn_id(sn_sa_x) : undefined;
-    sn2del_sa?.resort()
+    const sn2del_ss = unrelSn_ss ? new SortedSn_id(sn_sa_x) : undefined;
+    sn2del_ss?.resort()
       .slice()
       .forEach((sn) => {
         while (sn.parent_$) {
           sn = sn.parent_$;
-          sn2del_sa.add(sn);
+          sn2del_ss.add(sn);
         }
       });
 
@@ -529,7 +534,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
       let sn_i = sn_sa_x[i_y];
       let de_ = sn_i.depth;
       while (n_y--) {
-        unrelSn_sa?.add_O(sn_i.siblings);
+        unrelSn_ss?.add_O(sn_i.siblings);
         sn_i = sn_sa_x[i_y] = sn_i.parent_$!;
         sn_i.depth_$ = --de_;
       }
@@ -617,8 +622,8 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
 
     floatupAll();
 
-    unrelSn_sa?.rmv_O(sn2del_sa);
-    unrelSn_sa?.add_O(unrelSn_a);
+    unrelSn_ss?.rmv_O(sn2del_ss);
+    unrelSn_ss?.add_O(unrelSn_a);
 
     /* `sn_sa_x[0]` may be `hasErr` */
     sn_sa_x[0] = sn_sa_x[0].safeSn_1;

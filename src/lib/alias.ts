@@ -257,6 +257,12 @@ export enum ChrTyp {
   LRI = 0x8_0000, RLI = 0x10_0000, FSI = 0x20_0000, PDI = 0x40_0000,
 }
 export type ChrTypName = keyof typeof ChrTyp;
+/*49-------------------------------------------*/
+
+/* alias_v */
+// export type ULID = Brand<string, "ULID">;
+// export const vULID = v.pipe(v.string(), v.ulid(), v.brand("ULID"));
+/* ~ */
 /*64----------------------------------------------------------*/
 /* number array */
 

@@ -8,6 +8,7 @@ import { INOUT } from "@fe-src/preNs.ts";
 import type { SetTk } from "../../Token.ts";
 import { Token } from "../../Token.ts";
 import { ErrMsg } from "../../util.ts";
+import { Ids } from "./Ids.ts";
 import { Key } from "./Key.ts";
 import { SetSn } from "./SetSn.ts";
 /*80--------------------------------------------------------------------------*/
@@ -15,7 +16,7 @@ import { SetSn } from "./SetSn.ts";
 /** @final */
 export class Rel extends SetSn {
   /** If `undefined`, must `hasErr`. */
-  #src: Key | SetTk | undefined;
+  #src;
   get src() {
     return this.#src;
   }
@@ -23,7 +24,7 @@ export class Rel extends SetSn {
   readonly jnr_1;
 
   /** If `undefined`, must `hasErr`. */
-  #rel: Key | SetTk | undefined;
+  #rel;
   get rel() {
     return this.#rel;
   }
@@ -31,19 +32,25 @@ export class Rel extends SetSn {
   readonly jnr_2: SetTk | undefined;
 
   /** If `undefined`, must `hasErr`. */
-  #tgt: Key | SetTk | undefined;
+  #tgt;
   get tgt() {
     return this.#tgt;
   }
 
-  #children: Key[] | undefined;
-  override get children(): Key[] {
+  #children: (Key | Ids)[] | undefined;
+  override get children(): (Key | Ids)[] {
     if (this.#children) return this.#children;
 
-    const ret: Key[] = [];
-    if (this.#src instanceof Key) ret.push(this.#src);
-    if (this.#rel instanceof Key) ret.push(this.#rel);
-    if (this.#tgt instanceof Key) ret.push(this.#tgt);
+    const ret: (Key | Ids)[] = [];
+    if (this.#src instanceof Key || this.#src instanceof Ids) {
+      ret.push(this.#src);
+    }
+    if (this.#rel instanceof Key || this.#rel instanceof Ids) {
+      ret.push(this.#rel);
+    }
+    if (this.#tgt instanceof Key || this.#tgt instanceof Ids) {
+      ret.push(this.#tgt);
+    }
     return this.#children = ret;
   }
 
@@ -63,11 +70,11 @@ export class Rel extends SetSn {
   }
 
   constructor(
-    src_x: Key | SetTk | undefined,
+    src_x: Key | Ids | SetTk | undefined,
     jnr_1_x: SetTk,
-    rel_x?: Key | SetTk,
+    rel_x?: Key | Ids | SetTk,
     jnr_2_x?: SetTk,
-    tgt_x?: Key | SetTk,
+    tgt_x?: Key | Ids | SetTk,
   ) {
     super();
     this.#src = src_x;
@@ -76,31 +83,28 @@ export class Rel extends SetSn {
     this.jnr_2 = jnr_2_x;
     this.#tgt = tgt_x;
 
-    if (src_x instanceof Key) src_x.parent_$ = this;
-    if (rel_x instanceof Key) rel_x.parent_$ = this;
+    if (src_x instanceof Key || src_x instanceof Ids) src_x.parent_$ = this;
+    if (rel_x instanceof Key || rel_x instanceof Ids) rel_x.parent_$ = this;
     if (!jnr_2_x) this.setErr(ErrMsg.set_rel_no_2nd);
-    if (tgt_x instanceof Key) tgt_x.parent_$ = this;
+    if (tgt_x instanceof Key || tgt_x instanceof Ids) tgt_x.parent_$ = this;
     if (!src_x && !rel_x && !tgt_x) this.setErr(ErrMsg.set_rel_no_srt);
 
     this.ensureBdries();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  override replaceChild(oldSn_x: SetSn, newSn_x: SetSn) {
-    /*#static*/ if (INOUT) {
-      assert(newSn_x instanceof Key);
-    }
+  override replaceChild(oldSn_x: Key | Ids, newSn_x: Key | Ids) {
     newSn_x.parent_$ = this;
 
     if (this.#src === oldSn_x) {
-      this.#src = newSn_x as Key;
+      this.#src = newSn_x;
     } else if (this.#rel === oldSn_x) {
-      this.#rel = newSn_x as Key;
+      this.#rel = newSn_x;
     } else {
       /*#static*/ if (INOUT) {
         assert(this.#tgt === oldSn_x);
       }
-      this.#tgt = newSn_x as Key;
+      this.#tgt = newSn_x;
     }
     this.#children = undefined;
 

@@ -204,6 +204,67 @@ describe("SetLexr.lex()", () => {
     ]]]);
   });
 
+  it("lex() priid", () => {
+    init_();
+
+    repl(rv(0, 0), "#");
+    assertEquals(lexr.strtLexTk_$._Repr_(), [
+      ["strtBdry[0-0)", "fuzykey[0-0,0-1)"],
+      "stopBdry[0-1)",
+      [],
+    ]);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+    /*
+    #
+    */
+    repl(ran(0).rv, "01");
+    assertEquals(lexr.strtLexTk_$._Repr_(), [
+      ["strtBdry[0-0)", "fuzykey[0-0,0-3)"],
+      "stopBdry[0-3)",
+      [],
+    ]);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+    /*
+    #01
+    */
+    repl(ran(0).rv, "JYJG7E7EHJ07RDT4QRE18AJX");
+    /*! `SetTok.priid` does not support concatenation. */
+    assertEquals(lexr.strtLexTk_$._Repr_(), [
+      ["strtBdry[0-0)", "fuzykey[0-0,0-27)"],
+      "stopBdry[0-27)",
+      [],
+    ]);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+
+    test_o.bufr.refresh_Bufr();
+    assertEquals(lexr.strtLexTk_$._Repr_(), [
+      ["strtBdry[0-0)", "priid[0-0,0-27)"],
+      "stopBdry[0-27)",
+      [],
+    ]);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+
+    test_o.bufr.refresh_Bufr("d#01JYJG7E7EHJ07RDT4QRE18AJXef");
+    assertEquals(lexr.strtLexTk_$._Repr_(), [
+      [
+        "strtBdry[0-0)",
+        "fuzykey[0-0,0-1)",
+        "priid[0-1,0-28)",
+        "fuzykey[0-28,0-30)",
+      ],
+      "stopBdry[0-30)",
+      [],
+    ]);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+    repl(rv(0, 27, 0, 28), "Y");
+    assertEquals(lexr.strtLexTk_$._Repr_(), [
+      ["strtBdry[0-0)", "fuzykey[0-0,0-1)", "priid[0-1,0-28)"],
+      "fuzykey[0-28,0-30)",
+      ["stopBdry[0-30)"],
+    ]);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+  });
+
   it("lex() other SetTok", () => {
     init_();
 

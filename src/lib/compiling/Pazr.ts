@@ -13,8 +13,9 @@ import type { PlainTok } from "./plain/PlainTok.ts";
 import { Stnode } from "./Stnode.ts";
 import type { TokBart } from "./TokBart.ts";
 import type { TokBufr } from "./TokBufr.ts";
-import { type Token } from "./Token.ts";
+import type { Token } from "./Token.ts";
 import { SortedSn_id } from "./util.ts";
+import type { Err } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
 export abstract class Pazr<T extends Tok = BaseTok> {
@@ -76,16 +77,26 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   }
   /* ~ */
 
-  /* errSn_sa$ */
-  protected readonly errSn_sa$ = new SortedSn_id();
+  /* errSn_ss$ */
+  protected readonly errSn_ss$ = new SortedSn_id();
   /** @final */
   get hasErr() {
-    return !!this.errSn_sa$.length;
+    return !!this.errSn_ss$.length;
+  }
+
+  /**
+   * @final
+   * @headconst @param sn_x
+   * @const @param err_x
+   */
+  setErr(sn_x: Stnode<T>, err_x: Err): void {
+    sn_x.setErr(err_x);
+    this.errSn_ss$.add(sn_x);
   }
 
   get _err_(): unknown {
     const ret: [string, unknown[]][] = [];
-    for (const sn of this.errSn_sa$) {
+    for (const sn of this.errSn_ss$) {
       ret.push([sn._info_, sn._err_]);
     }
     return ret;
@@ -93,12 +104,12 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   /* ~ */
 
   /** @final */
-  readonly unrelSn_sa_$ = new SortedSn_id();
+  readonly unrelSn_ss_$ = new SortedSn_id();
   /**
    * reused, or partially reuesed, or abandoned
    * @final
    */
-  readonly takldSn_sa_$ = new SortedSn_id();
+  readonly takldSn_ss_$ = new SortedSn_id();
 
   /* strtPazTk$ */
   /** @final */
@@ -145,9 +156,9 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     this.drtSn_$ = undefined;
     this.newSn_$ = undefined;
 
-    this.errSn_sa$.reset_SortedArray();
-    this.unrelSn_sa_$.reset_SortedArray();
-    this.takldSn_sa_$.reset_SortedArray();
+    this.errSn_ss$.reset_SortedArray();
+    this.unrelSn_ss_$.reset_SortedArray();
+    this.takldSn_ss_$.reset_SortedArray();
 
     this.strtPazTk$ = this.lexr$.frstLexTk;
     this.stopPazTk$ = this.lexr$.lastLexTk;
@@ -177,21 +188,21 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   }
 
   /** Helper */
-  #tmpSn_sa = new SortedSn_id();
+  #tmpSn_ss = new SortedSn_id();
   /**
    * Invalidate "(strtPazTk$, stopPazTk$).stnod_$" (if any) and their parents up
    * to `drtSn_$` (excluded)\
-   * Use `#tmpSn_sa`
+   * Use `#tmpSn_ss`
    */
   #invalBdries(): void {
-    this.#tmpSn_sa.reset_SortedArray();
+    this.#tmpSn_ss.reset_SortedArray();
 
     const VALVE = 1_000;
     let valve = VALVE;
     const invalUp_ = (sn_y: Stnode<T> | undefined) => {
-      while (sn_y && !this.#tmpSn_sa.includes(sn_y) && --valve) {
+      while (sn_y && !this.#tmpSn_ss.includes(sn_y) && --valve) {
         sn_y.invalBdry();
-        this.#tmpSn_sa.add(sn_y);
+        this.#tmpSn_ss.add(sn_y);
         if (sn_y === this.drtSn_$) break;
         sn_y = sn_y.parent;
       }
@@ -206,7 +217,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     }
     assert(valve, `Loop ${VALVE}±1 times`);
 
-    this.#tmpSn_sa.reset_SortedArray();
+    this.#tmpSn_ss.reset_SortedArray();
   }
 
   /**
@@ -238,7 +249,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
    * Mark paz region
    *
    * Set `drtSn_$`, `strtPazTk$`, `stopPazTk$`\
-   * Reset `errSn_sa$`
+   * Reset `errSn_ss$`
    */
   @out((self: Pazr<T>) => {
     assert(self.strtPazTk$.posS(self.stopPazTk$));
@@ -258,8 +269,8 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     const strtLexTk = this.lexr$.strtLexTk_$;
     const stopLexTk = this.lexr$.stopLexTk_$;
     this.newSn_$ = undefined; //!
-    this.unrelSn_sa_$.reset_SortedArray();
-    this.takldSn_sa_$.reset_SortedArray();
+    this.unrelSn_ss_$.reset_SortedArray();
+    this.takldSn_ss_$.reset_SortedArray();
     const unrelSn_a: Stnode<T>[] = [];
 
     const VALVE = 10_000;
@@ -304,17 +315,17 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     }
 
     if (snClrTk_0 && snClrTk_1) { // 1916
-      Stnode.sn_sa
+      Stnode.sn_ss
         .reset_SortedArray().messUp()
         .push(snClrTk_0.stnod_$!, snClrTk_1.stnod_$!);
       let tk_: Token<T> | undefined = snClrTk_0;
       while ((tk_ = tk_.nextToken_$) && tk_ !== snClrTk_1 && --valve) {
-        if (tk_.stnod_$) Stnode.sn_sa.push(tk_.stnod_$);
+        if (tk_.stnod_$) Stnode.sn_ss.push(tk_.stnod_$);
       }
       assert(valve, `Loop ${VALVE}±1 times`);
-      Stnode.sn_sa.push(...this.errSn_sa$);
+      Stnode.sn_ss.push(...this.errSn_ss$);
       this.drtSn_$ = this.setPazRegion$(
-        Stnode.calcCommon({ unrelSn_sa: this.unrelSn_sa_$, unrelSn_a }),
+        Stnode.calcCommon({ unrelSn_ss: this.unrelSn_ss_$, unrelSn_a }),
       );
     } else { // 1915
       if (snClrTk_0) {
@@ -327,10 +338,10 @@ export abstract class Pazr<T extends Tok = BaseTok> {
         while ((sn_ = sn_.nextStnod) && --valve) sn_.filterTo(unrelSn_a);
         assert(valve, `Loop ${VALVE}±1 times`);
       }
-      this.unrelSn_sa_$.add_O(unrelSn_a);
+      this.unrelSn_ss_$.add_O(unrelSn_a);
       this.drtSn_$ = this.setPazRegion$();
     }
-    this.errSn_sa$.reset_SortedArray();
+    this.errSn_ss$.reset_SortedArray();
 
     this.#enlrgBdries(strtLexTk, stopLexTk);
     this.sufPazmrk$();
@@ -339,7 +350,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
 
   /**
    * - Enlarge boundaries from (strtPazTk$, stopPazTk$) to boundaries of `sn_x`
-   * - Restore and possibly replenish `unrelSn_sa_$`
+   * - Restore and possibly replenish `unrelSn_ss_$`
    * - Set `drtSn_$`
    * @final
    * @headconst @param sn_x
@@ -351,14 +362,14 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     // console.log(`%crun here: `, `color:${LOG_cssc.runhere}`);
     const unrelSn_a: Stnode<T>[] = [];
     sn_x.filterChildrenTo(unrelSn_a, this.drtSn_$);
-    this.unrelSn_sa_$.add_O(unrelSn_a);
-    this.unrelSn_sa_$.add_O(this.takldSn_sa_$);
-    this.takldSn_sa_$.reset_SortedArray();
+    this.unrelSn_ss_$.add_O(unrelSn_a);
+    this.unrelSn_ss_$.add_O(this.takldSn_ss_$);
+    this.takldSn_ss_$.reset_SortedArray();
 
     const origStrtTk = this.drtSn_$!.frstToken.prevToken_$!;
     const origStopTk = this.drtSn_$!.lastToken.nextToken_$!;
     this.drtSn_$ = this.setPazRegion$(sn_x);
-    this.errSn_sa$.reset_SortedArray();
+    this.errSn_ss$.reset_SortedArray();
 
     this.#enlrgBdries(origStrtTk, origStopTk);
   }

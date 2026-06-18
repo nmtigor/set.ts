@@ -86,9 +86,14 @@ export const vTs_t = v.pipe(vInt64, v.brand("Ts_t"));
 
 export const vRatio = v.pipe(v.number(), v.finite());
 /*64----------------------------------------------------------*/
+/* string */
 
 /** Type of each element of `[..."(😄)"]` */
 export type Chr = Brand<string, "Chr">;
+/*49-------------------------------------------*/
+
+export type ULID = Brand<string, "ULID">;
+export const vULID = v.pipe(v.string(), v.ulid(), v.brand("ULID"));
 /*80--------------------------------------------------------------------------*/
 /* fe */
 
