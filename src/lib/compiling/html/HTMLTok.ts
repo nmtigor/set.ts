@@ -19,6 +19,9 @@ enum HTMLTok_ {
    */
   bogusTag,
 
+  /** For auto-generated Elment */
+  placeholder,
+
   _max,
 }
 console.assert(HTMLTok_._max <= 600);

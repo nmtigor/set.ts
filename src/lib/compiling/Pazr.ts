@@ -7,15 +7,15 @@ import { INOUT } from "../../preNs.ts";
 import type { Id_t } from "../alias_v.ts";
 import { assert, out } from "../util.ts";
 import type { Tok } from "./alias.ts";
+import type { Bart } from "./Bart.ts";
 import type { BaseTok } from "./BaseTok.ts";
+import type { Bufr } from "./Bufr.ts";
 import type { Lexr } from "./Lexr.ts";
 import type { PlainTok } from "./plain/PlainTok.ts";
 import { Stnode } from "./Stnode.ts";
-import type { TokBart } from "./TokBart.ts";
-import type { TokBufr } from "./TokBufr.ts";
 import type { Token } from "./Token.ts";
-import { SortedSn_id } from "./util.ts";
 import type { Err } from "./util.ts";
+import { SortedSn_id } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
 export abstract class Pazr<T extends Tok = BaseTok> {
@@ -28,7 +28,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** @final */
-  get bufr(): TokBufr<T> | TokBart<T> {
+  get bufr(): Bufr | Bart {
     return this.lexr$.bufr;
   }
 

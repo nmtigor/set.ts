@@ -1,42 +1,40 @@
 /** 80**************************************************************************
- * @module lib/compiling/TokBart
+ * @module lib/compiling/Bart
  * @license MIT
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
 import type { lnum_t } from "../alias.ts";
 import { assert } from "../util.ts";
-import type { BaseTok } from "./BaseTok.ts";
-import { Bufr } from "./Bufr.ts";
-import type { TokLine } from "./TokLine.ts";
-import type { TokRan } from "./TokRan.ts";
-import type { Tok } from "./alias.ts";
+import type { Bufr } from "./Bufr.ts";
+import type { Line } from "./Line.ts";
+import type { Ran } from "./Ran.ts";
 /*80--------------------------------------------------------------------------*/
 
 /**
  * Bufr part, a continuous part of a Bufr
  *
- * !Readonly (for the moment)
+ **! Readonly (for the moment)
  *
  * @final
  */
-export class TokBart<T extends Tok = BaseTok> {
+export class Bart {
   readonly #bufr;
   readonly #frstLidx;
   readonly #lastLidx;
 
-  get frstLine(): TokLine<T> {
-    return this.#bufr.line(this.#frstLidx) as TokLine<T>;
+  get frstLine(): Line {
+    return this.#bufr.line(this.#frstLidx);
   }
-  get lastLine(): TokLine<T> {
-    return this.#bufr.line(this.#lastLidx) as TokLine<T>;
+  get lastLine(): Line {
+    return this.#bufr.line(this.#lastLidx);
   }
 
-  get oldRan_a(): TokRan<T>[] {
-    return this.#bufr.oldRan_a_$ as TokRan<T>[];
+  get oldRan_a(): Ran[] {
+    return this.#bufr.oldRan_a_$;
   }
-  get newRan_a(): TokRan<T>[] {
-    return this.#bufr.newRan_a_$ as TokRan<T>[];
+  get newRan_a(): Ran[] {
+    return this.#bufr.newRan_a_$;
   }
 
   /**

@@ -3,7 +3,7 @@
  * @license MIT
  ******************************************************************************/
 
-import { INOUT } from "../../preNs.ts";
+import { DEBUG, INOUT } from "../../preNs.ts";
 import type { lnum_t, loff_t, uint } from "../alias.ts";
 import { LnumMAX } from "../alias.ts";
 import type { Id_t } from "../alias_v.ts";
@@ -157,7 +157,7 @@ export class ERan {
    **! Range's start is always ahead of end, otherwise `collapsed`.
    * @borrow @return synchronized `#range`
    */
-  #syncRange(): Range {
+  syncRange_$(): Range {
     const ctnr = this.anchrCtnr;
     const offs = this.anchrOffs;
     if (this.collapsed) {
@@ -189,7 +189,7 @@ export class ERan {
    * @const @param relPos_x
    */
   getBcr_$(relPos_x?: Pos): DOMRect {
-    const retRec = this.#syncRange().getBoundingClientRect();
+    const retRec = this.syncRange_$().getBoundingClientRect();
     if (relPos_x) {
       retRec.x -= relPos_x.left;
       retRec.y -= relPos_x.top;
@@ -197,133 +197,134 @@ export class ERan {
     return retRec;
   }
 
-  /**
-   * @headconst @param elnO_x
-   * @const @param relPos_x
-   */
-  getRecA_$(elnO_x: ElnO_, relPos_x?: Pos): DOMRect[] {
-    this.#syncRange();
-    if (this.#range.collapsed) return [];
-    /*49|||||||||||||||||||||||||||||||||||||||||||*/
+  //jjjj TOCLEANUP
+  // /**
+  //  * @headconst @param elnO_x
+  //  * @const @param relPos_x
+  //  */
+  // getRecA_$(elnO_x: ElnO_, relPos_x?: Pos): DOMRect[] {
+  //   this.syncRange_$();
+  //   if (this.#range.collapsed) return [];
+  //   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-    const ctnr_a: Node[] = [];
+  //   const ctnr_a: Node[] = [];
 
-    const frstCtnr = this.#range.startContainer;
-    const lastCtnr = this.#range.endContainer;
-    /*#static*/ if (INOUT) {
-      assert(frstCtnr.isText);
-      assert(lastCtnr.isText);
-    }
-    const strtOfs = this.#range.startOffset;
-    const stopOfs = this.#range.endOffset;
+  //   const frstCtnr = this.#range.startContainer;
+  //   const lastCtnr = this.#range.endContainer;
+  //   /*#static*/ if (INOUT) {
+  //     assert(frstCtnr.isText);
+  //     assert(lastCtnr.isText);
+  //   }
+  //   const strtOfs = this.#range.startOffset;
+  //   const stopOfs = this.#range.endOffset;
 
-    const frstBln = ELineBase.getBLine(frstCtnr);
-    const lastBln = ELineBase.getBLine(lastCtnr);
-    const lastStopBofs = (lastCtnr as Text).loff(stopOfs);
+  //   const frstBln = ELineBase.getBLine(frstCtnr);
+  //   const lastBln = ELineBase.getBLine(lastCtnr);
+  //   const lastStopBofs = (lastCtnr as Text).loff(stopOfs);
 
-    let ctnr = frstCtnr;
-    let stopBofs = (ctnr as Text).stopLoff;
-    let bln = frstBln;
-    let eln = elnO_x.eline(bln.lidx_1);
+  //   let ctnr = frstCtnr;
+  //   let stopBofs = (ctnr as Text).stopLoff;
+  //   let bln = frstBln;
+  //   let eln = elnO_x.eline(bln.lidx_1);
 
-    ctnr_a.push(ctnr);
+  //   ctnr_a.push(ctnr);
 
-    if (bln !== lastBln) {
-      const VALVE = LnumMAX;
-      let valve = VALVE;
-      do {
-        const blnLEN = bln.uchrLen;
-        while (stopBofs < blnLEN) {
-          ctnr = eln.caretNodeAt(stopBofs);
-          /*#static*/ if (INOUT) {
-            assert(ctnr.isText && stopBofs === (ctnr as Text)[$loff_0]);
-          }
-          ctnr_a.push(ctnr);
-          stopBofs += (ctnr as Text).length;
-        }
+  //   if (bln !== lastBln) {
+  //     const VALVE = LnumMAX;
+  //     let valve = VALVE;
+  //     do {
+  //       const blnLEN = bln.uchrLen;
+  //       while (stopBofs < blnLEN) {
+  //         ctnr = eln.caretNodeAt(stopBofs);
+  //         /*#static*/ if (INOUT) {
+  //           assert(ctnr.isText && stopBofs === (ctnr as Text)[$loff_0]);
+  //         }
+  //         ctnr_a.push(ctnr);
+  //         stopBofs += (ctnr as Text).length;
+  //       }
 
-        stopBofs = 0;
-        bln = bln.nextLine!;
-        eln = elnO_x.eline(bln.lidx_1);
-      } while (bln !== lastBln && --valve);
-      assert(valve, `Loop ${VALVE}±1 times`);
-    }
+  //       stopBofs = 0;
+  //       bln = bln.nextLine!;
+  //       eln = elnO_x.eline(bln.lidx_1);
+  //     } while (bln !== lastBln && --valve);
+  //     assert(valve, `Loop ${VALVE}±1 times`);
+  //   }
 
-    if (frstBln !== bln) stopBofs = 0;
-    while (stopBofs <= lastStopBofs) {
-      ctnr = eln.caretNodeAt(stopBofs);
-      /*#static*/ if (INOUT) {
-        assert(ctnr.isText && stopBofs === (ctnr as Text)[$loff_0]);
-      }
-      ctnr_a.push(ctnr);
-      stopBofs += (ctnr as Text).length;
-    }
-    /*49|||||||||||||||||||||||||||||||||||||||||||*/
+  //   if (frstBln !== bln) stopBofs = 0;
+  //   while (stopBofs <= lastStopBofs) {
+  //     ctnr = eln.caretNodeAt(stopBofs);
+  //     /*#static*/ if (INOUT) {
+  //       assert(ctnr.isText && stopBofs === (ctnr as Text)[$loff_0]);
+  //     }
+  //     ctnr_a.push(ctnr);
+  //     stopBofs += (ctnr as Text).length;
+  //   }
+  //   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-    const retRec: DOMRect[] = [];
+  //   const retRec: DOMRect[] = [];
 
-    const n_ = range_fac_.produce(ctnr_a.length);
+  //   const n_ = range_fac_.produce(ctnr_a.length);
 
-    ctnr = ctnr_a[0];
-    let len: uint,
-      r_1: Range;
-    //jjjj TOCLEANUP
-    // if (ctnr) {
-    len = n_ === 1
-      ? stopOfs
-      : ctnr.isText
-      ? (ctnr as Text)[$tail_ignored]
-        ? ctnr.textContent!.length - 1
-        : ctnr.textContent!.length
-      : ctnr.childNodes.length;
-    if (len) {
-      r_1 = range_fac_.val_a[0];
-      r_1.setStart(ctnr, strtOfs);
-      r_1.setEnd(ctnr, len);
-      r_1.getStickA(retRec, !ctnr.isText, relPos_x);
-    }
-    // }
+  //   ctnr = ctnr_a[0];
+  //   let len: uint,
+  //     r_1: Range;
+  //   //jjjj TOCLEANUP
+  //   // if (ctnr) {
+  //   len = n_ === 1
+  //     ? stopOfs
+  //     : ctnr.isText
+  //     ? (ctnr as Text)[$tail_ignored]
+  //       ? ctnr.textContent!.length - 1
+  //       : ctnr.textContent!.length
+  //     : ctnr.childNodes.length;
+  //   if (len) {
+  //     r_1 = range_fac_.val_a[0];
+  //     r_1.setStart(ctnr, strtOfs);
+  //     r_1.setEnd(ctnr, len);
+  //     r_1.getStickA(retRec, !ctnr.isText, relPos_x);
+  //   }
+  //   // }
 
-    for (let i = 1; i < n_ - 1; i++) {
-      ctnr = ctnr_a[i];
-      //jjjj TOCLEANUP
-      // if (ctnr) {
-      //jjjj TOCLEANUP
-      // const out_o = {};
-      // const bline = ELineBase.getBLine( ctnr, out_o );
-      // const offset = out_o.np === NodeInELine.indent ?
-      //   ctnr.textContent.length :
-      //   bline.uchrLen - out_o.vuu.indent;
-      len = ctnr.isText
-        ? (ctnr as Text)[$tail_ignored]
-          ? ctnr.textContent!.length - 1
-          : ctnr.textContent!.length
-        : ctnr.childNodes.length;
-      if (len) {
-        r_1 = range_fac_.val_a[i];
-        r_1.setStart(ctnr, 0);
-        r_1.setEnd(ctnr, len);
-        r_1.getStickA(retRec, !ctnr.isText, relPos_x);
-      }
-      // }
-    }
+  //   for (let i = 1; i < n_ - 1; i++) {
+  //     ctnr = ctnr_a[i];
+  //     //jjjj TOCLEANUP
+  //     // if (ctnr) {
+  //     //jjjj TOCLEANUP
+  //     // const out_o = {};
+  //     // const bline = ELineBase.getBLine( ctnr, out_o );
+  //     // const offset = out_o.np === NodeInELine.indent ?
+  //     //   ctnr.textContent.length :
+  //     //   bline.uchrLen - out_o.vuu.indent;
+  //     len = ctnr.isText
+  //       ? (ctnr as Text)[$tail_ignored]
+  //         ? ctnr.textContent!.length - 1
+  //         : ctnr.textContent!.length
+  //       : ctnr.childNodes.length;
+  //     if (len) {
+  //       r_1 = range_fac_.val_a[i];
+  //       r_1.setStart(ctnr, 0);
+  //       r_1.setEnd(ctnr, len);
+  //       r_1.getStickA(retRec, !ctnr.isText, relPos_x);
+  //     }
+  //     // }
+  //   }
 
-    if (n_ > 1) {
-      ctnr = ctnr_a.at(-1)!;
-      //jjjj TOCLEANUP
-      // if (ctnr) {
-      len = stopOfs;
-      if (len) {
-        r_1 = range_fac_.val_a[n_ - 1];
-        r_1.setStart(ctnr, 0);
-        r_1.setEnd(ctnr, len);
-        r_1.getStickA(retRec, !ctnr.isText, relPos_x);
-      }
-      // }
-    }
+  //   if (n_ > 1) {
+  //     ctnr = ctnr_a.at(-1)!;
+  //     //jjjj TOCLEANUP
+  //     // if (ctnr) {
+  //     len = stopOfs;
+  //     if (len) {
+  //       r_1 = range_fac_.val_a[n_ - 1];
+  //       r_1.setStart(ctnr, 0);
+  //       r_1.setEnd(ctnr, len);
+  //       r_1.getStickA(retRec, !ctnr.isText, relPos_x);
+  //     }
+  //     // }
+  //   }
 
-    return retRec;
-  }
+  //   return retRec;
+  // }
 
   /** @const @param ct_x */
   collapse_$(ct_x = EdranCollapseTo.focus) {
@@ -336,14 +337,14 @@ export class ERan {
       this.#focusEloc.ctnr_$ = this.anchrCtnr;
       this.#focusEloc.offs_$ = this.anchrOffs;
     } else {
-      const range = this.#syncRange();
+      const range = this.syncRange_$();
       if (ct_x === EdranCollapseTo.rangeStrt) {
         this.#focusEloc.ctnr_$ = range.startContainer;
         this.#focusEloc.offs_$ = range.startOffset;
-      } else if (ct_x === EdranCollapseTo.rangeStop) {
+      } /* if (ct_x === EdranCollapseTo.rangeStop) */ else {
         this.#focusEloc.ctnr_$ = range.endContainer;
         this.#focusEloc.offs_$ = range.endOffset;
-      } else fail();
+      }
       this.#anchrEloc.ctnr_$ = this.focusCtnr;
       this.#anchrEloc.offs_$ = this.focusOffs;
     }

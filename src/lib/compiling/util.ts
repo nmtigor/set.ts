@@ -320,8 +320,9 @@ export const enum ErrMsg {
     "End tag contains unexpected self-closing flag.",
   "expected-tag-name-but-got-right-bracket" =
     "Expected tag name. Got '>' instead.",
-  "expected-tag-name-but-got-question-mark" =
-    "Expected tag name. Got '?' instead. (HTML doesn't support processing instructions.)",
+  //jjjj TOCLEANUP
+  // "expected-tag-name-but-got-question-mark" =
+  //   "Expected tag name. Got '?' instead. (HTML doesn't support processing instructions.)",
   "expected-tag-name" = "Expected tag name. Got something else instead",
   "expected-closing-tag-but-got-right-bracket" =
     "Expected closing tag. Got '>' instead. Ignoring '</>'.",
@@ -358,12 +359,14 @@ export const enum ErrMsg {
   "unexpected-character-after-solidus-in-tag" =
     "Unexpected character after / in tag. Expected >",
   "expected-dashes-or-doctype" = "Expected '--' or 'DOCTYPE'. Not found.",
-  "unexpected-bang-after-double-dash-in-comment" =
-    "Unexpected ! after -- in comment",
+  //jjjj TOCLEANUP
+  // "unexpected-bang-after-double-dash-in-comment" =
+  //   "Unexpected ! after -- in comment",
   "unexpected-space-after-double-dash-in-comment" =
     "Unexpected space after -- in comment",
-  "incorrect-comment" = "Incorrect comment.",
-  "eof-in-comment" = "Unexpected end of file in comment.",
+  //jjjj TOCLEANUP
+  // "incorrect-comment" = "Incorrect comment.",
+  // "eof-in-comment" = "Unexpected end of file in comment.",
   "eof-in-comment-end-dash" = "Unexpected end of file in comment (-)",
   "unexpected-dash-after-double-dash-in-comment" =
     "Unexpected '-' after '--' found in comment.",
@@ -379,14 +382,15 @@ export const enum ErrMsg {
     "Unexpected end of file. Expected DOCTYPE name.",
   "eof-in-doctype-name" = "Unexpected end of file in DOCTYPE name.",
   "eof-in-doctype" = "Unexpected end of file in DOCTYPE.",
-  "expected-space-or-right-bracket-in-doctype" =
-    "Expected space or '>'. Got '%(data)s'",
-  "unexpected-end-of-doctype" = "Unexpected end of DOCTYPE.",
-  "unexpected-char-in-doctype" = "Unexpected character in DOCTYPE.",
+  //jjjj TOCLEANUP
+  // "expected-space-or-right-bracket-in-doctype" =
+  //   "Expected space or '>'. Got '%(data)s'",
+  // "unexpected-end-of-doctype" = "Unexpected end of DOCTYPE.",
+  // "unexpected-char-in-doctype" = "Unexpected character in DOCTYPE.",
   "eof-in-innerhtml" = "XXX innerHTML EOF",
   html_unexp_doctype = "unexpected-doctype", // "Unexpected DOCTYPE. Ignored.",
   html_nonroot_html = "non-html-root", // "html needs to be the first start tag.",
-  "expected-doctype-but-got-eof" = "Unexpected End of file. Expected DOCTYPE.",
+  html_no_doctype_eof = "expected-doctype-but-got-eof", // "Unexpected End of file. Expected DOCTYPE.",
   html_unknown_doctype = "unknown-doctype", // "Erroneous DOCTYPE."
   html_unexp_chr_doctype = "expected-doctype-but-got-chars", // "Unexpected non-space characters. Expected DOCTYPE.",
   html_unexp_opntag_doctype = "expected-doctype-but-got-start-tag", // "Unexpected start tag (%(name)s). Expected DOCTYPE.",

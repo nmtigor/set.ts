@@ -3,15 +3,12 @@
  * @license MIT
  ******************************************************************************/
 
-import type { loff_t, uint } from "../alias.ts";
+import type { loff_t } from "../alias.ts";
 import { Factory } from "../util/Factory.ts";
-import type { Tok } from "./alias.ts";
 import type { Bufr } from "./Bufr.ts";
+import type { Line } from "./Line.ts";
 import { Loc } from "./Loc.ts";
 import { Ran } from "./Ran.ts";
-import { TokLine } from "./TokLine.ts";
-import type { TokLoc } from "./TokLoc.ts";
-import type { TokRan } from "./TokRan.ts";
 /*80--------------------------------------------------------------------------*/
 
 class RanFac_ extends Factory<Ran> {
@@ -43,35 +40,34 @@ class RanFac_ extends Factory<Ran> {
   }
 
   /**
-   * @borrow @cosnt @param line_x
-   * @cosnt @param loff_x
+   * @borrow @const @param line_x
+   * @const @param loff_x
    */
-  byLoff<T extends Tok>(line_x: TokLine<T>, loff_x?: loff_t): TokRan<T> {
+  byLoff(line_x: Line, loff_x?: loff_t): Ran {
     const ret = this.setBufr(line_x.bufr)
-      .oneMore() as TokRan<T>;
+      .oneMore();
     ret.stopLoc.set_Loc(line_x, loff_x);
     return ret.collapse();
   }
   /**
-   * `in( loc_x.bufr)`
-   * @borrow @cosnt @param loc_x
-   * @borrow @cosnt @param loc_1_x
+   * @borrow @const @param loc_x
+   * @borrow @const @param loc_1_x
    */
-  byTokLoc<T extends Tok>(loc_x: TokLoc<T>, loc_1_x?: TokLoc<T>): TokRan<T> {
-    const ret = this.setBufr(loc_x.bufr!).oneMore() as TokRan<T>;
+  byLoc(loc_x: Loc, loc_1_x?: Loc): Ran {
+    const ret = this.setBufr(loc_x.bufr!).oneMore();
     ret.strtLoc.become_Loc(loc_x);
     ret.stopLoc.become_Loc(loc_1_x ?? loc_x);
     return ret.ord();
   }
   /**
    * `in( ran_x.bufr)`
-   * @borrow @cosnt @param ran_x
+   * @borrow @const @param ran_x
    */
-  byTokRan<T extends Tok>(ran_x: TokRan<T>): TokRan<T> {
+  byRan(ran_x: Ran): Ran {
     return this
       .setBufr(ran_x.bufr!)
       .oneMore()
-      .become_Ran(ran_x) as TokRan<T>;
+      .become_Ran(ran_x);
   }
 }
 export const g_ran_fac = new RanFac_();

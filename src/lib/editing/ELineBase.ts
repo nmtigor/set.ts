@@ -6,7 +6,7 @@
 import type { Line } from "@fe-cpl/Line.ts";
 import { Ranval } from "@fe-cpl/Ranval.ts";
 import { _TRACE, CYPRESS, DEBUG, INOUT } from "../../preNs.ts";
-import type { lnum_t, loff_t, unum } from "../alias.ts";
+import type { int, ldt_t, lnum_t, loff_t, uint, unum } from "../alias.ts";
 import { WritingDir, WritingMode } from "../alias.ts";
 import type { Id_t } from "../alias_v.ts";
 import type { Bidir } from "../Bidi.ts";
@@ -149,6 +149,42 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
+  /**
+   * `in( this.el$.firstChild?.isText)`
+   * @final
+   * @param strt_x Same as param `start` of `Array.splice()`
+   * @const @param nrmv_x Same as param `deleteCount` of `Array.splice()`
+   *    with value being `String.length`
+   * @const @param inss_x inserted string
+   */
+  splicePlain(
+    strt_x: int,
+    nrmv_x?: uint | typeof Infinity,
+    inss_x?: string,
+  ): this {
+    const tnd = this.el$.firstChild as Text;
+    if (strt_x < -tnd.length) strt_x = 0;
+    else if (strt_x < 0) strt_x += tnd.length;
+    else if (strt_x > tnd.length) strt_x = tnd.length;
+
+    let ldt: ldt_t = 0;
+    if (!nrmv_x) {
+      if (inss_x !== undefined) {
+        tnd.insertData(strt_x, inss_x);
+        ldt = inss_x.length;
+      }
+    } else if (inss_x === undefined) {
+      tnd.deleteData(strt_x, nrmv_x);
+      ldt = -nrmv_x;
+    } else {
+      tnd.replaceData(strt_x, nrmv_x, inss_x);
+      ldt = inss_x.length - nrmv_x;
+    }
+
+    (this.el$.lastChild!.vuu as TailV).translate_$(ldt);
+    return this;
+  }
+
   /** @final */
   // @traceOut(_TRACE)
   refreshPlain(): this {
@@ -235,12 +271,13 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
    */
   abstract replace_$(...a_x: any[]): any;
 
-  /** `in( this.el$.isConnected)` */
-  refresh_$(): void {
-    this.refreshPlain()
-      .syncBSize();
-    // .clearFsrecA();
-  }
+  //jjjj TOCLEANUP
+  // /** `in( this.el$.isConnected)` */
+  // refresh_$(): void {
+  //   this.refreshPlain()
+  //     .syncBSize();
+  //   // .clearFsrecA();
+  // }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /** Helper */
@@ -366,6 +403,7 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   }
 
   /**
+   * @deprecated
    * @final
    * @const @param loff_x
    */
@@ -406,6 +444,7 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   }
   /**
    * `in( !this.empty)`
+   * @deprecated
    * @final
    */
   get frstCaretNode(): HTMLElement | Text {
@@ -413,6 +452,7 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   }
   /**
    * `in( !this.empty)`
+   * @deprecated
    * @final
    */
   get lastCaretNode(): HTMLElement | Text {

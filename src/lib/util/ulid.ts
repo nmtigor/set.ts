@@ -7,12 +7,12 @@
  ******************************************************************************/
 
 import type { ts_t } from "../alias.ts";
-import type { Ts_t } from "../alias_v.ts";
+import type { Ts_t, ULID } from "../alias_v.ts";
 import * as Is from "./is.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** Type for a ULID generator function. */
-type ULID = (seedTime?: number) => string;
+type GenULID_ = (seedTime?: number) => string;
 
 // These values should NEVER change. If
 // they do, we're no longer making ulids!
@@ -69,7 +69,7 @@ function incrementBase32(str: string): string {
  *    the ULID was generated.
  * @throw {@linkcode Error}
  */
-export function decodeTime(ulid_x: string): Ts_t {
+export function decodeTime(ulid_x: ULID): Ts_t {
   if (ulid_x.length !== ULID_LEN) {
     throw new Error(`ULID must be exactly ${ULID_LEN} characters long`);
   }
@@ -118,7 +118,7 @@ function encodeRandom(): string {
 /*64----------------------------------------------------------*/
 
 /** Generates a monotonically increasing ULID. */
-function monotonicFactory(encodeRand = encodeRandom): ULID {
+function monotonicFactory(encodeRand = encodeRandom): GenULID_ {
   let lastTime = 0;
   /* It is possible that `seedTime <= lastTime` on the first run, e.g., in
   cypress testing with `cy.clock()`, in which case, both are 0. */
@@ -178,8 +178,8 @@ function monotonicFactory(encodeRand = encodeRandom): ULID {
  * @return A ULID that is guaranteed to be strictly increasing for the same seed
  *    time.
  */
-export const monotonicUlid = (seedTime_x: ts_t = Date.now()): string =>
-  monotonicFactory()(seedTime_x);
+export const monotonicUlid = (seedTime_x: ts_t = Date.now()): ULID =>
+  monotonicFactory()(seedTime_x) as ULID;
 /* This stucks when "deno task denoflare push cf". */
 // export const monotonicUlid: ULID = monotonicFactory();
 /*80--------------------------------------------------------------------------*/

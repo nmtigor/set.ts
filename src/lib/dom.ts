@@ -378,6 +378,7 @@ if (globalThis.SVGElement) {
 
 declare global {
   interface CSSStyleDeclaration {
+    /** @const @param prop_o */
     assignPropo(prop_o: Record<string, string | number>): void;
   }
 }
@@ -387,6 +388,31 @@ if (globalThis.CSSStyleDeclaration) {
     for (const [key, val] of Object.entries(prop_o)) {
       this.setProperty(key, val as any);
     }
+  };
+}
+/*64----------------------------------------------------------*/
+
+declare global {
+  interface CSSStyleSheet {
+    /**
+     * @const @param selector
+     * @return Count of deleted rules
+     */
+    deleteSelector(selector: string): uint;
+  }
+}
+
+if (globalThis.CSSStyleSheet) {
+  CSSStyleSheet.prototype.deleteSelector = function (this, selector) {
+    let n_: uint = 0;
+    for (let i = this.cssRules.length; i--;) {
+      const rule_i = this.cssRules[i];
+      if (rule_i instanceof CSSStyleRule && rule_i.selectorText === selector) {
+        this.deleteRule(i);
+        n_ += 1;
+      }
+    }
+    return n_;
   };
 }
 /*64----------------------------------------------------------*/

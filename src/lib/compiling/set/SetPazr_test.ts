@@ -8,9 +8,9 @@ import { after, afterEach, describe, it } from "@std/testing/bdd";
 import { g_count } from "../../util/performance.ts";
 import type { TestO } from "../_test.ts";
 import { ran, repl, rv, test_o, undo } from "../_test.ts";
+import { Bufr } from "../Bufr.ts";
 import { g_ran_fac } from "../RanFac.ts";
 import { ErrMsg } from "../util.ts";
-import { SetBufr } from "./SetBufr.ts";
 import { SetLexr } from "./SetLexr.ts";
 import { SetPazr } from "./SetPazr.ts";
 import type { BinaryOp } from "./stnode/BinaryOp.ts";
@@ -18,7 +18,7 @@ import type { Rel } from "./stnode/Rel.ts";
 import type { Set } from "./stnode/Set.ts";
 /*80--------------------------------------------------------------------------*/
 
-const bufr = new SetBufr();
+const bufr = new Bufr();
 const lexr = new SetLexr(bufr);
 const pazr = new SetPazr(lexr);
 Object.assign(test_o, { bufr, lexr, pazr } as Partial<TestO>);

@@ -9,7 +9,6 @@ import { assert } from "../util.ts";
 import type { Bufr } from "./Bufr.ts";
 import { Lexr } from "./Lexr.ts";
 import { Pazr } from "./Pazr.ts";
-import type { TokRan } from "./TokRan.ts";
 import { BufrReplState } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -44,7 +43,7 @@ export class ReplActr {
                 /*#static*/ if (INOUT) {
                   assert(this.#bufr.oldRan_a_$.at(0));
                 }
-                this.#lexr?.lexmrk_$(this.#bufr.oldRan_a_$ as TokRan<any>[]);
+                this.#lexr?.lexmrk_$(this.#bufr.oldRan_a_$);
                 this.#pazr?.pazmrk_$();
                 //jjjj TOCLEANUP
                 // this.#tfmr?.tfmmrk_$(this.#bufr.oldRan_a_$);
@@ -61,7 +60,7 @@ export class ReplActr {
                   assert(this.#bufr.newRan_a_$.at(0));
                 }
                 this.#lexr
-                  ?.lexadj_$(this.#bufr.newRan_a_$ as TokRan<any>[])
+                  ?.lexadj_$(this.#bufr.newRan_a_$)
                   .lex();
                 this.#pazr?.paz();
                 //jjjj TOCLEANUP

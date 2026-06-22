@@ -14,7 +14,7 @@ import { Pale } from "../color/Pale.ts";
 import { HTMLVuu } from "../cv.ts";
 import { html, span } from "../dom.ts";
 import "../jslang.ts";
-import { $ovlap } from "../symbols.ts";
+import { $cssstylesheet } from "../symbols.ts";
 import { assert, bind, out } from "../util.ts";
 import { trace, traceOut } from "../util/trace.ts";
 import { Caret_passive_z, Caret_proactive_z } from "./alias.ts";
@@ -22,7 +22,6 @@ import type { EdtrBase, EdtrBaseScrolr } from "./EdtrBase.ts";
 import type { ELoc } from "./ELoc.ts";
 import { ERan } from "./ERan.ts";
 import { MainCaret } from "./MainCaret.ts";
-import { SelecFac } from "./Selec.ts";
 /*80--------------------------------------------------------------------------*/
 
 export type CaretRvM = [mainCaret: MainCaret, ranval_mo: RanvalMo];
@@ -33,33 +32,67 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
 
   /* Pale */
   #proactiveBg_p = Pale.get("lib.editor.Caret.proactiveBg");
-  #passiveBg_p = Pale.get("lib.editor.Caret.passiveBg");
-  #proactiveFatOl_p = Pale.get("lib.editor.Caret.proactiveFatOl");
-  #passiveFatOl_p = Pale.get("lib.editor.Caret.passiveFatOl");
   #onProactiveBgCssc = (_x: Cssc) => {
     if (this.isMain$) {
       this.el$.style.backgroundColor = _x;
       this.#anchr_el.style.backgroundColor = _x;
     }
   };
+
+  #passiveBg_p = Pale.get("lib.editor.Caret.passiveBg");
   #onPassiveBgCssc = (_x: Cssc) => {
     if (!this.isMain$) {
       this.el$.style.backgroundColor = _x;
       this.#anchr_el.style.backgroundColor = _x;
     }
   };
+
+  #proactiveFatOl_p = Pale.get("lib.editor.Caret.proactiveFatOl");
   #onProactiveFatOlCssc = (_x: Cssc) => {
     if (this.isMain$) this.#fat_el.style.outlineColor = _x;
   };
+
+  #passiveFatOl_p = Pale.get("lib.editor.Caret.passiveFatOl");
   #onPassiveFatOlCssc = (_x: Cssc) => {
     if (!this.isMain$) this.#fat_el.style.outlineColor = _x;
   };
+
+  #proactiveBgSelec_p = Pale.get("lib.editor.Selec.proactiveBgSelec");
+  #onProactiveBgSelecCssc = (_x: Cssc) => {
+    if (this.isMain$) {
+      document.body.style.setProperty(`--${this._class_id_}_selecBg`, _x);
+    }
+  };
+
+  // #proactiveBgOvlap_p = Pale.get("lib.editor.Selec.proactiveBgOvlap");
+
+  #passiveBgSelec_p = Pale.get("lib.editor.Selec.passiveBgSelec");
+  #onPassiveBgSelecCssc = (_x: Cssc) => {
+    if (!this.isMain$) {
+      document.body.style.setProperty(`--${this._class_id_}_selecBg`, _x);
+    }
+  };
+
+  // #passiveBgOvlap_p = Pale.get("lib.editor.Selec.passiveBgOvlap");
+
   override observeTheme() {
     this.#proactiveBg_p.registCsscHandler(this.#onProactiveBgCssc);
     this.#passiveBg_p.registCsscHandler(this.#onPassiveBgCssc);
     this.#proactiveFatOl_p.registCsscHandler(this.#onProactiveFatOlCssc);
     this.#passiveFatOl_p.registCsscHandler(this.#onPassiveFatOlCssc);
+
+    this.#proactiveBgSelec_p.registCsscHandler(this.#onProactiveBgSelecCssc);
+    this.#passiveBgSelec_p.registCsscHandler(this.#onPassiveBgSelecCssc);
   }
+  // override unobserveTheme() {
+  //   this.#proactiveBg_p.removeCsscHandler(this.#onProactiveBgCssc);
+  //   this.#passiveBg_p.removeCsscHandler(this.#onPassiveBgCssc);
+  //   this.#proactiveFatOl_p.removeCsscHandler(this.#onProactiveFatOlCssc);
+  //   this.#passiveFatOl_p.removeCsscHandler(this.#onPassiveFatOlCssc);
+
+  //   this.#proactiveBgSelec_p.removeCsscHandler(this.#onProactiveBgSelecCssc);
+  //   this.#passiveBgSelec_p.removeCsscHandler(this.#onPassiveBgSelecCssc);
+  // }
   /* ~ */
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -109,6 +142,11 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     return this.class === "MainCaret"
       ? this.#proactiveFatOl_p.cssc
       : this.#passiveFatOl_p.cssc;
+  }
+  get #bgSelecCssc(): Cssc {
+    return this.class === "MainCaret"
+      ? this.#proactiveBgSelec_p.cssc
+      : this.#passiveBgSelec_p.cssc;
   }
   get #zidx(): int {
     return this.class === "MainCaret" ? Caret_proactive_z : Caret_passive_z;
@@ -186,22 +224,30 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   }
   /* ~ */
 
-  /* #selec_fac */
-  readonly #selec_fac: SelecFac;
+  /* #selec_hl */
+  //jjjj TOCLEANUP
+  // readonly #selec_fac: SelecFac;
+
+  readonly #selec_hl = new Highlight();
+  readonly #selec_hl_name = `${this._class_id_}_selec`;
   #hideSelec() {
-    this.#selec_fac.reset_Factory();
     //jjjj TOCLEANUP
-    // this.#anchr_el.style.display = "none";
+    // this.#selec_fac.reset_Factory();
+    // //jjjj TOCLEANUP
+    // // this.#anchr_el.style.display = "none";
+
+    this.#selec_hl.clear();
   }
-  #showSelec() {
-    //jjjj TOCLEANUP
-    // this.#selec_fac.showAll_$();
-    for (const selec of this.#selec_fac) {
-      selec.el.style.display = "revert";
-    }
-    //jjjj TOCLEANUP
-    // this.#anchr_el.style.display = "revert";
-  }
+  //jjjj TOCLEANUP
+  // #showSelec() {
+  //   //jjjj TOCLEANUP
+  //   // this.#selec_fac.showAll_$();
+  //   for (const selec of this.#selec_fac) {
+  //     selec.el.style.display = "revert";
+  //   }
+  //   //jjjj TOCLEANUP
+  //   // this.#anchr_el.style.display = "revert";
+  // }
 
   #selec_eran!: ERan;
   /* ~ */
@@ -237,7 +283,8 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
 
   protected constructor(coo_x: EdtrBase) {
     super(coo_x, html("input"));
-    this.#selec_fac = new SelecFac(coo_x);
+    //jjjj TOCLEANUP
+    // this.#selec_fac = new SelecFac(coo_x);
 
     this.el$.id = this._class_id_; // Otherwise, Chrome DevTools will issue "A form field element has neither an id nor a name attribute."
     /*#static*/ if (CYPRESS || DEBUG) {
@@ -287,6 +334,18 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
 
       backgroundColor: this.#bgCssc,
     });
+
+    CSS.highlights.set(this.#selec_hl_name, this.#selec_hl);
+    document[$cssstylesheet].insertRule(
+      `::highlight(${this.#selec_hl_name}) {
+        background-color: var(--${this._class_id_}_selecBg);
+      }`,
+    );
+    document.body.style.setProperty(
+      `--${this._class_id_}_selecBg`,
+      this.#bgSelecCssc,
+    );
+
     //jjjj TOCLEANUP "Avoid calling virtual (overridden) methods inside a constructor."
     // this.resetCaretRvM_$(crm_x);
 
@@ -309,6 +368,15 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     ret.observeTheme();
     return ret;
   }
+
+  // destructor() {
+  //   this.unobserveTheme();
+
+  //   document[$cssstylesheet].deleteSelector(
+  //     `::highlight(${this.#selec_hl_name})`,
+  //   );
+  //   CSS.highlights.delete(this.#selec_hl_name);
+  // }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
@@ -706,16 +774,18 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
       rv_1.setFocus(eslr.stopLidx - 1, Number.MAX_SAFE_INTEGER);
     }
     this.#selec_eran = eslr.getERanOf_$(rv_1, this.#selec_eran);
+    this.#selec_hl.add(this.#selec_eran.syncRange_$());
 
-    const rec_a = this.#selec_eran.getRecA_$(eslr, eslr.pbPos);
-    this.#selec_fac.isMain_$ = this.isMain$;
-    const n_ = this.#selec_fac.produce(rec_a.length);
-    const selec_a = this.#selec_fac.val_a;
-    for (let i = n_; i--;) {
-      const rec = rec_a[i];
-      selec_a[i].draw_$(rec.left, rec.top, rec.width, rec.height, rec[$ovlap]);
-    }
-    this.#showSelec();
+    //jjjj TOCLEANUP
+    // const rec_a = this.#selec_eran.getRecA_$(eslr, eslr.pbPos);
+    // this.#selec_fac.isMain_$ = this.isMain$;
+    // const n_ = this.#selec_fac.produce(rec_a.length);
+    // const selec_a = this.#selec_fac.val_a;
+    // for (let i = n_; i--;) {
+    //   const rec = rec_a[i];
+    //   selec_a[i].draw_$(rec.left, rec.top, rec.width, rec.height, rec[$ovlap]);
+    // }
+    // this.#showSelec();
   }
 
   //jjjj TOCLEANUP

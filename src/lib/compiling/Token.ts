@@ -15,18 +15,18 @@ import { CSSTok } from "./css/CSSTok.ts";
 import { HTMLTok } from "./html/HTMLTok.ts";
 import { JSLangTok } from "./jslang/JSLangTok.ts";
 import { Lexr } from "./Lexr.ts";
+import type { Line } from "./Line.ts";
 import type { Loc } from "./Loc.ts";
 import { MdextTok } from "./mdext/MdextTok.ts";
 import { PDFTok } from "./pdf/PDFTok.ts";
 import { PlainTok } from "./plain/PlainTok.ts";
+import type { Ran } from "./Ran.ts";
 import { g_ran_fac } from "./RanFac.ts";
 import { Ranval } from "./Ranval.ts";
 import { RMLTok } from "./rml/RMLTok.ts";
 import { SetTok } from "./set/SetTok.ts";
 import { Snt } from "./Snt.ts";
 import { Stnode } from "./Stnode.ts";
-import type { TokLine } from "./TokLine.ts";
-import type { TokRan } from "./TokRan.ts";
 import { URITok } from "./uri/URITok.ts";
 import type { _OldInfo_, LexdInfo } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
@@ -78,7 +78,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
 
   /* ran_$ */
   /** @using */
-  readonly ran_$: TokRan<T>;
+  readonly ran_$: Ran;
 
   syncRanvalAnchr(): this {
     this.ran_$.syncRanvalAnchr_$();
@@ -262,11 +262,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
    * @headmove @const @param ran_x
    * @const @param value_x
    */
-  constructor(
-    lexr_x: Lexr<T>,
-    ran_x: TokRan<T>,
-    value_x = BaseTok.unknown as T,
-  ) {
+  constructor(lexr_x: Lexr<T>, ran_x: Ran, value_x = BaseTok.unknown as T) {
     super();
     this.lexr_$ = lexr_x;
     /* `syncRanval_$()` after `this` is scanned or adjusted */
@@ -305,7 +301,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
 
   /** @const */
   dup_Token() {
-    return new Token(this.lexr_$, g_ran_fac.byTokRan(this.ran_$), this.#value);
+    return new Token(this.lexr_$, g_ran_fac.byRan(this.ran_$), this.#value);
   }
 
   // /**
@@ -572,7 +568,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //   // }
   // }
   /** Correct `sntFrstLine.#frstToken_m` */
-  #correct_line_frstToken(): TokLine<T> {
+  #correct_line_frstToken(): Line {
     const retLn = this.sntFrstLine;
     retLn.delFrstTokenBy_$(this.lexr_$);
 
@@ -591,7 +587,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     return retLn;
   }
   /** Correct `sntLastLine.#lastToken_m` */
-  #correct_line_lastToken(): TokLine<T> {
+  #correct_line_lastToken(): Line {
     const retLn = this.sntLastLine;
     retLn.delLastTokenBy_$(this.lexr_$);
 
@@ -710,40 +706,40 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     return retTk_x;
   }
 
-  /** @const @param ret_x  */
-  removeSelf(ret_x?: "prev" | "next"): Token<T> | undefined {
-    const prev = this.prevToken_$;
-    const next = this.nextToken_$;
-    if (prev) {
-      prev.#unlinkNext();
-      prev.nextToken_$ = next;
+  /** @const @param pn_x  */
+  removeSelf(pn_x?: "prev" | "next"): Token<T> | undefined {
+    const prevTk = this.prevToken_$;
+    const nextTk = this.nextToken_$;
+    if (prevTk) {
+      prevTk.#unlinkNext();
+      prevTk.nextToken_$ = nextTk;
     }
-    if (next) {
-      next.#unlinkPrev();
-      next.prevToken_$ = prev;
+    if (nextTk) {
+      nextTk.#unlinkPrev();
+      nextTk.prevToken_$ = prevTk;
     }
 
     let frstLn, lastLn;
-    if (prev) {
-      frstLn = prev.#correct_line_frstToken();
-      lastLn = prev.#correct_line_lastToken();
+    if (prevTk) {
+      frstLn = prevTk.#correct_line_frstToken();
+      lastLn = prevTk.#correct_line_lastToken();
     }
-    if (next) {
-      if (next.sntFrstLine !== frstLn) next.#correct_line_frstToken();
-      if (next.sntLastLine !== lastLn) next.#correct_line_lastToken();
+    if (nextTk) {
+      if (nextTk.sntFrstLine !== frstLn) nextTk.#correct_line_frstToken();
+      if (nextTk.sntLastLine !== lastLn) nextTk.#correct_line_lastToken();
     }
 
     // if (destroy_x) this.destructor();
-    return ret_x === "prev" ? prev : ret_x === "next" ? next : undefined;
+    return pn_x === "prev" ? prevTk : pn_x === "next" ? nextTk : this;
   }
 
   /**
    * `stnod_$`s do not change.
    * @headconst @param retTk_x
    */
-  insPrev(retTk_x: Token<T>) {
+  insPrev<K extends Token<T>>(retTk_x: K): K {
     /*#static*/ if (INOUT) {
-      assert(retTk_x !== this);
+      assert(retTk_x !== this as Token<T>);
       assert(retTk_x.posS(this));
     }
     if (this.prevToken_$) {
@@ -753,12 +749,12 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     } else {
       retTk_x.#unlinkPrev();
     }
-    return this.linkPrev(retTk_x);
+    return this.linkPrev(retTk_x) as K;
   }
   /** @see {@linkcode insPrev()} */
-  insNext(retTk_x: Token<T>) {
+  insNext<K extends Token<T>>(retTk_x: K): K {
     /*#static*/ if (INOUT) {
-      assert(retTk_x !== this);
+      assert(retTk_x !== this as Token<T>);
       assert(this.posS(retTk_x));
     }
     if (this.nextToken_$) {
@@ -768,7 +764,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     } else {
       retTk_x.#unlinkNext();
     }
-    return this.linkNext(retTk_x);
+    return this.linkNext(retTk_x) as K;
   }
 
   // /**
