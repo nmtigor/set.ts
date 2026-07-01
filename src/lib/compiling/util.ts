@@ -6,6 +6,8 @@
 import { INOUT } from "../../preNs.ts";
 import type { loff_t, unum } from "../alias.ts";
 import type { Id_t, UInt16 } from "../alias_v.ts";
+import type { Cssc, CsscHexNorm } from "../color/alias.ts";
+import type { MooHandler } from "../Moo.ts";
 import { assert } from "../util.ts";
 import * as Is from "../util/is.ts";
 import { SortedIdo, SortedSet } from "../util/SortedSet.ts";
@@ -150,11 +152,11 @@ export abstract class LexdInfo {
 
 export const sntFrstTk = <T extends Tok>(
   snt_x: Stnode<T> | Token<T>,
-): Token<T> => snt_x instanceof Stnode ? snt_x.frstToken : snt_x;
+): Token<T> => snt_x instanceof Stnode ? snt_x.frstToken_1 : snt_x;
 
 export const sntLastTk = <T extends Tok>(
   snt_x: Stnode<T> | Token<T>,
-): Token<T> => snt_x instanceof Stnode ? snt_x.lastToken : snt_x;
+): Token<T> => snt_x instanceof Stnode ? snt_x.lastToken_1 : snt_x;
 /*80--------------------------------------------------------------------------*/
 
 export type _OldInfo_ = {
@@ -307,13 +309,15 @@ export const enum ErrMsg {
     "Entity used with illegal number (windows-1252 reference).",
   "cant-convert-numeric-entity" =
     "Numeric entity couldn't be converted to character (codepoint U+%(charAsInt)08x).",
-  "illegal-codepoint-for-numeric-entity" =
-    "Numeric entity represents an illegal codepoint: U+%(charAsInt)08x.",
-  "numeric-entity-without-semicolon" = "Numeric entity didn't end with ';'.",
+  //jjjj TOCLEANUP
+  // "illegal-codepoint-for-numeric-entity" =
+  //   "Numeric entity represents an illegal codepoint: U+%(charAsInt)08x.",
+  // "numeric-entity-without-semicolon" = "Numeric entity didn't end with ';'.",
   "expected-numeric-entity-but-got-eof" =
     "Numeric entity expected. Got end of file instead.",
-  "expected-numeric-entity" = "Numeric entity expected but none found.",
-  "named-entity-without-semicolon" = "Named entity didn't end with ';'.",
+  //jjjj TOCLEANUP
+  // "expected-numeric-entity" = "Numeric entity expected but none found.",
+  // "named-entity-without-semicolon" = "Named entity didn't end with ';'.",
   "expected-named-entity" = "Named entity expected. Got none.",
   "attributes-in-end-tag" = "End tag contains unexpected attributes.",
   "self-closing-flag-on-end-tag" =
@@ -510,6 +514,18 @@ export const enum ErrMsg {
 export type ErrRv = [ErrMsg, Ranval, string?];
 
 export type Err = ErrMsg | ErrRv;
+//jjjj TOCLEANUP
+// /**
+//  * @constborrow @param lhs_x
+//  * @constborrow @param rhs_x
+//  */
+// export const errMsgEq = (lhs_x: Err, rhs_x: Err): boolean => {
+//   if (lhs_x === rhs_x) return true;
+
+//   if (Is.array(lhs_x)) lhs_x = lhs_x[0];
+//   if (Is.array(rhs_x)) rhs_x = rhs_x[0];
+//   return lhs_x === rhs_x;
+// };
 
 /** @final */
 export class SortedErr extends SortedSet<Err> {
@@ -522,4 +538,18 @@ export class SortedErr extends SortedSet<Err> {
     );
   }
 }
+/*80--------------------------------------------------------------------------*/
+/* Mocks for DENO */
+
+export const rmvRangeMock = {
+  setStartBefore(_node: Node) {},
+  setEndAfter(_node: Node) {},
+  deleteContents() {},
+};
+
+export const paleMock = {
+  registCsscHandler(_h_x: MooHandler<CsscHexNorm>) {},
+  removeCsscHandler(_h_x: MooHandler<CsscHexNorm>) {},
+  cssc: "#000",
+};
 /*80--------------------------------------------------------------------------*/

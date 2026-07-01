@@ -17,14 +17,15 @@ import type { Paren, UnparenSet } from "./alias.ts";
 import { Oprec } from "./alias.ts";
 import { BinaryErr, BinaryOp } from "./stnode/BinaryOp.ts";
 import { FuzykeySeq } from "./stnode/FuzykeySeq.ts";
+import { Ids } from "./stnode/Ids.ts";
 import { Intersect } from "./stnode/Intersect.ts";
 import { Key } from "./stnode/Key.ts";
 import { QuotkeySeq } from "./stnode/QuotkeySeq.ts";
 import { Rel } from "./stnode/Rel.ts";
 import { Set } from "./stnode/Set.ts";
+import type { SetSn } from "./stnode/SetSn.ts";
 import { Subtract } from "./stnode/Subtract.ts";
 import { Union } from "./stnode/Union.ts";
-import { Ids } from "./stnode/Ids.ts";
 /*80--------------------------------------------------------------------------*/
 
 type PazSetO_ = {
@@ -44,12 +45,17 @@ export class SetPazr extends Pazr<SetTok> {
   // }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
+  protected override sufPaz$(): void {
+    this.gc_$();
+  }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
   /** @headconst @param _x */
   @traceOut(_TRACE)
   private _pazSet(
     _x: PazSetO_ = { oprec: Oprec.lowest, paren: 0, selfParen: 0 },
   ): Set {
-    assert(--this.#valve, `Loop ${SetPazr.#VALVE} times`);
+    assert(--this.#valve, `Loop ${SetPazr.#VALVE}±1 times`);
     /*#static*/ if (_TRACE) {
       console.log(
         `${trace.indent}>>>>>>> ${this._class_id_}._pazSet() >>>>>>>`,
@@ -99,6 +105,7 @@ export class SetPazr extends Pazr<SetTok> {
       case SetTok.priid:
         srcSn = this.#pazIds();
         break;
+      case SetTok.asterisk:
       case SetTok.question:
         srcSn = this.strtPazTk$;
         this.forceForw$();
@@ -124,7 +131,7 @@ export class SetPazr extends Pazr<SetTok> {
     this.forceForw$();
     let retSn: Rel;
     if (this.reachPazBdry$()) {
-      retSn = new Rel(srcSn, jnr_1);
+      retSn = new Rel(this, srcSn, jnr_1);
       for (const tk of unexpTk_a) {
         retSn.setErr([
           ErrMsg.set_rel_unexp_tk,
@@ -146,6 +153,7 @@ export class SetPazr extends Pazr<SetTok> {
       case SetTok.priid:
         relSn = this.#pazIds();
         break;
+      case SetTok.asterisk:
       case SetTok.question:
         relSn = this.strtPazTk$;
         this.forceForw$();
@@ -159,7 +167,7 @@ export class SetPazr extends Pazr<SetTok> {
         break;
     }
     if (this.reachPazBdry$()) {
-      retSn = new Rel(srcSn, jnr_1, relSn, jnr_2);
+      retSn = new Rel(this, srcSn, jnr_1, relSn, jnr_2);
       for (const tk of unexpTk_a) {
         retSn.setErr([
           ErrMsg.set_rel_unexp_tk,
@@ -177,7 +185,7 @@ export class SetPazr extends Pazr<SetTok> {
     if (jnr_2) {
       this.forceForw$();
       if (this.reachPazBdry$()) {
-        retSn = new Rel(srcSn, jnr_1, relSn, jnr_2, undefined);
+        retSn = new Rel(this, srcSn, jnr_1, relSn, jnr_2, undefined);
         for (const tk of unexpTk_a) {
           retSn.setErr([
             ErrMsg.set_rel_unexp_tk,
@@ -199,6 +207,7 @@ export class SetPazr extends Pazr<SetTok> {
       case SetTok.priid:
         tgtSn = this.#pazIds();
         break;
+      case SetTok.asterisk:
       case SetTok.question:
         tgtSn = this.strtPazTk$;
         this.forceForw$();
@@ -208,7 +217,7 @@ export class SetPazr extends Pazr<SetTok> {
         this.forceForw$();
         break;
     }
-    retSn = new Rel(srcSn, jnr_1, relSn, jnr_2, tgtSn);
+    retSn = new Rel(this, srcSn, jnr_1, relSn, jnr_2, tgtSn);
     for (const tk of unexpTk_a) {
       retSn.setErr([
         ErrMsg.set_rel_unexp_tk,
@@ -233,14 +242,8 @@ export class SetPazr extends Pazr<SetTok> {
           this.strtPazTk$.value === SetTok.quotkey,
       );
     }
-    for (const sn of this.unrelSn_ss_$) {
-      if (sn instanceof Key && sn.frstToken === this.strtPazTk$) {
-        this.strtPazTk$ = sn.lastToken.nextToken_$!;
-        this.unrelSn_ss_$.rmv(sn);
-        this.takldSn_ss_$.add(sn);
-        return sn.detach().ensureAllBdries();
-      }
-    }
+    const reusdSn = this.#reuseSn((sn_y) => sn_y instanceof Key);
+    if (reusdSn) return reusdSn as Key;
 
     const sn_a: (FuzykeySeq | QuotkeySeq)[] = [];
     const VALVE = 100;
@@ -258,7 +261,7 @@ export class SetPazr extends Pazr<SetTok> {
       ) break;
     } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
-    return new Key(sn_a);
+    return new Key(this, sn_a);
   }
 
   @traceOut(_TRACE)
@@ -271,14 +274,8 @@ export class SetPazr extends Pazr<SetTok> {
     /*#static*/ if (INOUT) {
       assert(this.strtPazTk$.value === SetTok.fuzykey);
     }
-    for (const sn of this.unrelSn_ss_$) {
-      if (sn instanceof FuzykeySeq && sn.frstToken === this.strtPazTk$) {
-        this.strtPazTk$ = sn.lastToken.nextToken_$!;
-        this.unrelSn_ss_$.rmv(sn);
-        this.takldSn_ss_$.add(sn);
-        return sn.detach().ensureAllBdries();
-      }
-    }
+    const reusdSn = this.#reuseSn((sn_y) => sn_y instanceof FuzykeySeq);
+    if (reusdSn) return reusdSn as FuzykeySeq;
 
     const tk_a: SetTk[] = [];
     const VALVE = 100;
@@ -291,7 +288,7 @@ export class SetPazr extends Pazr<SetTok> {
       }
     } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
-    return new FuzykeySeq(tk_a);
+    return new FuzykeySeq(this, tk_a);
   }
 
   @traceOut(_TRACE)
@@ -304,14 +301,8 @@ export class SetPazr extends Pazr<SetTok> {
     /*#static*/ if (INOUT) {
       assert(this.strtPazTk$.value === SetTok.quotkey);
     }
-    for (const sn of this.unrelSn_ss_$) {
-      if (sn instanceof QuotkeySeq && sn.frstToken === this.strtPazTk$) {
-        this.strtPazTk$ = sn.lastToken.nextToken_$!;
-        this.unrelSn_ss_$.rmv(sn);
-        this.takldSn_ss_$.add(sn);
-        return sn.detach().ensureAllBdries();
-      }
-    }
+    const reusdSn = this.#reuseSn((sn_y) => sn_y instanceof QuotkeySeq);
+    if (reusdSn) return reusdSn as QuotkeySeq;
 
     const tk_a: SetTk[] = [];
     const VALVE = 100;
@@ -324,7 +315,7 @@ export class SetPazr extends Pazr<SetTok> {
       }
     } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
-    return new QuotkeySeq(tk_a);
+    return new QuotkeySeq(this, tk_a);
   }
 
   @traceOut(_TRACE)
@@ -337,14 +328,8 @@ export class SetPazr extends Pazr<SetTok> {
     /*#static*/ if (INOUT) {
       assert(this.strtPazTk$.value === SetTok.priid);
     }
-    for (const sn of this.unrelSn_ss_$) {
-      if (sn instanceof Ids && sn.frstToken === this.strtPazTk$) {
-        this.strtPazTk$ = sn.lastToken.nextToken_$!;
-        this.unrelSn_ss_$.rmv(sn);
-        this.takldSn_ss_$.add(sn);
-        return sn.detach().ensureAllBdries();
-      }
-    }
+    const reusdSn = this.#reuseSn((sn_y) => sn_y instanceof Ids);
+    if (reusdSn) return reusdSn as Ids;
 
     const tk_a: SetTk[] = [];
     const VALVE = 100;
@@ -357,7 +342,7 @@ export class SetPazr extends Pazr<SetTok> {
       }
     } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
-    return new Ids(tk_a);
+    return new Ids(this, tk_a);
   }
 
   /** Set `newSn_$` */
@@ -394,14 +379,14 @@ export class SetPazr extends Pazr<SetTok> {
     this.#valve = SetPazr.#VALVE;
 
     if (this.drtSn_$ instanceof BinaryOp) {
-      this.enlrgBdriesTo_$(this.drtSn_$.parent_$!);
+      this.enlrgBdriesTo_$(this.drtSn_$.parent!);
       this.forceForw$(); //!
     }
 
     if (this.drtSn_$) {
       this.#visitDrtSn();
       if (!this.newSn_$ || this.newSn_$.isErr || !this.reachPazBdry$()) {
-        this.enlrgBdriesTo_$(this.drtSn_$.parent_$!);
+        this.enlrgBdriesTo_$(this.drtSn_$.parent!);
         this.forceForw$(); //!
         if (this.drtSn_$) this.#visitDrtSn();
         else this.newSn_$ = this._pazSet();
@@ -409,47 +394,80 @@ export class SetPazr extends Pazr<SetTok> {
     } else {
       this.newSn_$ = this._pazSet();
     }
+
     /*#static*/ if (INOUT) {
       assert(!this.drtSn_$ || !this.drtSn_$.isRoot);
       assert(this.newSn_$);
     }
     if (this.drtSn_$) {
-      this.drtSn_$.parent_$!.replaceChild(this.drtSn_$, this.newSn_$!);
+      this.drtSn_$.parent!.replaceChild(this.drtSn_$, this.newSn_$!);
     } else {
       this.root$ = this.newSn_$!;
     }
-    // this.drtSn_$ = undefined;
-    // this.newSn_$ = this.root$;
-    // if (this.hasErr) console.log("_err: ", this._err);
-    // // else console.log(`root$: ${this.root$}`);
-    // else console.log("root$: ", this.root$!._repr_());
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
+  /** @headconst @param chk_x */
+  #reuseSn(chk_x: (sn_y: SetSn) => boolean): SetSn | undefined {
+    let reusdSn;
+    //jjjj TOCLEANUP
+    // if (opt_x === "any") {
+    for (const sn of this.unrelSn_ss_$) {
+      if (chk_x(sn) && sn.frstToken_1 === this.strtPazTk$) {
+        reusdSn = sn;
+        break;
+      }
+    }
+    //jjjj TOCLEANUP
+    // } else {
+    //   let minDepth;
+    //   for (const sn of this.unrelSn_ss_$) {
+    //     if (chk_x(sn) && sn.frstToken_1 === this.strtPazTk$) {
+    //       const de_ = sn.depth_1;
+    //       if (reusdSn) {
+    //         if (de_ < minDepth!) {
+    //           reusdSn = sn;
+    //           minDepth = de_;
+    //         }
+    //       } else {
+    //         reusdSn = sn;
+    //         minDepth = de_;
+    //       }
+    //     }
+    //   }
+    // }
+
+    if (reusdSn) {
+      this.strtPazTk$ = reusdSn.lastToken_1.nextToken_$!;
+      this.unrelSn_ss_$.rmv(reusdSn);
+      this.reusdSn_ss_$.add(reusdSn);
+    }
+    return reusdSn?.detach_$().ensureAllBdries();
+  }
 
   /**
    * `out( _x.lhs)`
    * @headconst @param _x
    */
   #pazLhs_impl(_x: PazSetO_): void {
-    for (const sn of this.unrelSn_ss_$) {
-      if (sn instanceof Set && sn.frstToken === this.strtPazTk$) {
-        this.strtPazTk$ = sn.lastToken.nextToken_$!;
-        this.unrelSn_ss_$.rmv(sn);
-        this.takldSn_ss_$.add(sn);
-        _x.lhs = sn.detach().ensureAllBdries();
-        return;
-      }
+    const reusdSn = this.#reuseSn((sn_y) =>
+      sn_y instanceof Set && !(sn_y.unpanenSet instanceof BinaryOp)
+    );
+    if (reusdSn) {
+      _x.lhs = reusdSn as Set;
+      return;
     }
 
     let snt: UnparenSet | SetTk | undefined;
     if (this.strtPazTk$.value === SetTok.paren_open) {
       const tk_0 = this.strtPazTk$;
       do {
-        _x.selfParen++;
+        _x.selfParen += 1;
         this.forceForw$();
         if (this.reachPazBdry$()) {
-          _x.lhs = new Set(tk_0, 0);
-          _x.lhs.setErr(ErrMsg.set_no_cloz_paren);
+          _x.lhs = Set.create(this, tk_0, 0);
+          //jjjj TOCLEANUP
+          // _x.lhs.setErr(ErrMsg.set_no_cloz_paren);
 
           _x.selfParen = 0;
           this.strtPazTk$ = tk_0.nextToken_$!;
@@ -462,6 +480,7 @@ export class SetPazr extends Pazr<SetTok> {
       case SetTok.fuzykey:
       case SetTok.quotkey:
       case SetTok.priid:
+      case SetTok.asterisk:
       case SetTok.question:
       case SetTok.joiner:
         snt = this.#pazRelKeyIds();
@@ -471,7 +490,7 @@ export class SetPazr extends Pazr<SetTok> {
         this.forceForw$();
         break;
     }
-    _x.lhs = new Set(snt, _x.selfParen);
+    _x.lhs = Set.create(this, snt, _x.selfParen);
     if (this.reachPazBdry$()) {
       if (_x.selfParen) {
         _x.lhs.setErr(ErrMsg.set_no_cloz_paren);
@@ -509,18 +528,18 @@ export class SetPazr extends Pazr<SetTok> {
     this.forceForw$();
     let sn_: BinaryOp;
     if (this.reachPazBdry$()) {
-      sn_ = new B_x(_x.lhs, op_, undefined);
+      sn_ = new B_x(this, _x.lhs, op_, undefined);
     } else {
       const rhs = this._pazSet({
         oprec: B_x.oprec,
         paren: _x.selfParen,
         selfParen: 0,
       });
-      sn_ = new B_x(_x.lhs, op_, rhs);
+      sn_ = new B_x(this, _x.lhs, op_, rhs);
     }
     if (sn_.isErr) this.errSn_ss$.add(sn_);
 
-    _x.lhs = new Set(sn_, _x.selfParen);
+    _x.lhs = Set.create(this, sn_, _x.selfParen);
     if (this.reachPazBdry$()) {
       if (_x.selfParen) {
         _x.lhs.setErr(ErrMsg.set_no_cloz_paren);

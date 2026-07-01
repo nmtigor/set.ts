@@ -9,6 +9,7 @@ import type { SetTk } from "../../Token.ts";
 import { FuzykeySeq } from "./FuzykeySeq.ts";
 import { QuotkeySeq } from "./QuotkeySeq.ts";
 import { SetSn } from "./SetSn.ts";
+import type { SetPazr } from "../SetPazr.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
@@ -18,21 +19,25 @@ export class Key extends SetSn {
     return this.#children;
   }
 
-  override get frstToken(): SetTk {
-    return this.frstToken$ ??= this.children[0].frstToken;
+  override get frstToken_1(): SetTk {
+    return this.frstTk$ ??= this.children[0].frstToken_1;
   }
-  override get lastToken(): SetTk {
-    return this.lastToken$ ??= this.children.at(-1)!.lastToken;
+  override get lastToken_1(): SetTk {
+    return this.lastTk$ ??= this.children.at(-1)!.lastToken_1;
   }
 
-  constructor(sn_a: (FuzykeySeq | QuotkeySeq)[]) {
+  /**
+   * @headconst @param pazr_x
+   * @headconst @param sns_x
+   */
+  constructor(pazr_x: SetPazr, sns_x: (FuzykeySeq | QuotkeySeq)[]) {
     /*#static*/ if (INOUT) {
-      assert(sn_a.length);
+      assert(sns_x.length);
     }
-    super();
-    this.#children = sn_a;
+    super(pazr_x);
+    this.#children = sns_x;
 
-    for (const sn of sn_a) sn.parent_$ = this;
+    for (const sn of sns_x) sn.attachTo_$(this);
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -43,7 +48,7 @@ export class Key extends SetSn {
     const c_a = this.children;
     const i_ = c_a.indexOf(oldSn_x);
     if (i_ >= 0) {
-      newSn_x.parent_$ = this;
+      newSn_x.attachTo_$(this);
       c_a.splice(i_, 1, newSn_x);
     }
 

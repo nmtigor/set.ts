@@ -5,15 +5,14 @@
 
 import type { loff_t } from "../alias.ts";
 import type { BaseTok } from "../compiling/BaseTok.ts";
-import type { Tok } from "../compiling/alias.ts";
 import { span, textnode } from "../dom.ts";
 import type { ELineBase } from "./ELineBase.ts";
 import type { EdtrBaseCI } from "./EdtrBase.ts";
 import { StnodeV } from "./StnodeV.ts";
 /*80--------------------------------------------------------------------------*/
 
-export class TextV<T extends Tok = BaseTok, CI extends EdtrBaseCI = EdtrBaseCI>
-  extends StnodeV<T, CI, HTMLSpanElement> {
+export class TextV<CI extends EdtrBaseCI = EdtrBaseCI>
+  extends StnodeV<BaseTok, CI, HTMLSpanElement> {
   protected host$;
   /** @implement */
   get eline_$() {

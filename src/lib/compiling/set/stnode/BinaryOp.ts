@@ -8,6 +8,7 @@ import { INOUT } from "@fe-src/preNs.ts";
 import { Ranval } from "../../Ranval.ts";
 import type { SetTk } from "../../Token.ts";
 import { ErrMsg } from "../../util.ts";
+import type { SetPazr } from "../SetPazr.ts";
 import { SetTok } from "../SetTok.ts";
 import { Oprec } from "../alias.ts";
 import { Set } from "./Set.ts";
@@ -42,24 +43,29 @@ export abstract class BinaryOp extends SetSn {
     return this.#children = ret;
   }
 
-  override get frstToken(): SetTk {
-    return this.frstToken$ ??= this.lhs$.frstToken;
+  override get frstToken_1(): SetTk {
+    return this.frstTk$ ??= this.lhs$.frstToken_1;
   }
-  override get lastToken(): SetTk {
-    return this.lastToken$ ??= this.rhs$ ? this.rhs$.lastToken : this.opTk;
+  override get lastToken_1(): SetTk {
+    return this.lastTk$ ??= this.rhs$ ? this.rhs$.lastToken_1 : this.opTk;
   }
 
-  constructor(lhs_x: Set, opTk_x: SetTk) {
-    super();
+  /**
+   * @headconst @param pazr_x
+   * @headconst @param lhs_x
+   * @const @param opTk_x
+   */
+  constructor(pazr_x: SetPazr, lhs_x: Set, opTk_x: SetTk) {
+    super(pazr_x);
     this.lhs$ = lhs_x;
     this.opTk = opTk_x;
 
-    lhs_x.parent_$ = this;
+    lhs_x.attachTo_$(this);
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override replaceChild(oldSn_x: Set, newSn_x: Set) {
-    newSn_x.parent_$ = this;
+    newSn_x.attachTo_$(this);
 
     if (this.lhs$ === oldSn_x) {
       this.lhs$ = newSn_x;
@@ -93,7 +99,18 @@ export abstract class BinaryOp extends SetSn {
 export class BinaryErr extends BinaryOp {
   static override readonly oprec = Oprec.err;
 
-  constructor(lhs_x: Set, opTk_x: SetTk, rhs_x: Set | undefined) {
+  /**
+   * @headconst @param pazr_x
+   * @headconst @param lhs_x
+   * @headconst @param opTk_x
+   * @headconst @param rhs_x
+   */
+  constructor(
+    pazr_x: SetPazr,
+    lhs_x: Set,
+    opTk_x: SetTk,
+    rhs_x: Set | undefined,
+  ) {
     /*#static*/ if (INOUT) {
       assert(
         opTk_x.value !== SetTok.subtract &&
@@ -101,20 +118,20 @@ export class BinaryErr extends BinaryOp {
           opTk_x.value !== SetTok.union,
       );
     }
-    super(lhs_x, opTk_x);
+    super(pazr_x, lhs_x, opTk_x);
     this.setErr([
       ErrMsg.set_inval_binary_op,
       Ranval.fromRan(opTk_x.ran_$),
       opTk_x.name,
     ]);
     if (rhs_x) {
-      rhs_x.parent_$ = this;
+      rhs_x.attachTo_$(this);
       this.rhs$ = rhs_x;
     } else {
       this.setErr(ErrMsg.set_binaryerr_no_rhs);
     }
 
-    this.ensureBdries();
+    this.ensureBdry();
   }
 }
 /*80--------------------------------------------------------------------------*/

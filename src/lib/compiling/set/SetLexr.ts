@@ -5,9 +5,10 @@
 
 import { INOUT } from "@fe-src/preNs.ts";
 import * as v from "@valibot/valibot";
+import type { UInt16 } from "../../alias_v.ts";
 import { vULID } from "../../alias_v.ts";
 import { assert, out } from "../../util.ts";
-import { isWs } from "../../util/string.ts";
+import { isWs, ws_a } from "../../util/string.ts";
 import { ULID_LEN } from "../../util/ulid.ts";
 import { ScanR } from "../alias.ts";
 import { Lexr } from "../Lexr.ts";
@@ -15,6 +16,8 @@ import type { SetTk } from "../Token.ts";
 import { ErrMsg } from "../util.ts";
 import { SetTok } from "./SetTok.ts";
 /*80--------------------------------------------------------------------------*/
+
+const setWs_a_ = [...ws_a, /* "\n" */ 0xA] as UInt16[];
 
 /** Fuzykey `UInt16` which needs to escape using `\` */
 const esc_a_ = /* deno-fmt-ignore */ [
@@ -32,6 +35,7 @@ export class SetLexr extends Lexr<SetTok> {
     }
     if (
       this.stopLexTk$.value !== SetTok.stopBdry &&
+      !this.stopLexTk$.sntStrtLoc.atSob &&
       this.stopLexTk$.sntStrtLoc.peek_ucod(-1) === /* "\\" */ 0x5C
     ) {
       this.enlrgStopTk$();
@@ -112,7 +116,7 @@ export class SetLexr extends Lexr<SetTok> {
     let valve = VALVE;
     L_0: do {
       const ucod = this.curLoc$.ucod;
-      if (this.reachLexBdry$() || isWs(ucod)) {
+      if (this.reachLexBdry$() || isWs(ucod, setWs_a_)) {
         this.outTk$!.setStop(this.curLoc$, SetTok.fuzykey);
         break;
       }
@@ -150,13 +154,19 @@ export class SetLexr extends Lexr<SetTok> {
   /** @implement */
   protected scan_impl$(): SetTk | undefined {
     let ucod = this.curLoc$.ucod;
-    if (isWs(this.curLoc$.ucod) && this.skipWs$() === ScanR.reachBdry) return;
+    if (
+      isWs(this.curLoc$.ucod, setWs_a_) &&
+      this.skipWs$(setWs_a_) === ScanR.reachBdry
+    ) return;
 
     this.outTk_1$;
     ucod = this.curLoc$.ucod;
     switch (ucod) {
       case /* '"' */ 0x22:
         this.#scanQuotkey();
+        break;
+      case /* "*" */ 0x2A:
+        this.outTk$!.setStop(this.curLoc$.forw(), SetTok.asterisk);
         break;
       case /* "?" */ 0x3F:
         this.outTk$!.setStop(this.curLoc$.forw(), SetTok.question);

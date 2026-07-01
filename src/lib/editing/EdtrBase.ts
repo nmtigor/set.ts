@@ -18,12 +18,14 @@ import type { CooInterface } from "../cv.ts";
 import { HTMLVCo } from "../cv.ts";
 import { div } from "../dom.ts";
 import { assert, bind, warn } from "../util.ts";
-import { rmvRange } from "../util/general.ts";
+import { rmvRange } from "../util/dom.ts";
 import { trace, traceOut } from "../util/trace.ts";
 import type { CaretRvM } from "./Caret.ts";
 import { Caret } from "./Caret.ts";
 import type { ELineBase } from "./ELineBase.ts";
+import { ELineBaseFac } from "./ELineBase.ts";
 import type { ELoc } from "./ELoc.ts";
+import type { ERanr } from "./ERan.ts";
 import { ERan } from "./ERan.ts";
 import { MainCaret } from "./MainCaret.ts";
 import type { EdtrType, FSRec, Pos } from "./alias.ts";
@@ -75,11 +77,11 @@ export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
   override readonly id = ++EdtrBase.#ID as Id_t;
 
   /* Pale */
-  readonly #fg_p = Pale.get("lib.editor.Edtr.fg");
+  readonly #fg_p = Pale.get("edt.Edtr.fg");
   #onFgCssc = (_x: Cssc) => {
     this.el$.style.color = _x;
   };
-  readonly #bg_p = Pale.get("lib.editor.Edtr.bg");
+  readonly #bg_p = Pale.get("edt.Edtr.bg");
   #onBgCssc = (_x: Cssc) => {
     this.el$.style.backgroundColor = _x;
   };
@@ -321,7 +323,8 @@ export type RevEln = (eln_x: ELineBase) => void;
  * non-generic.
  */
 export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
-  extends Scrolr<EdtrBase<CI>> {
+  extends Scrolr<EdtrBase<CI>>
+  implements ERanr {
   static #ID = 0 as Id_t;
   override readonly id = ++EdtrBaseScrolr.#ID as Id_t;
 
@@ -329,10 +332,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /* elidx_m$ */
-  //jjjj TOCLEANUP
-  // readonly eline_m = new Map<Line, ELineBase>();
-
-  protected readonly elidx_m$ = new Map<lnum_t, ELineBase>();
+  protected readonly elidx_m$ = new Map<lnum_t, ELineBase<CI>>();
 
   /** @const @param lidx_x */
   #mainLidx(lidx_x: lnum_t): void {
@@ -460,7 +460,19 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   /* ~ */
 
   protected readonly getEln$: GetEln;
+  /**
+   * @headconst @param coo_x
+   * @const @param bln_x
+   */
+  static readonly getEln$ = (coo_x: EdtrBase, bln_x: Line): ELineBase => {
+    return ELineBaseFac.get(coo_x, bln_x).refreshPlain();
+  };
+
   protected readonly revEln$: RevEln;
+  /** @headconst @param eln_x `SetELine` */
+  static readonly revEln$ = (eln_x: ELineBase): void => {
+    ELineBaseFac.rev(eln_x);
+  };
 
   /* bufr */
   protected bufr$!: Bufr;
@@ -652,8 +664,8 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   constructor(
     host_x: EdtrScronr<CI>,
     type_x: EdtrType,
-    getEln_x: GetEln,
-    revEln_x: RevEln,
+    getEln_x: GetEln = EdtrBaseScrolr.getEln$.bind(null, host_x.coo),
+    revEln_x: RevEln = EdtrBaseScrolr.revEln$,
   ) {
     super(host_x);
     this.type = type_x;
@@ -832,10 +844,10 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
    */
   abstract getEAnchrOf_$(rv_x: Ranval, retEloc_x?: ELoc): ELoc;
   /**
-   * @final
+   * @final @implement
    * @headconst @param rv_x Will be corrected
    */
-  getERanOf_$(rv_x: Ranval, retEran_x?: ERan): ERan {
+  getERanOf(rv_x: Ranval, retEran_x?: ERan): ERan {
     // console.log(rv_x);
     const eloc = this.getEFocusOf_$(rv_x, retEran_x?.focusEloc);
     retEran_x ??= new ERan(eloc);
@@ -906,7 +918,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   }
 
   /**
-   * add to `#head_el`
+   * Add to `#head_el`
    * @const @param srcStopLidx_x new
    */
   protected toHead$(srcStopLidx_x: lnum_t): void {
@@ -938,7 +950,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   }
 
   /**
-   * restore from `#head_el`
+   * Restore from `#head_el`
    * @const @param n_x
    * @const @param tgtStopLidx_x new
    * @const @param srcStopLidx_x useful only if `[srcStopLidx_x,strtLidx$)` is
@@ -955,7 +967,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       assert(srcStopLidx_x <= tgtStopLidx_x);
       assert(0 <= tgtStopLidx_x - n_x && srcStopLidx_x <= this.strtLidx$);
     }
-    const elnBefo = this.elidx_m$.get(tgtStopLidx_x)!;
+    const elnBefo = this.elidx_m$.get(tgtStopLidx_x);
     const elnEl_a: Element[] = [];
     for (let i = n_x; i--;) {
       const eln = this.getEln$(this.bufr$.line(tgtStopLidx_x - 1 - i));
@@ -973,7 +985,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     //     this.elnBSize$;
     // }
     for (let i = n_x; i--;) {
-      const eln = elnEl_a[i].vuu as ELineBase;
+      const eln = elnEl_a[i].vuu as ELineBase<CI>;
       //jjjj TOCLEANUP
       // this.headBDt$ -= eln.bline_$.getBSizeOn(this.id, this.elnBSize$) -
       //   this.elnBSize$;
@@ -984,7 +996,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   }
 
   /**
-   * add to `#foot_el`
+   * Add to `#foot_el`
    * @const @param srcStrtLidx_x new
    */
   protected toFoot$(srcStrtLidx_x: lnum_t): void {
@@ -1016,7 +1028,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   }
 
   /**
-   * restore from `#foot_el`
+   * Restore from `#foot_el`
    * @const @param n_x
    * @const @param tgtStrtLidx_x new
    * @const @param srcStrtLidx_x useful only if `[stopLidx$,srcStrtLidx_x)` is
@@ -1036,7 +1048,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
           tgtStrtLidx_x + n_x <= this.bufr$.lineN,
       );
     }
-    const elnAftr = this.elidx_m$.get(tgtStrtLidx_x - 1)!;
+    const elnAftr = this.elidx_m$.get(tgtStrtLidx_x - 1);
     const elnEl_a: Element[] = [];
     for (let i = 0; i < n_x; i++) {
       const eln = this.getEln$(this.bufr$.line(tgtStrtLidx_x + i));
@@ -1054,7 +1066,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     //     this.elnBSize$;
     // }
     for (let i = 0; i < n_x; i++) {
-      const eln = elnEl_a[i].vuu as ELineBase;
+      const eln = elnEl_a[i].vuu as ELineBase<CI>;
       //jjjj TOCLEANUP
       // this.footBDt$ -= eln.bline_$.getBSizeOn(this.id, this.elnBSize$) -
       //   this.elnBSize$;
@@ -1068,10 +1080,10 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
 
   /** @const @param strtLidx_x */
   @traceOut(_TRACE && EDTR)
-  #scrollTo(strtLidx_x: lnum_t): void {
+  protected scrollTo$(strtLidx_x: lnum_t): void {
     /*#static*/ if (_TRACE && EDTR) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.#scrollTo( strtLidx_x: ${strtLidx_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this._class_id_}.scrollTo$( strtLidx_x: ${strtLidx_x}) >>>>>>>`,
       );
     }
     const stopLidx = Math.min(strtLidx_x + this.nElnMax$, this.bufr$.lineN);
@@ -1106,8 +1118,8 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     this.strtLidx$ = strtLidx_x;
     this.stopLidx$ = stopLidx;
     this.drtLidxStrt_mo.val = this.strtLidx$;
-    this.refreshCarets();
   }
+
   #sufScroll_sync = false;
   #sufScroll_af: number | undefined;
   readonly #sufScroll_impl = (): void => {
@@ -1131,7 +1143,8 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     if (strtLidx === this.strtLidx$ || strtLidx >= this.bufr$.lineN) return;
 
     const impl_ = () => {
-      this.#scrollTo(strtLidx);
+      this.scrollTo$(strtLidx);
+      this.refreshCarets(); // `Caret.#selec_hl` should overlay `Stnode.#main_hl`
       // console.log(`${trace.dent}${
       //   [
       //     this.headBSize$.fixTo(2),

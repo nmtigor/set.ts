@@ -11,8 +11,10 @@ import { _TRACE, DEBUG } from "../../preNs.ts";
 import { Boor } from "../Moo.ts";
 import { tryCatch } from "../util/general.ts";
 import { trace, traceOut } from "../util/trace.ts";
-import { Pale, type PaleRaw, vPaleRaw } from "./Pale.ts";
-import { type PaleName, vPaleName } from "./PaleCoor.ts";
+import type { PaleRaw } from "./Pale.ts";
+import { Pale, vPaleRaw } from "./Pale.ts";
+import type { PaleName } from "./PaleCoor.ts";
+import { vPaleName } from "./PaleCoor.ts";
 import type { Cssc } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
 

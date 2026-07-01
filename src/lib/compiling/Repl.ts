@@ -272,7 +272,7 @@ export class Repl {
     // console.log(`inRv_x = ${inRv_x.toString()}`);
     // console.log(inTxt_a_x);
     const inRan_a = this.#bufr.oldRan_a_$;
-    for (const ran of inRan_a) ran[Symbol.dispose]();
+    for (const ran of inRan_a) ran.rev();
 
     if (this.aoa) {
       inRan_a.length = (inRv_x as Ranval[]).length;
@@ -312,7 +312,7 @@ export class Repl {
     outTxt_a_x: string[] | string[][],
   ): void {
     const outRan_a = this.#bufr.newRan_a_$;
-    for (const ran of outRan_a) ran[Symbol.dispose]();
+    for (const ran of outRan_a) ran.rev();
     outRan_a.length = inRan_a.length;
 
     if (this.aoa) {

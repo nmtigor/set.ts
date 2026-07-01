@@ -6,28 +6,32 @@
 import { assert } from "@fe-lib/util.ts";
 import { INOUT } from "@fe-src/preNs.ts";
 import type { SetTk } from "../../Token.ts";
+import type { SetPazr } from "../SetPazr.ts";
 import { SetSn } from "./SetSn.ts";
 /*80--------------------------------------------------------------------------*/
 
 export abstract class SubkeySeq extends SetSn {
   readonly tk_a;
 
-  override get frstToken(): SetTk {
-    return this.frstToken$ ??= this.tk_a[0];
+  override get frstToken_1(): SetTk {
+    return this.frstTk$ ??= this.tk_a[0];
   }
-  override get lastToken(): SetTk {
-    return this.lastToken$ ??= this.tk_a.at(-1)!;
+  override get lastToken_1(): SetTk {
+    return this.lastTk$ ??= this.tk_a.at(-1)!;
   }
 
-  /** @headconst @param tk_a_x */
-  constructor(tk_a_x: SetTk[]) {
+  /**
+   * @headconst @param pazr_x
+   * @const @param tks_x
+   */
+  constructor(pazr_x: SetPazr, tks_x: SetTk[]) {
     /*#static*/ if (INOUT) {
-      assert(tk_a_x.length);
+      assert(tks_x.length);
     }
-    super();
-    this.tk_a = tk_a_x;
+    super(pazr_x);
+    this.tk_a = tks_x;
 
-    this.ensureBdries();
+    this.ensureBdry();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

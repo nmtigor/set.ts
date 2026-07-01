@@ -12,6 +12,7 @@ enum SetTok_ {
 
   priid, // #01JYJG7E7EHJ07RDT4QRE18AJX
 
+  asterisk, // *
   question, // ?
   joiner, // >
 

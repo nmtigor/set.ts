@@ -3,11 +3,11 @@
  * @license MIT
  ******************************************************************************/
 
+import type { Pos } from "@fe-edt/alias.ts";
 import { DENO } from "../preNs.ts";
 import type { CSSStyle, loff_t, uint, unum } from "./alias.ts";
 import type { Vuu } from "./cv.ts";
-import type { Pos } from "@fe-edt/alias.ts";
-import { $cssstylesheet, $loff_0, $ovlap, $tail_ignored } from "./symbols.ts";
+import { $cssstylesheet, $loff_0, $ovlap } from "./symbols.ts";
 import * as Is from "./util/is.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -138,6 +138,8 @@ declare global {
   interface Node {
     readonly isText: boolean;
     readonly secondChild: Node | null;
+    readonly index: uint;
+
     /** @deprecated */
     assert_eq: (rhs: object) => void | never;
 
@@ -158,6 +160,15 @@ if (globalThis.Node) {
   Reflect.defineProperty(Node.prototype, "secondChild", {
     get(this: Node) {
       return this.firstChild ? this.firstChild.nextSibling : null;
+    },
+  });
+
+  Reflect.defineProperty(Node.prototype, "index", {
+    get(this: Node) {
+      let i_: uint = 0;
+      let nd_: Node | null = this;
+      for (; (nd_ = nd_.previousSibling) !== null; i_++);
+      return i_;
     },
   });
 
@@ -458,17 +469,6 @@ declare global {
 
     [$ovlap]: boolean;
   }
-
-  interface Range {
-    /**
-     * @out @param out_a_x
-     * @const @param ovlap_x
-     * @const @param relPos_x
-     */
-    getStickA(out_a_x: DOMRect[], ovlap_x: boolean, relPos_x?: Pos): void;
-
-    reset(): void;
-  }
 }
 
 if (globalThis.DOMRect) {
@@ -499,6 +499,36 @@ if (globalThis.DOMRect) {
       `width: ${this.width.fixTo(2)}`,
     ].join(", ");
   };
+}
+/*64----------------------------------------------------------*/
+
+declare global {
+  //jjjj TOCLEANUP
+  // interface AbstractRange {
+  //   [$eran]?: ERan;
+  // }
+
+  interface Range {
+    /**
+     * @out @param out_a_x
+     * @const @param ovlap_x
+     * @const @param relPos_x
+     */
+    getStickA(out_a_x: DOMRect[], ovlap_x: boolean, relPos_x?: Pos): void;
+
+    reset(): void;
+
+    /**
+     * @const @param node_x
+     * @const @param offs_x
+     */
+    setStrt(node_x: Node, offs_x: uint): this;
+    /**
+     * @const @param node_x
+     * @const @param offs_x
+     */
+    setStop(node_x: Node, offs_x: uint): this;
+  }
 }
 
 if (globalThis.Range) {
@@ -531,18 +561,52 @@ if (globalThis.Range) {
     this.setEnd(document, 0);
     this.collapse();
   };
+
+  Range.prototype.setStrt = function (this, node_x, offs_x) {
+    if (node_x.isText || node_x.hasChildNodes()) {
+      this.setStart(node_x, offs_x);
+    } else if (node_x.parentNode) {
+      this.setStart(node_x.parentNode, node_x.index);
+    } else {
+      this.reset();
+    }
+    return this;
+  };
+  Range.prototype.setStop = function (this, node_x, offs_x) {
+    if (node_x.isText || node_x.hasChildNodes()) {
+      this.setEnd(node_x, offs_x);
+    } else if (node_x.parentNode) {
+      this.setEnd(node_x.parentNode, node_x.index);
+    } else {
+      this.reset();
+    }
+    return this;
+  };
 }
+/*64----------------------------------------------------------*/
+
+//jjjj TOCLEANUP
+// declare global {
+//   interface Highlight {
+//     revERans(): void;
+//   }
+// }
+
+//jjjj TOCLEANUP
+// if (globalThis.Highlight) {
+//   Highlight.prototype.revERans = function (this) {
+//     if (this.size) {
+//       this.forEach((r) => r[$eran]?.rev());
+//       this.clear();
+//     }
+//   };
+// }
 /*64----------------------------------------------------------*/
 
 declare global {
   interface Text {
-    [$loff_0]: loff_t;
-    /**
-     * For `TokLine` being empty or containing whitespaces only, when it is
-     * appended to a `ELine`, an additional "|" will be added. For such
-     * `Text`, its `[$tail_ignored]` is `true`.
-     */
-    [$tail_ignored]?: boolean;
+    [$loff_0]?: loff_t;
+    // [$tail_ignored]?: boolean;
 
     loff(offs_x: uint): loff_t;
     readonly strtLoff: loff_t;
@@ -553,22 +617,21 @@ declare global {
 /**
  * @const @param text_x
  * @const @param loff_x
- * @const @param tail_ignored_x
  */
 export const textnode = (
   text_x: string,
   loff_x: loff_t = 0,
-  tail_ignored_x?: boolean,
+  // tail_ignored_x?: boolean,
 ) => {
   const ret = document.createTextNode(text_x);
   ret[$loff_0] = loff_x;
-  if (tail_ignored_x !== undefined) ret[$tail_ignored] = tail_ignored_x;
+  // if (tail_ignored_x !== undefined) ret[$tail_ignored] = tail_ignored_x;
   return ret;
 };
 
 if (globalThis.Text) {
   Text.prototype.loff = function (this, offs_x) {
-    return this[$loff_0] + offs_x;
+    return (this[$loff_0] ?? 0) + offs_x;
   };
 
   Reflect.defineProperty(Text.prototype, "strtLoff", {

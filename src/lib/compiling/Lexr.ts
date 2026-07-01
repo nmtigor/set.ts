@@ -4,7 +4,7 @@
  ******************************************************************************/
 
 import { _TRACE, INOUT } from "../../preNs.ts";
-import type { ldt_t, loff_t, uint } from "../alias.ts";
+import type { int, ldt_t, loff_t, uint } from "../alias.ts";
 import { LnumMAX } from "../alias.ts";
 import type { Id_t, UInt16 } from "../alias_v.ts";
 import "../jslang.ts";
@@ -167,10 +167,13 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   /* errTk_ss$ */
   protected readonly errTk_ss$ = new SortedTk_id();
   /** @final */
-  get hasErr() {
+  get isErr() {
     return !!this.errTk_ss$.length;
   }
-  /** @final */
+  /**
+   * @deprecated
+   * @final
+   */
   onlyErr(err_x: Err, tk_x?: Token<T>): boolean {
     return this.errTk_ss$.length === 1 &&
       this.errTk_ss$[0].onlyErr(err_x) &&
@@ -223,12 +226,17 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   };
 
   /* scandTk_a$ */
+  /** @final */
   protected readonly scandTk_a$: Token<T>[] = [];
   get _scandTk_a_() {
     return this.scandTk_a$;
   }
 
-  /** Insert `retTk_x` into `scandTk_a` before `retTk_x.nextToken_$` */
+  /**
+   * Insert `retTk_x` into `scandTk_a` before `retTk_x.nextToken_$`
+   * @final
+   * @const @param retTk_x
+   */
   insScandTk_$<K extends Token<T>>(retTk_x: K): K {
     const nextTk = retTk_x.nextToken_$;
     if (nextTk) {
@@ -240,10 +248,24 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     }
     return retTk_x;
   }
-  /** Remove `retTk_x` from `scandTk_a */
-  rmvScandTk_$<K extends Token<T>>(retTk_x: K): K {
-    const i_ = this.scandTk_a$.indexOf(retTk_x);
-    if (i_ >= 0) this.scandTk_a$.splice(i_, 1);
+
+  /**
+   * Remove `retTk_x` from `scandTk_a`, then `destructor()` it if it's not in
+   * `oldTk_ss$`, then `removeSelf()`.
+   * @final
+   * @headconst @param retTk_x
+   * @const @param i_x Same as `start` of `Array.splice()`
+   */
+  rmvScandTk_$<K extends Token<T>>(retTk_x: K, i_x?: int): K {
+    if (i_x === undefined) {
+      const i_ = this.scandTk_a$.indexOf(retTk_x);
+      if (i_ >= 0) this.scandTk_a$.splice(i_, 1);
+    } else {
+      this.scandTk_a$.splice(i_x, 1);
+    }
+
+    if (!this.oldTk_ss$.includes(retTk_x)) retTk_x.destructor();
+    retTk_x.removeSelf();
     return retTk_x;
   }
   /* ~ */
@@ -286,7 +308,10 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   }
 
   #destroyed = false;
-  /** `in( this.bufr$)` */
+  /**
+   * `in( this.bufr$)`
+   * @final
+   */
   destructor(): void {
     if (this.#destroyed) return;
 
@@ -319,7 +344,6 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     this.clrErr_$();
 
     this.curLoc$ = undefined as any;
-    this.oldTk_ss$.reset_SortedArray();
     this.scandTk_a$.length = 0;
     this.lsTk$ = undefined;
     this.outTk$ = undefined;
@@ -623,16 +647,16 @@ export abstract class Lexr<T extends Tok = BaseTok> {
         oldRan.lastLine === this.#stopLexTk_a[i].sntFrstLine;
 
       if (i < oldRan_a_x.length - 1) {
-        const gen_tk = () =>
-          new Token(
-            this,
-            g_ran_fac.byLoc(oldRan.stopLoc, oldRan_a_x[i + 1].strtLoc),
-          ).syncRanval();
         if (this.#strtLexTk_a[i] === this.#strtLexTk_a[i + 1]) {
           const tk_ = this.#stopLexTk_a[i] =
             this.#strtLexTk_a[i + 1] =
-              this.#strtLexTk_a[i].insNext(gen_tk());
-          if (
+              this.#strtLexTk_a[i].insNext(
+                new Token(
+                  this,
+                  g_ran_fac.byLoc(oldRan.stopLoc, oldRan_a_x[i + 1].strtLoc),
+                ).syncRanval(),
+              );
+          /* 3248 */ if (
             tk_.nextToken_$ && tk_.sntStopLoc.posG(tk_.nextToken_$.sntStrtLoc)
           ) {
             tk_.nextToken_$.setStrt(tk_.sntStopLoc);
@@ -640,8 +664,13 @@ export abstract class Lexr<T extends Tok = BaseTok> {
         } else if (this.#stopLexTk_a[i] === this.#stopLexTk_a[i + 1]) {
           const tk_ = this.#stopLexTk_a[i] =
             this.#strtLexTk_a[i + 1] =
-              this.#stopLexTk_a[i + 1].insPrev(gen_tk());
-          if (
+              this.#stopLexTk_a[i + 1].insPrev(
+                new Token(
+                  this,
+                  g_ran_fac.byLoc(oldRan.stopLoc, oldRan_a_x[i + 1].strtLoc),
+                ).syncRanval(),
+              );
+          /* 3249 */ if (
             tk_.prevToken_$ && tk_.sntStrtLoc.posS(tk_.prevToken_$.sntStopLoc)
           ) {
             tk_.prevToken_$.setStop(tk_.sntStrtLoc);
@@ -721,7 +750,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
         `${trace.indent}>>>>>>> ${this._class_id_}.lexadj_$( newRan_a_x: ${newRan_a_x}) >>>>>>>`,
       );
     }
-    if (this.hasErr) {
+    if (this.isErr) {
       /*#static*/ if (INOUT) {
         assert(
           this.strtLexTk$.posS(this.errTk_ss$[0]) &&
@@ -833,7 +862,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    */
   @traceOut(_TRACE)
   lex(valve_x = 10): void {
-    assert(valve_x--, "Cycle call!");
+    assert(--valve_x, "Cycle call!");
     /*#static*/ if (_TRACE) {
       console.log(`${trace.indent}>>>>>>> ${this._class_id_}.lex() >>>>>>>`);
     }
@@ -845,7 +874,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
 
     /*#static*/ if (INOUT) {
       /* Error tokens, if any, are included in the lex region. */
-      assert(!this.hasErr);
+      assert(!this.isErr);
       assert(this.strtLexTk$.posS(this.stopLexTk$));
     }
     this.preLex$();
@@ -875,17 +904,18 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   // }
 
   /**
-   * @headconst @param basTk_x
-   * @headconst @param retTk_x
+   * @headconst @param prevTk_x
+   * @headconst @param scandTk_x
+   * @return `scandTk_x`
    */
-  protected linkNextTk$(basTk_x: Token<T>, retTk_x: Token<T>): Token<T> {
-    // let retTk = basTk_x;
+  protected linkNextTk$(prevTk_x: Token<T>, scandTk_x: Token<T>): Token<T> {
+    // let retTk = prevTk_x;
     // for (let i = 0; i < nextTks_x.length; i++) {
     //   retTk = retTk.linkNext(nextTks_x[i]);
     // }
     // return retTk;
 
-    return basTk_x.linkNext(retTk_x);
+    return prevTk_x.linkNext(scandTk_x);
   }
 
   /**
@@ -906,25 +936,25 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     const VALVE = LnumMAX;
     let valve = VALVE;
     do {
-      const tk_ = this._scan();
-      if (!tk_ || tk_.value === BaseTok.unknown) { // 2269
+      const scandTk_ = this._scan();
+      if (!scandTk_ || scandTk_.value === BaseTok.unknown) { // 2269
         assert(--valve, `Loop ${VALVE}±1 times`);
         continue;
       }
-      /* `lsTk$` being `undefined` means that `tk_` is handled. */
+      /* `lsTk$` being `undefined` means that `scandTk_` is handled. */
       if (this.lsTk$) {
-        this.linkNextTk$(this.lsTk$, tk_);
-        if (tk_.isErr) this.errTk_ss$.add(tk_);
+        this.linkNextTk$(this.lsTk$, scandTk_);
+        if (scandTk_.isErr) this.errTk_ss$.add(scandTk_);
       }
 
-      if (!this.hasErr) this.strtLexTk$ = tk_;
-      if (tk_ === this.stopLexTk$) break;
+      if (!this.isErr) this.strtLexTk$ = scandTk_;
+      if (scandTk_ === this.stopLexTk$) break;
 
       if (this.lsTk$) {
-        tk_.syncRanval(); //!
-        this.scandTk_a$.push(tk_);
+        scandTk_.syncRanval(); //!
+        this.scandTk_a$.push(scandTk_);
       }
-      this.lsTk$ = tk_;
+      this.lsTk$ = scandTk_;
     } while (--valve);
     assert(valve, `Loop ${VALVE}±1 times`);
     return this;
@@ -1104,8 +1134,8 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   #bypassSn(sn_x: Stnode<T>): void {
-    let tk_ = sn_x.frstToken;
-    const lastTk = sn_x.lastToken;
+    let tk_ = sn_x.frstToken_1;
+    const lastTk = sn_x.lastToken_1;
     const VALVE = 1_000;
     let valve = VALVE;
     while (--valve) {
@@ -1137,7 +1167,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       assert(snts_x.length);
       assert(this.lsTk$);
     }
-    const tk_0 = snts_x[0] instanceof Token ? snts_x[0] : snts_x[0].frstToken;
+    const tk_0 = snts_x[0] instanceof Token ? snts_x[0] : snts_x[0].frstToken_1;
     this.lsTk$!.linkNext(tk_0);
     for (const snt of snts_x) {
       if (snt instanceof Token) this.#bypassTk(snt);
@@ -1146,7 +1176,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     /*! to prevent `linkNextTk$()` and `scandTk_a$.push()` in `lex_impl$()` */
     this.lsTk$ = undefined;
     const lastSnt = snts_x.at(-1)!;
-    return lastSnt instanceof Token ? lastSnt : lastSnt.lastToken;
+    return lastSnt instanceof Token ? lastSnt : lastSnt.lastToken_1;
   }
 
   /**
@@ -1168,74 +1198,72 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    * @final
    */
   protected concatTokens$() {
-    const tk_a = this.scandTk_a$;
     /*#static*/ if (INOUT) {
-      if (tk_a.length) {
+      if (this.scandTk_a$.length) {
         assert(
-          tk_a[0].prevToken_$ === this.strtLexTk_0$ &&
-            tk_a.at(-1)!.nextToken_$ === this.stopLexTk$,
+          this.scandTk_a$[0].prevToken_$ === this.strtLexTk_0$ &&
+            this.scandTk_a$.at(-1)!.nextToken_$ === this.stopLexTk$,
         );
       } else {
         assert(this.strtLexTk_0$.isConcatedTo(this.stopLexTk$));
       }
     }
     let tk_0, tk_1: Token<T> | undefined;
-    if (tk_a.length) {
+    if (this.scandTk_a$.length) {
       tk_0 = this.strtLexTk_0$;
-      tk_1 = tk_a[0];
+      tk_1 = this.scandTk_a$[0];
       if (tk_0 !== this.frstLexTk && this.canConcat$(tk_0, tk_1)) { // 1894
-        tk_0.setStop(tk_1.sntStopLoc).linkNext(tk_1.nextToken_$!);
+        tk_0.setStop(tk_1.sntStopLoc);
         if (this.errTk_ss$.includes(tk_1)) {
           this.errTk_ss$.rmv(tk_1.tfrErr(tk_0));
           this.errTk_ss$.add(tk_0);
         }
-        if (!this.oldTk_ss$.includes(tk_1)) tk_1.destructor(); //!
-        tk_a.splice(0, 1);
+
+        this.rmvScandTk_$(tk_1, 0);
       }
 
-      tk_0 = tk_a.at(-1);
+      tk_0 = this.scandTk_a$.at(-1);
       tk_1 = this.stopLexTk$;
       if (tk_1 !== this.lastLexTk && tk_0 && this.canConcat$(tk_0, tk_1)) { // 1895
-        tk_1.setStrt(tk_0.sntStrtLoc).linkPrev(tk_0.prevToken_$!);
+        tk_1.setStrt(tk_0.sntStrtLoc);
         if (this.errTk_ss$.includes(tk_0)) {
-          /* to keep the order of Err */
-          tk_1.tfrErr(tk_0).clrErr();
+          tk_1.tfrErr(tk_0).clrErr(); // to keep the order of Err's
           this.errTk_ss$.rmv(tk_0.tfrErr(tk_1));
           this.errTk_ss$.add(tk_1);
         }
-        if (!this.oldTk_ss$.includes(tk_0)) tk_0.destructor(); //!
-        tk_a.pop();
+
+        this.rmvScandTk_$(tk_0, -1);
       }
 
       if (this.concatAll$) {
-        for (let i = tk_a.length; i-- > 1;) {
-          tk_0 = tk_a[i - 1];
-          tk_1 = tk_a[i];
+        for (let i = this.scandTk_a$.length; i-- > 1;) {
+          tk_0 = this.scandTk_a$[i - 1];
+          tk_1 = this.scandTk_a$[i];
           if (this.canConcat$(tk_0, tk_1)) {
-            tk_1.setStrt(tk_0.sntStrtLoc).linkPrev(tk_0.prevToken_$!);
+            tk_1.setStrt(tk_0.sntStrtLoc);
             if (this.errTk_ss$.includes(tk_0)) {
-              /* to keep the order of Err */
-              tk_1.tfrErr(tk_0).clrErr();
+              tk_1.tfrErr(tk_0).clrErr(); // to keep the order of Err's
               this.errTk_ss$.rmv(tk_0.tfrErr(tk_1));
               this.errTk_ss$.add(tk_1);
             }
-            if (!this.oldTk_ss$.includes(tk_0)) tk_0.destructor(); //!
-            tk_a.splice(i - 1, 1);
+
+            this.rmvScandTk_$(tk_0, i - 1);
           }
         }
       }
     }
 
-    if (tk_a.length === 0) {
+    if (this.scandTk_a$.length === 0) {
       tk_0 = this.strtLexTk_0$;
       tk_1 = this.stopLexTk$;
       if (
         tk_0 !== this.frstLexTk && tk_1 !== this.lastLexTk &&
         this.canConcat$(tk_0, tk_1)
       ) {
-        tk_1.setStrt(tk_0.sntStrtLoc).linkPrev(tk_0.prevToken_$!);
-        tk_0.destructor(); //!
-        this.strtLexTk_0$ = tk_1; //!
+        tk_1.setStrt(tk_0.sntStrtLoc);
+        this.strtLexTk_0$ = tk_1;
+
+        tk_0.removeSelf()!.destructor();
       }
     }
   }

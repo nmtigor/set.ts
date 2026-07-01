@@ -3,8 +3,9 @@
  * @license MIT
  ******************************************************************************/
 
-import { INOUT } from "../../preNs.ts";
-import type { int, loff_t, uint } from "../alias.ts";
+import { INOUT, PRF } from "../../preNs.ts";
+import type { int, lnum_t, loff_t, uint } from "../alias.ts";
+import type { ERanr } from "@fe-edt/ERan.ts";
 import { assert, fail, out } from "../util.ts";
 import type { Cf } from "../util/SortedSet.ts";
 import { SortedSet } from "../util/SortedSet.ts";
@@ -15,16 +16,19 @@ import type { Token } from "./Token.ts";
 import type { Tok } from "./alias.ts";
 import type { _OldInfo_ } from "./util.ts";
 import { SortedSn_id } from "./util.ts";
+import { Pazr } from "./Pazr.ts";
+import type { Ts_t } from "../alias_v.ts";
+import { g_count } from "../util/performance.ts";
 /*80--------------------------------------------------------------------------*/
 
 type Depth_ = uint | -1;
 
 /** @final */
-export class SortedStnod_depth extends SortedSet<Stnode<any>> {
+export class SortedSn_depth extends SortedSet<Stnode<any>> {
   static #less: Cf<Stnode<any>> = (a, b) => a.depth < b.depth;
 
   constructor(val_a_x?: Stnode<any>[]) {
-    super(SortedStnod_depth.#less, val_a_x);
+    super(SortedSn_depth.#less, val_a_x);
   }
 }
 
@@ -34,28 +38,36 @@ export type CalcCommonO_ = {
   debug?: { a?: Stnode<any>[]; f?: Stnode<any>[][] };
 };
 
-/** >=1 */
-const FilterDepth_ = 2;
-
 /**
- * syntax node
+ * Syntax node
  *
- * primaryconst: const exclude `#depth`, `frstToken$`, `lastToken$`
+ * primaryconst: const exclude `#depth`, `frstTk$`, `lastTk$`
  */
 export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
-  /* parent_$ */
-  /** @final */
-  parent_$: Stnode<T> | undefined;
+  /* #parent */
+  #parent: Stnode<T> | undefined;
   get parent() {
-    return this.parent_$;
-  }
-  /** @final */
-  get isRoot() {
-    return !this.parent_$;
+    return this.#parent;
   }
 
-  detach(): this {
-    this.parent_$ = undefined;
+  /** @final */
+  get isRoot() {
+    return !this.#parent;
+  }
+
+  detach_$(): this {
+    this.#parent = undefined;
+    this.#depth = 0;
+    return this;
+  }
+
+  /**
+   * `in( !this.#parent)`
+   * @param pa_x
+   */
+  attachTo_$(pa_x: Stnode<T>): this {
+    this.#parent = pa_x;
+    this.#depth = -1;
     return this;
   }
 
@@ -64,20 +76,20 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     let ret: Stnode<T> = this;
     const VALVE = 1_000;
     let valve = VALVE;
-    while (ret.parent_$ && --valve) ret = ret.parent_$;
+    while (ret.#parent && --valve) ret = ret.#parent;
     assert(valve, `Loop ${VALVE}±1 times`);
     return ret;
   }
   /**
-   * Inclusive
    * @final
+   * @param sn_x Inclusive
    */
   isAncestorOf(sn_x?: Stnode<T>) {
     const VALVE = 1_000;
     let valve = VALVE;
     while (sn_x && --valve) {
       if (sn_x === this) return true;
-      sn_x = sn_x.parent_$;
+      sn_x = sn_x.#parent;
     }
     assert(valve, `Loop ${VALVE}±1 times`);
     return false;
@@ -87,7 +99,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /* children */
   // protected children$: Stnode<T>[] | undefined;
   get children(): Stnode<T>[] | undefined {
-    // return fail("jjjj Not implemented");
+    // return fail("Not implemented");
     return undefined;
   }
   /** @final */
@@ -128,7 +140,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
 
   /** @headmove @return */
   get siblings(): Stnode<T>[] | undefined {
-    const s_a = this.parent_$?.children;
+    const s_a = this.#parent?.children;
     if (!s_a?.length) return undefined;
 
     const i_ = s_a.indexOf(this);
@@ -136,20 +148,20 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   }
 
   get prevStnod(): Stnode<T> | undefined {
-    const s_a = this.parent_$?.children;
+    const s_a = this.#parent?.children;
     if (!s_a?.length) return undefined;
 
     const i_ = s_a.indexOf(this);
-    return i_ > 0 ? s_a[i_ - 1] : this.parent_$!.prevStnod;
+    return i_ > 0 ? s_a[i_ - 1] : this.#parent!.prevStnod;
   }
   get nextStnod(): Stnode<T> | undefined {
-    const s_a = this.parent_$?.children;
+    const s_a = this.#parent?.children;
     if (!s_a?.length) return undefined;
 
     const i_ = s_a.indexOf(this);
     return 0 <= i_ && i_ < s_a.length - 1
       ? s_a[i_ + 1]
-      : this.parent_$!.nextStnod;
+      : this.#parent!.nextStnod;
   }
 
   // /**
@@ -157,56 +169,62 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   //  * @final
   //  */
   // get prevLeaf(): Stnode<T> | undefined {
-  //   const s_a = this.parent_$?.children;
+  //   const s_a = this.#parent?.children;
   //   if (!s_a?.length) return undefined;
 
   //   const i_ = s_a.indexOf(this);
-  //   return i_ > 0 ? s_a[i_ - 1].frstLeaf : this.parent_$!.prevLeaf;
+  //   return i_ > 0 ? s_a[i_ - 1].frstLeaf : this.#parent!.prevLeaf;
   // }
   // /** @see {@linkcode prevLeaf} */
   // get nextLeaf(): Stnode<T> | undefined {
-  //   const s_a = this.parent_$?.children;
+  //   const s_a = this.#parent?.children;
   //   if (!s_a?.length) return undefined;
 
   //   const i_ = s_a.indexOf(this);
   //   return 0 <= i_ && i_ < s_a.length - 1
   //     ? s_a[i_ + 1].lastLeaf
-  //     : this.parent_$!.nextLeaf;
+  //     : this.#parent!.nextLeaf;
   // }
   /* ~ */
 
   /* #depth */
   /** 0 means no parent */
   #depth: Depth_ = -1;
-  get depth() {
+  get depth(): Depth_ {
     return this.#depth;
   }
   set depth_$(de_x: Depth_) {
     this.#depth = de_x;
   }
 
-  /** @final */
+  /**
+   * Set `#depth`
+   * @final
+   */
   get depth_1(): Depth_ {
-    let ret: Depth_ = 0;
-    let pa_ = this.parent_$;
+    let retDe: Depth_ = 0;
+    let pa_ = this.#parent;
     const VALVE = 1_000;
     let valve = VALVE;
     while (pa_ && --valve) {
-      ret++;
+      retDe += 1;
       if (pa_.#depth >= 0) {
-        ret += pa_.#depth;
+        retDe += pa_.#depth;
         break;
       }
-      pa_ = pa_.parent_$;
+      pa_ = pa_.#parent;
     }
     assert(valve, `Loop ${VALVE}±1 times`);
 
-    return this.#depth = ret;
+    return this.#depth = retDe;
   }
 
-  /** @final */
-  get depth_2(): Depth_ {
-    return (this.parent_$?.depth_2 ?? -1) + 1;
+  /**
+   * @final
+   * @const
+   */
+  get _depth_2_(): Depth_ {
+    return (this.#parent?._depth_2_ ?? -1) + 1;
   }
   /* ~ */
 
@@ -215,30 +233,28 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     let ret: Stnode<T> = this;
     const VALVE = 1_000;
     let valve = VALVE;
-    while (ret.isErr && ret.parent_$ && --valve) ret = ret.parent_$;
+    while (ret.isErr && ret.#parent && --valve) ret = ret.#parent;
     assert(valve, `Loop ${VALVE}±1 times`);
     return ret;
   }
 
-  /* frstToken$ */
+  /* frstTk$ */
   /** @final */
-  protected frstToken$: Token<T> | undefined;
-  /**
-   **! Do not call in `Pazr.pazmrk_$()`
-   * @primaryconst
-   */
-  get frstToken(): Token<T> {
-    return fail("jjjj Not implemented");
+  protected frstTk$: Token<T> | undefined;
+  /** @primaryconst */
+  get frstToken_1(): Token<T> {
+    return fail("Not implemented");
   }
-  /** @final */
-  get frstBdryTk(): Token<T> {
-    const tk_ = this.frstToken;
-    tk_.stnod_$ ??= this; // First setting wins.
-    return tk_;
-  }
+  //jjjj TOCLEANUP
+  // /** @final */
+  // get frstBdryTk(): Token<T> {
+  //   const tk_ = this.frstToken_1;
+  //   tk_.sn_$ ??= this; // First setting wins.
+  //   return tk_;
+  // }
   /** @final @implement */
   get sntFrstLine() {
-    return this.frstToken.sntFrstLine;
+    return this.frstToken_1.sntFrstLine;
   }
   /** @final @implement */
   get sntFrstLidx_1() {
@@ -246,33 +262,31 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   }
   /** @final @implement */
   get sntStrtLoc() {
-    return this.frstToken.sntStrtLoc;
+    return this.frstToken_1.sntStrtLoc;
   }
   /** @final @implement */
   get sntStrtLoff(): loff_t {
-    return this.frstToken.sntStrtLoff;
+    return this.frstToken_1.sntStrtLoff;
   }
   /* ~ */
 
-  /* lastToken$ */
+  /* lastTk$ */
   /** @final */
-  protected lastToken$: Token<T> | undefined;
-  /**
-   **! Do not call in `Pazr.pazmrk_$()`
-   * @primaryconst
-   */
-  get lastToken(): Token<T> {
-    return fail("jjjj Not implemented");
+  protected lastTk$: Token<T> | undefined;
+  /** @primaryconst */
+  get lastToken_1(): Token<T> {
+    return fail("Not implemented");
   }
-  /** @final */
-  get lastBdryTk(): Token<T> {
-    const tk_ = this.lastToken;
-    tk_.stnod_$ ??= this; // First setting wins.
-    return tk_;
-  }
+  //jjjj TOCLEANUP
+  // /** @final */
+  // get lastBdryTk(): Token<T> {
+  //   const tk_ = this.lastToken_1;
+  //   tk_.sn_$ ??= this; // First setting wins.
+  //   return tk_;
+  // }
   /** @final @implement */
   get sntLastLine() {
-    return this.lastToken.sntLastLine;
+    return this.lastToken_1.sntLastLine;
   }
   /** @final @implement */
   get sntLastLidx_1() {
@@ -280,35 +294,34 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   }
   /** @final @implement */
   get sntStopLoc() {
-    return this.lastToken.sntStopLoc;
+    return this.lastToken_1.sntStopLoc;
   }
   /** @final @implement */
   get sntStopLoff(): loff_t {
-    return this.lastToken.sntStopLoff;
+    return this.lastToken_1.sntStopLoff;
   }
   /* ~ */
 
-  /**
-   **! Do not use `frstToken` and `lastToken`, because this will be called in
-   *  `Pazr.pazmrk_$()()`.
-   * @final
-   */
+  /** @final */
   invalBdry(): this {
-    if (this.frstToken$?.stnod_$ === this) {
-      this.frstToken$.stnod_$ = undefined;
+    if (this.frstTk$?.sn_$ === this) {
+      this.frstTk$.sn_$ = undefined;
     }
-    if (this.lastToken$?.stnod_$ === this) {
-      this.lastToken$.stnod_$ = undefined;
+    if (this.lastTk$?.sn_$ === this) {
+      this.lastTk$.sn_$ = undefined;
     }
-    this.frstToken$ = undefined;
-    this.lastToken$ = undefined;
+    this.frstTk$ = undefined;
+    this.lastTk$ = undefined;
     return this;
   }
 
   /** @final */
-  ensureBdries(): this {
-    this.frstBdryTk;
-    this.lastBdryTk;
+  ensureBdry(): this {
+    //jjjj TOCLEANUP
+    // this.frstBdryTk;
+    // this.lastBdryTk;
+    this.frstToken_1.sn_$ ??= this; // First setting wins.
+    this.lastToken_1.sn_$ ??= this;
     return this;
   }
   /** @final */
@@ -317,8 +330,12 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     if (c_a) {
       for (const sn of c_a) sn.ensureAllBdries();
     }
-    return this.ensureBdries();
+    return this.ensureBdry();
   }
+
+  // resetBdry(): void {
+  //   this.invalBdry().ensureBdry();
+  // }
 
   /** @final */
   contain(loc_x: Loc): boolean {
@@ -328,10 +345,57 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   touch(loc_x: Loc): boolean {
     return this.sntStrtLoc.posSE(loc_x) && loc_x.posSE(this.sntStopLoc);
   }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  constructor() {
+  /* hl_a$ */
+  hl_a$?: Highlight[];
+
+  #highlighted?: boolean;
+  /* ~ */
+
+  /* #valid */
+  #valid = false;
+  #checkTs = 0 as Ts_t;
+  /**
+   * @final
+   * @const @param ts_x
+   * @const @param rt_x
+   */
+  valid_$(ts_x: Ts_t, rt_x?: Stnode<T>, valve_x = 1_000): boolean {
+    assert(valve_x, "Loop 1_000 ±1 times");
+    if (this.#checkTs < ts_x) {
+      if (rt_x) {
+        this.#valid = this.#parent === rt_x || this === rt_x
+          ? true
+          : !!this.#parent?.valid_$(ts_x, rt_x, valve_x - 1);
+      } else {
+        this.#valid = false;
+      }
+      this.#checkTs = ts_x;
+    }
+    return this.#valid;
+  }
+  /* ~ */
+
+  /** @headconst @param pazr_x */
+  constructor(pazr_x?: Pazr<T>) {
     super();
     this.NErr$ = 4;
+
+    pazr_x?.sns_$.push(this);
+
+    /*#static*/ if (PRF) {
+      g_count.newStnode += 1;
+    }
+  }
+
+  destructor(): void {
+    /* Related Eran's (if any) should be `rev()`ed at the end of `Lexr.lex()`. */
+    this.hl_a$?.forEach((hl) => hl.clear());
+
+    /*#static*/ if (PRF) {
+      g_count.oldStnode += 1;
+    }
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -340,11 +404,11 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
    * @headconst @param newSn_x
    */
   replaceChild(_oldSn_x: Stnode<T>, _newSn_x?: Stnode<T>): void {
-    return fail("jjjj Not implemented");
+    return fail("Not implemented");
   }
   /** @final */
   removeSelf(): void {
-    this.parent_$?.replaceChild(this);
+    this.#parent?.replaceChild(this);
   }
 
   //jjjj TOCLEANUP
@@ -355,12 +419,12 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   //  */
   // transferParentTo(newSn_x: Stnode<T>) {
   //   /*#static*/ if (INOUT) {
-  //     assert(!newSn_x.parent_$);
+  //     assert(!newSn_x.#parent);
   //   }
-  //   newSn_x.parent_$ = this.parent_$;
+  //   newSn_x.#parent = this.#parent;
   //   /* Do not remove `this` from syntax tree because `this` (normally as
   //   `drtSn`) could be needed in `sufrepl_edtr` phase. */
-  //   // this.parent_$ = undefined;
+  //   // this.#parent = undefined;
   // }
 
   //jjjj TOCLEANUP
@@ -370,11 +434,11 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   //  * @headconst @param newSn_x
   //  */
   // transferBdryTo(newSn_x: Stnode<T>) {
-  //   if (this.frstToken$?.stnod_$ === this) {
-  //     this.frstToken$.stnod_$ = newSn_x;
+  //   if (this.frstTk$?.sn_$ === this) {
+  //     this.frstTk$.sn_$ = newSn_x;
   //   }
-  //   if (this.lastToken$?.stnod_$ === this) {
-  //     this.lastToken$.stnod_$ = newSn_x;
+  //   if (this.lastTk$?.sn_$ === this) {
+  //     this.lastTk$.sn_$ = newSn_x;
   //   }
   // }
 
@@ -395,17 +459,19 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     return false;
   }
 
+  /** \>=1 */
+  static FilterDepth = 2;
   /**
    * @final
    * @out @param outSn_a
    * @headconst @param except_x
-   * @const @param fd_x
-   * @return same as `hasErr_1`
+   * @const @param fd_x \>=1
+   * @return Same as `hasErr_1`
    */
   filterTo(
     outSn_a: Stnode<T>[],
     except_x?: Stnode<T>,
-    fd_x = FilterDepth_,
+    fd_x = Stnode.FilterDepth,
   ): boolean {
     if (this === except_x) return false;
 
@@ -413,9 +479,10 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     const c_a = this.children;
     if (c_a?.length) {
       for (const sn of c_a) {
-        hasErr ||= fd_x === 1
+        hasErr = fd_x === 1
           ? sn.hasErr_1
           : sn.filterTo(outSn_a, except_x, fd_x - 1);
+        if (hasErr) break;
       }
     }
     if (hasErr) return true;
@@ -444,12 +511,12 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   //  */
   // directBdryBy$_( token )
   // {
-  //   return this.frstToken$ === token || this.lastToken$ === token;
+  //   return this.frstTk$ === token || this.lastTk$ === token;
   // }
 
   // /** @final */
   // get isBdryValid() {
-  //   return this.frstToken$.stnode === this && this.lastToken$.stnode === this;
+  //   return this.frstTk$.stnode === this && this.lastTk$.stnode === this;
   // }
 
   // /**
@@ -471,16 +538,16 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   //   return this.calcLastToken() ===
   //          this.root1.calcLastToken();
   // }
-  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /** Helper */
-  static readonly sn_ss = new SortedStnod_depth();
+  static readonly sn_ss = new SortedSn_depth();
   /**
    * @out @param unrelSn_ss
    * @headconst @param unrelSn_a
    * @out @param debug
-   * @headconst @param sn_sa_x
-   * @return `sn_sa_x[0]`
+   * @headconst @param sn_ss_x
+   * @return `sn_ss_x[0]`
    */
   @out((self: typeof Stnode<any>, _1, args) => {
     const sn_ss = args[1] ?? self.sn_ss;
@@ -491,25 +558,25 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   })
   static calcCommon(
     { unrelSn_ss, unrelSn_a, debug }: CalcCommonO_ = {},
-    sn_sa_x = this.sn_ss,
+    sn_ss_x = this.sn_ss,
   ): Stnode<any> {
     /*#static*/ if (INOUT) {
-      assert(sn_sa_x.length);
+      assert(sn_ss_x.length);
     }
-    if (sn_sa_x.length === 1) {
-      return sn_sa_x[0];
+    if (sn_ss_x.length === 1) {
+      return sn_ss_x[0];
     }
 
-    sn_sa_x.forEach((sn) => sn.depth_1);
-    sn_sa_x.resort();
-    if (debug) debug.a = sn_sa_x.slice();
+    sn_ss_x.forEach((sn) => sn.depth_1);
+    sn_ss_x.resort();
+    if (debug) debug.a = sn_ss_x.slice();
 
-    const sn2del_ss = unrelSn_ss ? new SortedSn_id(sn_sa_x) : undefined;
+    const sn2del_ss = unrelSn_ss ? new SortedSn_id(sn_ss_x) : undefined;
     sn2del_ss?.resort()
       .slice()
       .forEach((sn) => {
-        while (sn.parent_$) {
-          sn = sn.parent_$;
+        while (sn.#parent) {
+          sn = sn.#parent;
           sn2del_ss.add(sn);
         }
       });
@@ -517,9 +584,9 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     let swapSn;
     const swap = (i_y: uint, j_y: uint): void => {
       if (i_y !== j_y) {
-        swapSn = sn_sa_x[i_y];
-        sn_sa_x[i_y] = sn_sa_x[j_y];
-        sn_sa_x[j_y] = swapSn;
+        swapSn = sn_ss_x[i_y];
+        sn_ss_x[i_y] = sn_ss_x[j_y];
+        sn_ss_x[j_y] = swapSn;
       }
     };
 
@@ -527,21 +594,21 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     let valve = VALVE;
 
     /**
-     * @const @param i_y sn_sa_x[i_y].#depth >= 0
+     * @const @param i_y sn_ss_x[i_y].#depth >= 0
      * @param n_y >=1
      */
     const floatUp = (i_y: uint, n_y: uint = 1): void => {
-      let sn_i = sn_sa_x[i_y];
+      let sn_i = sn_ss_x[i_y];
       let de_ = sn_i.depth;
       while (n_y--) {
         unrelSn_ss?.add_O(sn_i.siblings);
-        sn_i = sn_sa_x[i_y] = sn_i.parent_$!;
+        sn_i = sn_ss_x[i_y] = sn_i.#parent!;
         sn_i.depth_$ = --de_;
       }
     };
 
     /**
-     * Make all of sorted `sn_sa_x` up `iUp_y` to the depth `tgtDe_y`.\
+     * Make all of sorted `sn_ss_x` up `iUp_y` to the depth `tgtDe_y`.\
      * Remove duplicates.
      * @const @param iUp_y >=1
      * @const @param tgtDe_y
@@ -549,7 +616,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     const floatupTail = (iUp_y: uint, tgtDe_y: Depth_): void => {
       let j_0 = iUp_y;
       for (; j_0--;) {
-        if (sn_sa_x[j_0].depth !== tgtDe_y) {
+        if (sn_ss_x[j_0].depth !== tgtDe_y) {
           break;
         }
       }
@@ -558,17 +625,17 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
         assert(0 <= j_0 && j_0 < iUp_y);
       }
 
-      const n_ = sn_sa_x.at(-1)!.depth - tgtDe_y;
-      for (let k = sn_sa_x.length; k-- > iUp_y;) {
+      const n_ = sn_ss_x.at(-1)!.depth - tgtDe_y;
+      for (let k = sn_ss_x.length; k-- > iUp_y;) {
         floatUp(k, n_);
       }
 
-      let len = sn_sa_x.length;
+      let len = sn_ss_x.length;
       /* Remove duplicates */
       L_0: while (j_0 < len - 1) {
         for (let j = j_0; j < len - 1; ++j) {
-          if (sn_sa_x[j] === sn_sa_x[len - 1]) {
-            sn_sa_x.length = --len;
+          if (sn_ss_x[j] === sn_ss_x[len - 1]) {
+            sn_ss_x.length = --len;
             continue L_0;
           }
         }
@@ -578,10 +645,10 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     };
 
     let floatupTailCalled = false;
-    L_0: while (sn_sa_x.length > 1 && --valve) {
-      const de_0 = sn_sa_x.at(-1)!.depth;
-      for (let i = sn_sa_x.length - 1; i--;) {
-        const de_i = sn_sa_x[i].depth;
+    L_0: while (sn_ss_x.length > 1 && --valve) {
+      const de_0 = sn_ss_x.at(-1)!.depth;
+      for (let i = sn_ss_x.length - 1; i--;) {
+        const de_i = sn_ss_x[i].depth;
         if (
           de_i !== de_0 ||
           i === 0 && !floatupTailCalled
@@ -590,10 +657,10 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
           floatupTail(i + 1, de_i);
           floatupTailCalled = true;
           /*
-        ! `sn_sa_x` can have been shortened */
+        ! `sn_ss_x` can have been shortened */
           if (debug) {
             debug.f ??= [];
-            debug.f.push(sn_sa_x.slice());
+            debug.f.push(sn_ss_x.slice());
           }
           continue L_0;
         }
@@ -603,16 +670,16 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     assert(valve, `Loop ${VALVE}±1 times`);
 
     const floatupAll = (): void => {
-      let len = sn_sa_x.length;
+      let len = sn_ss_x.length;
       if (len <= 1) return;
 
       for (let i = 0; i < len; i++) {
         floatUp(i);
-        const sn_i = sn_sa_x[i];
+        const sn_i = sn_ss_x[i];
         for (let j = i + 1; j < len;) {
-          if (sn_i === sn_sa_x[j].parent) {
+          if (sn_i === sn_ss_x[j].parent) {
             swap(j, len - 1);
-            sn_sa_x.length = --len;
+            sn_ss_x.length = --len;
           } else j++;
         }
       }
@@ -625,42 +692,120 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     unrelSn_ss?.rmv_O(sn2del_ss);
     unrelSn_ss?.add_O(unrelSn_a);
 
-    /* `sn_sa_x[0]` may be `hasErr` */
-    sn_sa_x[0] = sn_sa_x[0].safeSn_1;
-    return sn_sa_x[0];
+    /* `sn_ss_x[0]` may be `hasErr` */
+    sn_ss_x[0] = sn_ss_x[0].safeSn_1;
+    return sn_ss_x[0];
+  }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
+  /** Call `Token.revERan()` on specific Token's */
+  protected clrHighlight_impl$(): false {
+    return false;
+  }
+  /**
+   * `out( this.#highlighted === false)`
+   * @final
+   * @return `#highlighted`
+   */
+  clrHighlight(): boolean {
+    if (this.#highlighted) {
+      this.clrHighlight_impl$();
+
+      this.hl_a$?.forEach((hl) => hl.clear());
+      if (this.children) {
+        for (const c of this.children) c.clrHighlight();
+      }
+    }
+    return this.#highlighted = false;
+  }
+
+  /**
+   * Assign `Token.eran$` on specific Token's, then add Range's to `hl_a$`\
+   * `in( _frstLidx_x <= _lastLidx_x)`
+   * @const @param _frstLidx_x
+   * @const @param _lastLidx_x
+   * @headconst @param eranr_x
+   * @return Highlighted or not
+   */
+  protected setHighlight_impl$(
+    _frstLidx_x: lnum_t,
+    _lastLidx_x: lnum_t,
+    _eranr_x: ERanr,
+  ): boolean {
+    return false;
+  }
+  /**
+   * Set `#highlighted`\
+   * `in( frstLidx_x <= lastLidx_x)`
+   * @final
+   * @const @param frstLidx_x
+   * @const @param lastLidx_x
+   * @headconst @param eranr_x
+   * @return `#highlighted`
+   */
+  setHighlight(
+    frstLidx_x: lnum_t,
+    lastLidx_x: lnum_t,
+    eranr_x: ERanr,
+  ): boolean {
+    const frstLidx = this.sntFrstLidx_1;
+    if (lastLidx_x < frstLidx) return this.clrHighlight();
+    const lastLidx = this.sntLastLidx_1;
+    if (lastLidx < frstLidx_x) return this.clrHighlight();
+
+    this.#highlighted = this.setHighlight_impl$(
+      frstLidx_x,
+      lastLidx_x,
+      eranr_x,
+    );
+
+    if (this.children) {
+      for (const c of this.children) {
+        const hl_ = c.setHighlight(frstLidx_x, lastLidx_x, eranr_x);
+        this.#highlighted ||= hl_;
+      }
+    }
+    return this.#highlighted;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   //jjjj TOCLEANUP
   // /** @final */
   // get _info(): string {
-  //   return `${this.constructor.name}(${this.depth_2})`;
+  //   return `${this.constructor.name}(${this._depth_2_})`;
   // }
+  /** @const */
   get _info_(): string {
-    return `${this.constructor.name},${this.depth_2}`;
+    return `${this.constructor.name},${this._depth_2_}`;
   }
   //jjjj TOCLEANUP
   // /** @final */
   // get _oldInfo_(): string {
   //   return `${this._info}[ ` +
-  //     `${this.frstToken$?._name_}${this.frstToken$?.oldRanval}, ` +
-  //     `${this.lastToken$?._name_}${this.lastToken$?.oldRanval} ]`;
+  //     `${this.frstTk$?._name_}${this.frstTk$?.oldRanval}, ` +
+  //     `${this.lastTk$?._name_}${this.lastTk$?.oldRanval} ]`;
   // }
-  /** @final */
+  /**
+   * @final
+   * @primaryconst
+   */
   override get _oldInfo_(): _OldInfo_ {
-    const frstOldInfo = this.frstToken._oldInfo_;
+    const frstOldInfo = this.frstToken_1._oldInfo_;
     return {
       sort: frstOldInfo.sort,
-      info: this.frstToken === this.lastToken
+      info: this.frstToken_1 === this.lastToken_1
         ? `${this._info_} [ ${frstOldInfo.info} ]`
-        : `${this._info_} [ ${frstOldInfo.info}, ${this.lastToken._oldInfo_.info} ]`,
+        : `${this._info_} [ ${frstOldInfo.info}, ${this.lastToken_1._oldInfo_.info} ]`,
     };
   }
-  /** @final */
+  /**
+   * @final
+   * @primaryconst
+   */
   get _newInfo_(): string {
-    return this.frstToken === this.lastToken
-      ? `${this._info_} [ ${this.frstToken} ]`
-      : `${this._info_} [ ${this.frstToken}, ${this.lastToken} ]`;
+    return this.frstToken_1 === this.lastToken_1
+      ? `${this._info_} [ ${this.frstToken_1} ]`
+      : `${this._info_} [ ${this.frstToken_1}, ${this.lastToken_1} ]`;
   }
 
   _repr_(): unknown {
@@ -690,9 +835,9 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
 //   let ret = calcCommon( sn_a_x );
 //   if( !ret.isBeg() )
 //   {
-//     ret = ret.parent_$;
+//     ret = ret.#parent;
 //     let valve = 1000+1;
-//     while( ret && !ret.isBeg() && --valve ) ret = ret.parent_$;
+//     while( ret && !ret.isBeg() && --valve ) ret = ret.#parent;
 //     assert(valve);
 //   }
 //   out(ret); return ret;

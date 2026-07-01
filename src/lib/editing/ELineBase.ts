@@ -14,7 +14,6 @@ import { Bidi } from "../Bidi.ts";
 import { HTMLVuu, Vuu } from "../cv.ts";
 import { div, textnode } from "../dom.ts";
 import "../jslang.ts";
-import { $tail_ignored } from "../symbols.ts";
 import { assert } from "../util.ts";
 import { trace, traceOut } from "../util/trace.ts";
 import type { EdtrBase, EdtrBaseCI } from "./EdtrBase.ts";
@@ -22,6 +21,7 @@ import { StnodeV } from "./StnodeV.ts";
 import { TextV } from "./TextV.ts";
 import type { BlockOf, SameRow } from "./util.ts";
 import { samerow_bot, samerow_left, samerow_rigt } from "./util.ts";
+import { Factory } from "../util/Factory.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
@@ -39,14 +39,14 @@ export class TailV extends TextV {
       color: "transparent",
     });
 
-    this.text[$tail_ignored] = true;
+    // this.text[$tail_ignored] = true;
   }
 }
 
 /**
  * A non-generic base s.t. many related uses (e.g. Caret) can be non-generic.
  */
-export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
+export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   extends HTMLVuu<EdtrBase<CI>, HTMLDivElement>
   implements Bidir {
   static #ID = 0 as Id_t;
@@ -114,6 +114,13 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   //   return this.#fsrec_a;
   // }
 
+  /** Text Node */
+  get tn(): Text | undefined {
+    return this.el$.childNodes.length === 2
+      ? this.el$.firstChild as Text
+      : undefined;
+  }
+
   /**
    * @headconst @param coo_x
    * @headconst @param bln_x
@@ -122,17 +129,27 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     super(coo_x, div());
     this.bline_$ = bln_x;
 
+    this.el$.id = this._class_id_;
     /*#static*/ if (CYPRESS || DEBUG) {
       this.el$.hint = this._class_id_;
     }
-    this.assignStylo({
-      /* It works not well for, say, 5000 individual tiny divs.
-      Ref. [Optimize `contenteditable` Performance](https://gemini.google.com/share/94ef1d448397)
-       */
-      // contentVisibility: "auto",
-      // containIntrinsicSize: "1em",
-      /* ~ */
-    });
+    // this.assignStylo({
+    //   /* It works not well for, say, 5000 individual tiny divs.
+    //   Ref. [Optimize `contenteditable` Performance](https://gemini.google.com/share/94ef1d448397)
+    //    */
+    //   // contentVisibility: "auto",
+    //   // containIntrinsicSize: "1em",
+    //   /* ~ */
+    // });
+    /* The problem of this setting (instead of uisng `TailV`) is that it would
+    be very complex to position the Caret on an empty ELineBase (of different
+    BufrDir and WritingMode). */
+    // document[$cssstylesheet].insertRule(
+    //   `#${this.el$.id}:empty::before {
+    //     display: inline-block;
+    //     content: "\\feff";
+    //   }`,
+    // );
 
     //jjjj TOCLEANUP
     // /* For testing only */
@@ -150,7 +167,6 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
-   * `in( this.el$.firstChild?.isText)`
    * @final
    * @param strt_x Same as param `start` of `Array.splice()`
    * @const @param nrmv_x Same as param `deleteCount` of `Array.splice()`
@@ -162,23 +178,29 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     nrmv_x?: uint | typeof Infinity,
     inss_x?: string,
   ): this {
-    const tnd = this.el$.firstChild as Text;
-    if (strt_x < -tnd.length) strt_x = 0;
-    else if (strt_x < 0) strt_x += tnd.length;
-    else if (strt_x > tnd.length) strt_x = tnd.length;
-
     let ldt: ldt_t = 0;
-    if (!nrmv_x) {
-      if (inss_x !== undefined) {
-        tnd.insertData(strt_x, inss_x);
-        ldt = inss_x.length;
+
+    const tn_ = this.tn;
+    if (tn_) {
+      if (strt_x < -tn_.length) strt_x = 0;
+      else if (strt_x < 0) strt_x += tn_.length;
+      else if (strt_x > tn_.length) strt_x = tn_.length;
+
+      if (!nrmv_x) {
+        if (inss_x !== undefined) {
+          tn_.insertData(strt_x, inss_x);
+          ldt = inss_x.length;
+        }
+      } else if (inss_x === undefined) {
+        tn_.deleteData(strt_x, nrmv_x);
+        ldt = -nrmv_x;
+      } else {
+        tn_.replaceData(strt_x, nrmv_x, inss_x);
+        ldt = inss_x.length - nrmv_x;
       }
-    } else if (inss_x === undefined) {
-      tnd.deleteData(strt_x, nrmv_x);
-      ldt = -nrmv_x;
-    } else {
-      tnd.replaceData(strt_x, nrmv_x, inss_x);
-      ldt = inss_x.length - nrmv_x;
+    } else if (inss_x) {
+      this.el$.insertBefore(textnode(inss_x), this.el$.lastChild);
+      ldt = inss_x.length;
     }
 
     (this.el$.lastChild!.vuu as TailV).translate_$(ldt);
@@ -262,14 +284,14 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   //   return this;
   // }
 
-  /**
-   * According to `bline_$`, which is updated in `EdtrScrolr._resetELine()`\
-   * `in( this.el$.isConnected)`
-   *
-   * @deprecated
-   * jjjj@return false if `newSn` is not used
-   */
-  abstract replace_$(...a_x: any[]): any;
+  //jjjj TOCLEANUP
+  // /**
+  //  * According to `bline_$`, which is updated in `EdtrScrolr._resetELine()`\
+  //  * `in( this.el$.isConnected)`
+  //  *
+  //  * jjjj@return false if `newSn` is not used
+  //  */
+  // abstract replace_$(...a_x: any[]): any;
 
   //jjjj TOCLEANUP
   // /** `in( this.el$.isConnected)` */
@@ -395,7 +417,7 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
-   * @deprecated just use `Node.isConnected` directly
+   * @deprecated Just use `Node.isConnected` directly
    * @final
    */
   get removed() {
@@ -403,7 +425,6 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   }
 
   /**
-   * @deprecated
    * @final
    * @const @param loff_x
    */
@@ -444,7 +465,6 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   }
   /**
    * `in( !this.empty)`
-   * @deprecated
    * @final
    */
   get frstCaretNode(): HTMLElement | Text {
@@ -452,7 +472,6 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   }
   /**
    * `in( !this.empty)`
-   * @deprecated
    * @final
    */
   get lastCaretNode(): HTMLElement | Text {
@@ -543,6 +562,57 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   }
 }
 
+/** @final */
+export class ELineBaseFac extends Factory<ELineBase> {
+  #coo!: EdtrBase;
+  /** @const @param coo_x */
+  #setCoo(coo_x: EdtrBase): this {
+    this.#coo = coo_x;
+    return this;
+  }
+
+  #bln!: Line;
+  /** @const @param bln_x  */
+  #setBln(bln_x: Line): this {
+    this.#bln = bln_x;
+    return this;
+  }
+
+  private constructor() {
+    super();
+  }
+
+  static #instance?: ELineBaseFac;
+  private static get _instance() {
+    return this.#instance ??= new ELineBaseFac();
+  }
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
+  /** @implement */
+  protected createVal$() {
+    return new ELineBase(this.#coo, this.#bln);
+  }
+
+  protected override reuseVal$(v_x: ELineBase): void {
+    v_x.setCoo_$(this.#coo);
+    v_x.bline_$ = this.#bln;
+  }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
+  /**
+   * @const @param coo_x
+   * @const @param bln_x
+   */
+  static get(coo_x: EdtrBase, bln_x: Line): ELineBase {
+    return this._instance.#setCoo(coo_x).#setBln(bln_x).oneMore();
+  }
+
+  /** @headconst @param eln_x */
+  static rev(eln_x: ELineBase): void {
+    this._instance.revoke(eln_x);
+  }
+}
+
 //jjjj TOCLEANUP
 // export type BLineInfo = {
 //   // nodeInELine: NodeInELine = NodeInELine.unknown;
@@ -552,10 +622,11 @@ export abstract class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
 //   // eline?:PlainELine;
 // };
 
-export const enum NodeInELine {
-  unknown = 1,
-  text,
-  span,
-  indent,
-}
+//jjjj TOCLEANUP
+// export const enum NodeInELine {
+//   unknown = 1,
+//   text,
+//   span,
+//   indent,
+// }
 /*80--------------------------------------------------------------------------*/

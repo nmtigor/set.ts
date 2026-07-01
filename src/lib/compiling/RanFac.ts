@@ -59,10 +59,7 @@ class RanFac_ extends Factory<Ran> {
     ret.stopLoc.become_Loc(loc_1_x ?? loc_x);
     return ret.ord();
   }
-  /**
-   * `in( ran_x.bufr)`
-   * @borrow @const @param ran_x
-   */
+  /** @borrow @const @param ran_x */
   byRan(ran_x: Ran): Ran {
     return this
       .setBufr(ran_x.bufr!)

@@ -64,3 +64,17 @@ export const genInlineMidOf = (wm_x: WritingMode) => {
 
 export const stringFrom = (_x: Keycnt) => Is.string(_x) ? _x : Key[_x];
 /*80--------------------------------------------------------------------------*/
+
+// /** @final */
+// class HighlightFac_ extends Factory<Highlight> {
+//   /** @implement */
+//   protected createVal$() {
+//     return new Highlight();
+//   }
+
+//   protected override resetVal$(v_x: Highlight): void {
+//     v_x.clear();
+//   }
+// }
+// export const g_highlight_fac = new HighlightFac_();
+/*80--------------------------------------------------------------------------*/

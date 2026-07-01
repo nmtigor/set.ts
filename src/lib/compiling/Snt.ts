@@ -8,7 +8,7 @@ import type { lnum_t, loff_t } from "../alias.ts";
 import type { Id_t } from "../alias_v.ts";
 import type { Line } from "./Line.ts";
 import type { Loc } from "./Loc.ts";
-import type { _OldInfo_, Err } from "./util.ts";
+import type { _OldInfo_, Err, ErrMsg } from "./util.ts";
 import { SortedErr } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -48,7 +48,13 @@ export abstract class Snt {
   get isErr(): boolean {
     return !!this.err_ss$?.length;
   }
+  hasErrMsg(errMsg_x: ErrMsg): boolean {
+    return !!this.err_ss$?.some((err) =>
+      errMsg_x === (Is.array(err) ? err[0] : err)
+    );
+  }
   /**
+   * @deprecated
    * @const
    * @const @param errMsg_x
    */

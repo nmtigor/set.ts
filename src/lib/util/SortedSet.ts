@@ -270,24 +270,24 @@ export class SortedSet<T> extends Array<T> {
   /**
    * `in( this.length )`\
    * `in( 0 <= _x && _x < this.length )`
-   * @const @param _x
+   * @const @param i_x
    */
-  #rmvByIndex_impl(_x: uint) {
-    for (let i = _x + 1; i < this.length; ++i) {
+  #rmvByIndex_impl(i_x: uint) {
+    for (let i = i_x + 1; i < this.length; ++i) {
       this[i - 1] = this[i];
     }
     this.length -= 1;
   }
   /**
-   * @param _x Could be any `int`, e.g. `-1` is the last
+   * @param i_x Could be any `int`, e.g. `-1` is the last
    * @return Return the normalized index of the removed
    */
-  rmvByIndex(_x: int): uint | -1 {
+  rmvByIndex(i_x: int): uint | -1 {
     if (!this.length) return -1;
 
-    _x = Number.normalize(_x, this.length);
-    this.#rmvByIndex_impl(_x);
-    return _x;
+    i_x = Number.normalize(i_x, this.length);
+    this.#rmvByIndex_impl(i_x);
+    return i_x;
   }
   /**
    * @headconst @param val_x

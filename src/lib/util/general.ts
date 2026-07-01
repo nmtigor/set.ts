@@ -8,8 +8,6 @@
 export {};
 /*80--------------------------------------------------------------------------*/
 
-export const rmvRange = new Range();
-
 /**
  * Ref. [Get Byte size of the string in Javascript](https://dev.to/rajnishkatharotiya/get-byte-size-of-the-string-in-javascript-20jm)
  */

@@ -321,6 +321,21 @@ describe("SetLexr.lex()", () => {
       [],
     ]);
     assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
+    repl(ran(0).rv, "*");
+    assertEquals(lexr.strtLexTk_$._Repr_(), [
+      [
+        "strtBdry[0-0)",
+        "question[0-0,0-1)",
+        "joiner[0-1,0-2)",
+        "intersect[0-2,0-3)",
+        "union[0-3,0-4)",
+        "paren_open[0-4,0-5)",
+        "asterisk[0-5,0-6)",
+      ],
+      "stopBdry[0-6)",
+      [],
+    ]);
+    assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);
     repl(ran(0).rv, ")");
     assertEquals(lexr.strtLexTk_$._Repr_(), [
       [
@@ -330,9 +345,10 @@ describe("SetLexr.lex()", () => {
         "intersect[0-2,0-3)",
         "union[0-3,0-4)",
         "paren_open[0-4,0-5)",
-        "paren_cloz[0-5,0-6)",
+        "asterisk[0-5,0-6)",
+        "paren_cloz[0-6,0-7)",
       ],
-      "stopBdry[0-6)",
+      "stopBdry[0-7)",
       [],
     ]);
     assertStrictEquals(lexr.stopLexTk_$, lexr.strtLexTk_$);

@@ -3,31 +3,32 @@
  * @license MIT
  ******************************************************************************/
 
-import { DEBUG, INOUT } from "../../preNs.ts";
-import type { lnum_t, loff_t, uint } from "../alias.ts";
-import { LnumMAX } from "../alias.ts";
+import type { Ranval } from "@fe-cpl/Ranval.ts";
+import { INOUT } from "../../preNs.ts";
+import type { loff_t, uint } from "../alias.ts";
 import type { Id_t } from "../alias_v.ts";
-import { $facil_node, $loff_0, $ovlap, $tail_ignored } from "../symbols.ts";
-import { assert, fail } from "../util.ts";
+import { $ovlap } from "../symbols.ts";
+import { assert } from "../util.ts";
 import { Factory } from "../util/Factory.ts";
-import { ELineBase } from "./ELineBase.ts";
 import { ELoc } from "./ELoc.ts";
 import type { Pos } from "./alias.ts";
 /*80--------------------------------------------------------------------------*/
 
 declare global {
   interface Node {
-    [$facil_node]: boolean;
+    //jjjj TOCLEANUP
+    // [$facil_node]: boolean;
     [$ovlap]: boolean;
   }
 }
 
-type ElnO_ = {
-  eline(_: lnum_t): ELineBase;
-};
+//jjjj TOCLEANUP
+// type ElnO_ = {
+//   eline(_: lnum_t): ELineBase;
+// };
 
 /**
- * Wrapper of one `Range`: `#range`
+ * Wrapper of one `Range`: `range`
  *
  * Like `Range`, `ERan` has no visual effects. `Caret` has visual effects.\
  * Should sync with `EdtrScrolr`s modification as soon as possible.
@@ -91,11 +92,20 @@ export class ERan {
    * @headmove @const @param anchrELoc_x
    */
   constructor(focusELoc_x: ELoc, anchrELoc_x?: ELoc) {
+    //jjjj TOCLEANUP
+    // this.#range[$eran] = this;
     this.#focusEloc = focusELoc_x;
     this.#anchrEloc = anchrELoc_x ?? focusELoc_x.dup_ELoc();
     /*#static*/ if (INOUT) {
       assert(this.#focusEloc !== this.#anchrEloc);
     }
+  }
+
+  reset_ERan(): this {
+    this.#range.reset();
+    this.#focusEloc.reset_ELoc();
+    this.#anchrEloc.reset_ELoc();
+    return this;
   }
 
   /** @const */
@@ -107,8 +117,11 @@ export class ERan {
     return this;
   }
 
-  [Symbol.dispose]() {
+  rev(): void {
     g_eran_fac.revoke(this);
+  }
+  [Symbol.dispose]() {
+    this.rev();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -155,41 +168,30 @@ export class ERan {
 
   /**
    **! Range's start is always ahead of end, otherwise `collapsed`.
-   * @borrow @return synchronized `#range`
+   * @borrow @return Synchronized `range`
    */
-  syncRange_$(): Range {
-    const ctnr = this.anchrCtnr;
-    const offs = this.anchrOffs;
+  syncRange(): Range {
     if (this.collapsed) {
-      // assert( this.focusCtnr );
-      // this.#range.collapse();
-
-      if (ctnr.isText) {
-        this.#range.setEnd(ctnr, offs);
-        this.#range.collapse();
-      } else {
-        this.#range.selectNode(
-          ctnr.childNodes[offs],
-        );
-      }
+      this.#range
+        .setStop(this.focusCtnr, this.focusOffs)
+        .collapse();
     } else {
-      // assert( this.anchrCtnr );
-      // assert( this.focusCtnr );
-      this.#range.setStart(ctnr, offs);
-      this.#range.setEnd(this.focusCtnr, this.focusOffs);
+      this.#range
+        .setStrt(this.anchrCtnr, this.anchrOffs)
+        .setStop(this.focusCtnr, this.focusOffs);
       if (this.#range.collapsed) {
-        this.#range.setEnd(this.anchrCtnr, this.anchrOffs);
+        this.#range.setStop(this.anchrCtnr, this.anchrOffs);
       }
     }
     return this.#range;
   }
 
   /**
-   * Assign `#range`, and return its synchronized `DOMRect`.
+   * Assign `range`, and return its synchronized `DOMRect`.
    * @const @param relPos_x
    */
   getBcr_$(relPos_x?: Pos): DOMRect {
-    const retRec = this.syncRange_$().getBoundingClientRect();
+    const retRec = this.syncRange().getBoundingClientRect();
     if (relPos_x) {
       retRec.x -= relPos_x.left;
       retRec.y -= relPos_x.top;
@@ -203,7 +205,7 @@ export class ERan {
   //  * @const @param relPos_x
   //  */
   // getRecA_$(elnO_x: ElnO_, relPos_x?: Pos): DOMRect[] {
-  //   this.syncRange_$();
+  //   this.syncRange();
   //   if (this.#range.collapsed) return [];
   //   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -337,7 +339,7 @@ export class ERan {
       this.#focusEloc.ctnr_$ = this.anchrCtnr;
       this.#focusEloc.offs_$ = this.anchrOffs;
     } else {
-      const range = this.syncRange_$();
+      const range = this.syncRange();
       if (ct_x === EdranCollapseTo.rangeStrt) {
         this.#focusEloc.ctnr_$ = range.startContainer;
         this.#focusEloc.offs_$ = range.startOffset;
@@ -389,23 +391,27 @@ class ERanFac_ extends Factory<ERan> {
   }
 
   protected override resetVal$(v_x: ERan): void {
-    v_x.focusEloc.ctnr_$ = document;
-    v_x.focusEloc.offs_$ = 0;
-    v_x.collapse_$();
+    v_x.reset_ERan();
   }
 }
 export const g_eran_fac = new ERanFac_();
 
-/** @final */
-class RangeFac_ extends Factory<Range> {
-  /** @implement */
-  protected createVal$() {
-    return new Range();
-  }
+// /** @final */
+// class RangeFac_ extends Factory<Range> {
+//   /** @implement */
+//   protected createVal$() {
+//     return new Range();
+//   }
 
-  protected override resetVal$(v_x: Range): void {
-    v_x.reset();
-  }
-}
-const range_fac_ = new RangeFac_();
+//   protected override resetVal$(v_x: Range): void {
+//     v_x.reset();
+//   }
+// }
+// const range_fac_ = new RangeFac_();
+/*80--------------------------------------------------------------------------*/
+
+/** ERan getter */
+export type ERanr = {
+  getERanOf(rv_x: Ranval, retEran_x?: ERan): ERan;
+};
 /*80--------------------------------------------------------------------------*/

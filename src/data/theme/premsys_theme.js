@@ -724,6 +724,7 @@ export default [
     }],
     "cidx": 0,
   }],
+
   ["premsys.MainToolbar.bg", {
     "coors": [{
       "axes": ["Surface Container"],
@@ -1188,51 +1189,51 @@ export default [
     }],
     "cidx": 0,
   }],
-  ["lib.editor.Edtr.fg", {
+  ["edt.Edtr.fg", {
     "coors": [{
       "axes": ["On Surface"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
     }],
     "cidx": 0,
   }],
-  ["lib.editor.Edtr.bg", {
+  ["edt.Edtr.bg", {
     "coors": [{
       "axes": ["Surface"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
     }],
     "cidx": 0,
   }],
-  ["lib.editor.Caret.proactiveBg", {
+  ["edt.Caret.proactiveBg", {
     "coors": [{
       "axes": ["Primary"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
     }],
     "cidx": 0,
   }],
-  ["lib.editor.Caret.passiveBg", {
+  ["edt.Caret.passiveBg", {
     "coors": [{
       "axes": ["On Surface Variant"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
     }],
     "cidx": 0,
   }],
-  ["lib.editor.Caret.proactiveFatOl", {
+  ["edt.Caret.proactiveFatOl", {
     "coors": [{
-      "axes": ["lib.editor.Caret.proactiveBg"],
+      "axes": ["edt.Caret.proactiveBg"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
     }],
     "cidx": 0,
   }],
-  ["lib.editor.Caret.passiveFatOl", {
+  ["edt.Caret.passiveFatOl", {
     "coors": [{
-      "axes": ["lib.editor.Caret.passiveBg"],
+      "axes": ["edt.Caret.passiveBg"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
     }],
     "cidx": 0,
   }],
-  ["lib.editor.Selec.proactiveBgSelec", {
+  ["edt.Selec.proactiveBgSelec", {
     "coors": [{
-      "axes": ["lib.editor.Caret.proactiveBg"],
+      "axes": ["edt.Caret.proactiveBg"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], [{
         "channel": "a",
         "value": 0.503333740234375,
@@ -1240,13 +1241,13 @@ export default [
     }],
     "cidx": 0,
   }],
-  ["lib.editor.Selec.proactiveBgOvlap", {
+  ["edt.Selec.proactiveBgOvlap", {
     "coors": [{ "qm_a": [[null, "rgb(108,24,115,1)"]] }],
     "cidx": 0,
   }],
-  ["lib.editor.Selec.passiveBgSelec", {
+  ["edt.Selec.passiveBgSelec", {
     "coors": [{
-      "axes": ["lib.editor.Caret.passiveBg"],
+      "axes": ["edt.Caret.passiveBg"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], [{
         "channel": "a",
         "value": 0.4966668701171875,
@@ -1254,13 +1255,20 @@ export default [
     }],
     "cidx": 0,
   }],
-  ["lib.editor.Selec.passiveBgOvlap", {
+  ["edt.Selec.passiveBgOvlap", {
     "coors": [{ "qm_a": [[null, "rgb(108,24,115,1)"]] }],
     "cidx": 0,
   }],
-  ["lib.editor.set.SetEdtr.err", {
+  ["cpl.set.errTs", {
     "coors": [{
       "axes": ["Error"],
+      "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
+    }],
+    "cidx": 0,
+  }],
+  ["cpl.set.Set.mainFg", {
+    "coors": [{
+      "axes": ["Tertiary"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
     }],
     "cidx": 0,

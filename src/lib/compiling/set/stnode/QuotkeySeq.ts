@@ -4,13 +4,18 @@
  ******************************************************************************/
 
 import type { SetTk } from "../../Token.ts";
+import type { SetPazr } from "../SetPazr.ts";
 import { SubkeySeq } from "./SubkeySeq.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
 export class QuotkeySeq extends SubkeySeq {
-  constructor(tk_a: SetTk[]) {
-    super(tk_a);
+  /**
+   * @headconst @param pazr_x
+   * @const @param tks_x
+   */
+  constructor(pazr_x: SetPazr, tks_x: SetTk[]) {
+    super(pazr_x, tks_x);
   }
 }
 /*80--------------------------------------------------------------------------*/

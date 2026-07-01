@@ -3,6 +3,8 @@
  * @license MIT
  ******************************************************************************/
 
+import { g_eran_fac } from "@fe-edt/ERan.ts";
+import type { ERan, ERanr } from "@fe-edt/ERan.ts";
 import * as v from "@valibot/valibot";
 import { DEBUG, INOUT, PRF } from "../../preNs.ts";
 import type { lnum_t, loff_t, uint } from "../alias.ts";
@@ -31,9 +33,10 @@ import { URITok } from "./uri/URITok.ts";
 import type { _OldInfo_, LexdInfo } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
-type NErr_ = 2;
-const NErr_ = 2;
-console.assert(NErr_ >= 1);
+//jjjj TOCLEANUP
+// type NErr_ = 2;
+// const NErr_ = 2;
+// console.assert(NErr_ >= 1);
 
 //jjjj TOCLEANUP
 // type ResetTokenP_<T extends Tok> = {
@@ -241,8 +244,8 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  /** `this` is a DIRECT boundary token of `stnod_$`. */
-  stnod_$: Stnode<T> | undefined;
+  /** `this` is a DIRECT boundary token of `sn_$`. */
+  sn_$: Stnode<T> | undefined;
 
   //jjjj TOCLEANUP use LexdInfo
   // /**
@@ -255,6 +258,34 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //  * `stopBdry` aligns with the stop of last such token.
   //  */
   // stopBdry: Token<BaseTok.stopBdry> | undefined;
+
+  /* #eran */
+  /** @using */
+  #eran?: ERan | undefined;
+  //jjjj TOCLEANUP
+  // get range(): Range | undefined {
+  //   return this.#eran?.range;
+  // }
+
+  /** @final */
+  protected get eran$(): ERan {
+    return this.#eran ??= g_eran_fac.oneMore();
+  }
+
+  /**
+   * @final
+   * @headconst @param eranr_x
+   */
+  syncERan(eranr_x: ERanr): ERan {
+    return eranr_x.getERanOf(Ranval.fromRan(this.ran_$), this.eran$);
+  }
+
+  /** @final */
+  revERan(): void {
+    this.#eran?.rev();
+    this.#eran = undefined;
+  }
+  /* ~ */
 
   /**
    * `in( lexr_x.bufr === ran_x.bufr)`
@@ -275,28 +306,34 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     }
   }
 
-  #destroyed = false;
-  // get destroyed() {
-  //   return this.#destroyed;
-  // }
+  //jjjj TOCLEANUP
+  // #destroyed = false;
+  // // get destroyed() {
+  // //   return this.#destroyed;
+  // // }
   /**
    * It does not really destroy `this`, but only invokes `destructor()` or
    * `revoke()` of `ran_$` and `lexdInfo`, because `this` could still be used
    * later through e.g. `_oldInfo_`.
+   * @final
    */
   destructor(): void {
-    if (this.#destroyed) return;
+    //jjjj TOCLEANUP
+    // if (this.#destroyed) return;
 
-    this.ran_$[Symbol.dispose]();
+    this.ran_$.rev();
     this.clrErr(); //! called before `lexdInfo = null`
     this.lexdInfo = null;
-    this.stnod_$ = undefined;
+
+    this.sn_$ = undefined;
+    this.revERan();
 
     /*#static*/ if (PRF) {
       g_count.oldToken += 1;
     }
 
-    this.#destroyed = true;
+    //jjjj TOCLEANUP
+    // this.#destroyed = true;
   }
 
   /** @const */
@@ -319,7 +356,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
 
   //   this.#oldRanval = tk_x.#oldRanval;
   //   this.err_ss$.become(tk_x.err_ss$);
-  //   this.stnod_$ = tk_x.stnod_$;
+  //   this.sn_$ = tk_x.sn_$;
   //   return this;
   // }
 
@@ -341,8 +378,8 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     if (stopLoc_x) this.setStop(stopLoc_x);
     this.setValue(value_x);
     if (this.isErr) this.clrErr();
-    /* `pazmrk_$()` needs `stnod_$` of Token in dirty region. */
-    // this.stnod_$ = undefined;
+    /* `pazmrk_$()` needs `sn_$` of Token in dirty region. */
+    // this.sn_$ = undefined;
     return this;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -615,7 +652,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
       // prevTk.notAsLinebdry_();
       // prevTk.linked_ = false;
       //jjjj TOCLEANUP
-      // if (prevTk !== stndKept_tk_x) prevTk.stnod_$ = undefined;
+      // if (prevTk !== stndKept_tk_x) prevTk.sn_$ = undefined;
     }
     return prevTk;
   }
@@ -628,14 +665,14 @@ export class Token<T extends Tok = BaseTok> extends Snt {
       // nextTk.notAsLinebdry_();
       // nextTk.linked_ = false;
       //jjjj TOCLEANUP
-      // if (nextTk !== stndKept_tk_x) nextTk.stnod_$ = undefined;
+      // if (nextTk !== stndKept_tk_x) nextTk.sn_$ = undefined;
     }
     return nextTk;
   }
 
   /**
    **! `retTk_x.prevToken_$` will be untouched. (cf. {@linkcode insPrev()})\
-   * `stnod_$`s do not change.
+   * `sn_$`s do not change.
    * @headconst @param retTk_x
    */
   @out((self: Token<T>, _, args) => {
@@ -660,7 +697,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     }
 
     //jjjj TOCLEANUP
-    // if (retTk_x !== stndKept_tk_x) retTk_x.stnod_$ = undefined;
+    // if (retTk_x !== stndKept_tk_x) retTk_x.sn_$ = undefined;
 
     const frstLn = retTk_x.#correct_line_frstToken();
     const lastLn = retTk_x.#correct_line_lastToken();
@@ -671,7 +708,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   }
   /**
    **! `retTk_x.nextToken_$` will be untouched. (cf. {@linkcode insNext()})\
-   * `stnod_$`s do not change.
+   * `sn_$`s do not change.
    * @headconst @param retTk_x
    */
   @out((self: Token<T>, _, args) => {
@@ -696,7 +733,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     }
 
     //jjjj TOCLEANUP
-    // if (retTk_x !== stndKept_tk_x) retTk_x.stnod_$ = undefined;
+    // if (retTk_x !== stndKept_tk_x) retTk_x.sn_$ = undefined;
 
     const frstLn = retTk_x.#correct_line_frstToken();
     const lastLn = retTk_x.#correct_line_lastToken();
@@ -734,7 +771,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   }
 
   /**
-   * `stnod_$`s do not change.
+   * `sn_$`s do not change.
    * @headconst @param retTk_x
    */
   insPrev<K extends Token<T>>(retTk_x: K): K {
@@ -790,7 +827,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //   return tk;
   // }
   // get nextToken_paz() {
-  //   this.stnod_$ = undefined;
+  //   this.sn_$ = undefined;
   //   return this.nextToken_$;
   // }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/

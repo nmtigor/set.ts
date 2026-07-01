@@ -191,8 +191,11 @@ export class Loc {
     return this;
   }
 
-  [Symbol.dispose]() {
+  rev(): void {
     g_loc_fac.revoke(this);
+  }
+  [Symbol.dispose]() {
+    this.rev();
   }
 
   /** @const */

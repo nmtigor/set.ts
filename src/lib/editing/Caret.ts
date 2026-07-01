@@ -31,7 +31,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   override readonly id = ++Caret.#ID as Id_t;
 
   /* Pale */
-  #proactiveBg_p = Pale.get("lib.editor.Caret.proactiveBg");
+  #proactiveBg_p = Pale.get("edt.Caret.proactiveBg");
   #onProactiveBgCssc = (_x: Cssc) => {
     if (this.isMain$) {
       this.el$.style.backgroundColor = _x;
@@ -39,7 +39,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     }
   };
 
-  #passiveBg_p = Pale.get("lib.editor.Caret.passiveBg");
+  #passiveBg_p = Pale.get("edt.Caret.passiveBg");
   #onPassiveBgCssc = (_x: Cssc) => {
     if (!this.isMain$) {
       this.el$.style.backgroundColor = _x;
@@ -47,33 +47,33 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     }
   };
 
-  #proactiveFatOl_p = Pale.get("lib.editor.Caret.proactiveFatOl");
+  #proactiveFatOl_p = Pale.get("edt.Caret.proactiveFatOl");
   #onProactiveFatOlCssc = (_x: Cssc) => {
     if (this.isMain$) this.#fat_el.style.outlineColor = _x;
   };
 
-  #passiveFatOl_p = Pale.get("lib.editor.Caret.passiveFatOl");
+  #passiveFatOl_p = Pale.get("edt.Caret.passiveFatOl");
   #onPassiveFatOlCssc = (_x: Cssc) => {
     if (!this.isMain$) this.#fat_el.style.outlineColor = _x;
   };
 
-  #proactiveBgSelec_p = Pale.get("lib.editor.Selec.proactiveBgSelec");
+  #proactiveBgSelec_p = Pale.get("edt.Selec.proactiveBgSelec");
   #onProactiveBgSelecCssc = (_x: Cssc) => {
     if (this.isMain$) {
-      document.body.style.setProperty(`--${this._class_id_}_selecBg`, _x);
+      document.body.style.setProperty(this.#selecBg_pn, _x);
     }
   };
 
-  // #proactiveBgOvlap_p = Pale.get("lib.editor.Selec.proactiveBgOvlap");
+  // #proactiveBgOvlap_p = Pale.get("edt.Selec.proactiveBgOvlap");
 
-  #passiveBgSelec_p = Pale.get("lib.editor.Selec.passiveBgSelec");
+  #passiveBgSelec_p = Pale.get("edt.Selec.passiveBgSelec");
   #onPassiveBgSelecCssc = (_x: Cssc) => {
     if (!this.isMain$) {
-      document.body.style.setProperty(`--${this._class_id_}_selecBg`, _x);
+      document.body.style.setProperty(this.#selecBg_pn, _x);
     }
   };
 
-  // #passiveBgOvlap_p = Pale.get("lib.editor.Selec.passiveBgOvlap");
+  // #passiveBgOvlap_p = Pale.get("edt.Selec.passiveBgOvlap");
 
   override observeTheme() {
     this.#proactiveBg_p.registCsscHandler(this.#onProactiveBgCssc);
@@ -224,6 +224,8 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   }
   /* ~ */
 
+  readonly #selecBg_pn = `--${this._class_id_}-selecBg`;
+
   /* #selec_hl */
   //jjjj TOCLEANUP
   // readonly #selec_fac: SelecFac;
@@ -338,13 +340,10 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     CSS.highlights.set(this.#selec_hl_name, this.#selec_hl);
     document[$cssstylesheet].insertRule(
       `::highlight(${this.#selec_hl_name}) {
-        background-color: var(--${this._class_id_}_selecBg);
+        background-color: var(${this.#selecBg_pn});
       }`,
     );
-    document.body.style.setProperty(
-      `--${this._class_id_}_selecBg`,
-      this.#bgSelecCssc,
-    );
+    document.body.style.setProperty(this.#selecBg_pn, this.#bgSelecCssc);
 
     //jjjj TOCLEANUP "Avoid calling virtual (overridden) methods inside a constructor."
     // this.resetCaretRvM_$(crm_x);
@@ -466,13 +465,13 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
       this.el$["cy.any"] = `${rv_x}`;
     }
     //jjjj TOCLEANUP
-    // this.#eran = this.edtr.getERanOf_$(rv_x, this.#eran);
+    // this.#eran = this.edtr.getERanOf(rv_x, this.#eran);
     // // if( !this.#eran.focusCtnr.isText ) { this.hide(); return; }
     // // console.log(this.#eran);
     // using fat_rv = g_ranval_fac.oneMore()
     //   .set_Ranval(rv_x.focusLidx, rv_x.focusLoff);
     // fat_rv.focusLoff += 1;
-    // this.#fat_eran = this.edtr.getERanOf_$(fat_rv, this.#fat_eran);
+    // this.#fat_eran = this.edtr.getERanOf(fat_rv, this.#fat_eran);
 
     this.draw_$();
     this.sufDraw$();
@@ -503,11 +502,11 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   //   }
   //   const rv_0 = this.ranval;
   //   using rv_u = rv_0.usingDup();
-  //   this.#eran = this.edtr.getERanOf_$(rv_u, this.#eran);
+  //   this.#eran = this.edtr.getERanOf(rv_u, this.#eran);
   //   using fat_rv = g_ranval_fac.oneMore()
   //     .set_Ranval(rv_0.focusLidx, rv_0.focusLoff);
   //   fat_rv.focusLoff += 1;
-  //   this.#fat_eran = this.edtr.getERanOf_$(fat_rv, this.#fat_eran);
+  //   this.#fat_eran = this.edtr.getERanOf(fat_rv, this.#fat_eran);
 
   //   this.draw_$();
   //   this.sufDraw$();
@@ -667,7 +666,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
       //   .set_Ranval(rv_.focusLidx, rv_.focusLoff);
       const fat_rv = new Ranval(rv_.focusLidx, rv_.focusLoff);
       fat_rv.focusLoff += 1;
-      this.#fat_eran = eslr.getERanOf_$(fat_rv, this.#fat_eran);
+      this.#fat_eran = eslr.getERanOf(fat_rv, this.#fat_eran);
 
       const sin = this.lastSin$ = this.#focusEloc.getBcr_$(eslr.pbPos);
       this.#setPosSiz(
@@ -773,8 +772,8 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     if (eslr.stopLidx <= rv_1.focusLidx) {
       rv_1.setFocus(eslr.stopLidx - 1, Number.MAX_SAFE_INTEGER);
     }
-    this.#selec_eran = eslr.getERanOf_$(rv_1, this.#selec_eran);
-    this.#selec_hl.add(this.#selec_eran.syncRange_$());
+    this.#selec_eran = eslr.getERanOf(rv_1, this.#selec_eran);
+    this.#selec_hl.add(this.#selec_eran.syncRange());
 
     //jjjj TOCLEANUP
     // const rec_a = this.#selec_eran.getRecA_$(eslr, eslr.pbPos);

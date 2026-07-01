@@ -472,8 +472,8 @@ export class Bufr {
     this.modified_br_Bufr.reset_Boor();
     this.#lastRepl = this.#repl_saved = undefined;
 
-    for (const ran of this.oldRan_a_$) ran[Symbol.dispose]();
-    for (const ran of this.newRan_a_$) ran[Symbol.dispose]();
+    for (const ran of this.oldRan_a_$) ran.rev();
+    for (const ran of this.newRan_a_$) ran.rev();
 
     this.#doState = BufrDoState.idle;
     this.#doq.reset_Unre();

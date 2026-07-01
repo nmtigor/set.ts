@@ -233,8 +233,11 @@ export class Ran {
     return this;
   }
 
-  [Symbol.dispose]() {
+  rev(): void {
     g_ran_fac.revoke(this);
+  }
+  [Symbol.dispose]() {
+    this.rev;
   }
 
   /**

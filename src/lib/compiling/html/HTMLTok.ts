@@ -19,7 +19,7 @@ enum HTMLTok_ {
    */
   bogusTag,
 
-  /** For auto-generated Elment */
+  /** Used as the only Token in auto-generated Elment's */
   placeholder,
 
   _max,

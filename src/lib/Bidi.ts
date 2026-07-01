@@ -1532,7 +1532,7 @@ export class Bidi {
    */
   visulLeften(l_x: loff_t): boolean {
     //jjjj TOCLEANUP
-    // assert(valve_x--, "Cycle call!");
+    // assert(--valve_x, "Cycle call!");
     this.#calcVisul(l_x);
     const row = this.rowOf();
     if (
@@ -1589,7 +1589,7 @@ export class Bidi {
   /** @see {@linkcode visulLeften()} */
   visulRigten(l_x: loff_t): boolean {
     //jjjj TOCLEANUP
-    // assert(valve_x--, "Cycle call!");
+    // assert(--valve_x, "Cycle call!");
     this.#calcVisul(l_x);
     const row = this.rowOf();
     if (

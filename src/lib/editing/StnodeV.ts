@@ -1,26 +1,22 @@
 /** 80**************************************************************************
+ * jjjj TOCLEANUP?
  * @module lib/editing/StnodeV
  * @license MIT
  ******************************************************************************/
 
-import type { Line } from "@fe-cpl/Line.ts";
-import { CYPRESS, INOUT } from "../../preNs.ts";
-import type { ldt_t, loff_t, uint } from "../alias.ts";
-import type { Id_t } from "../alias_v.ts";
-import type { BaseTok } from "@fe-cpl/BaseTok.ts";
-import type { Stnode } from "@fe-cpl/Stnode.ts";
-import type { Token } from "@fe-cpl/Token.ts";
 import type { Tok } from "@fe-cpl/alias.ts";
+import type { BaseTok } from "@fe-cpl/BaseTok.ts";
+import type { Line } from "@fe-cpl/Line.ts";
+import { INOUT } from "../../preNs.ts";
+import type { ldt_t, loff_t } from "../alias.ts";
+import type { Id_t } from "../alias_v.ts";
 import { HTMLVuu } from "../cv.ts";
 import { $loff_0 } from "../symbols.ts";
 import { assert } from "../util.ts";
-import * as Is from "../util/is.ts";
-import { CtorRest, type ReplRest } from "./CtorRest.ts";
-import type { ELineBase } from "./ELineBase.ts";
 import type { EdtrBase, EdtrBaseCI } from "./EdtrBase.ts";
+import type { ELineBase } from "./ELineBase.ts";
 /*80--------------------------------------------------------------------------*/
 
-/** "Code" mode */
 export abstract class StnodeV<
   T extends Tok = BaseTok,
   CI extends EdtrBaseCI = EdtrBaseCI,
@@ -31,7 +27,8 @@ export abstract class StnodeV<
   override readonly id = ++StnodeV.#ID as Id_t;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  static readonly ctorRest = new CtorRest();
+  //jjjj TOCLEANUP
+  // static readonly ctorRest = new CtorRest();
 
   abstract get eline_$(): ELineBase<CI>;
   /** @final */
@@ -74,66 +71,71 @@ export abstract class StnodeV<
   //   );
   // }
 
-  //llll review: should be frstToken?
-  /**
-   * kkkk (really? example?)
-   * Notice, `strtToken$.sntFrstLine` could be after `bline_$`, in which case
-   * there is no token on `bline_$`. //jjjj and `this.strtToken$ === this.stopToken$`.
-   */
-  protected strtToken$!: Token<T>;
-  /** @final */
-  get strtToken_$(): Token<T> {
-    return this.strtToken$;
-  }
-  //llll review: should be lastToken?
-  protected stopToken$!: Token<T>;
-  /** @final */
-  get stopToken_$(): Token<T> {
-    return this.stopToken$;
-  }
+  //jjjj TOCLEANUP
+  // //llll review: should be frstToken?
+  // /**
+  //  * kkkk (really? example?)
+  //  * Notice, `strtToken$.sntFrstLine` could be after `bline_$`, in which case
+  //  * there is no token on `bline_$`. //jjjj and `this.strtToken$ === this.stopToken$`.
+  //  */
+  // protected strtToken$!: Token<T>;
+  // /** @final */
+  // get strtToken_$(): Token<T> {
+  //   return this.strtToken$;
+  // }
+  // //llll review: should be lastToken?
+  // protected stopToken$!: Token<T>;
+  // /** @final */
+  // get stopToken_$(): Token<T> {
+  //   return this.stopToken$;
+  // }
 
-  protected abstract snt$: Stnode<T> | Token<T>;
+  //jjjj TOCLEANUP
+  // protected abstract snt$: Stnode<T> | Token<T>;
 
-  /* broken$ */
-  protected broken$ = false;
-  /** @final */
-  get broken_$() {
-    return this.broken$;
-  }
+  //jjjj TOCLEANUP
+  // /* broken$ */
+  // protected broken$ = false;
+  // /** @final */
+  // get broken_$() {
+  //   return this.broken$;
+  // }
 
-  /**
-   * Set `broken$`.
-   * @final
-   * @headconst @param subV_x
-   * @return `subV_x.stopToken$`
-   */
-  brokenBy_$(subV_x: StnodeV<T, CI, E>): Token<T> {
-    const ret = subV_x.stopToken$;
-    if (this.snt$.sntStopLoc.posSE(ret.sntStrtLoc)) {
-      /* `ret` is after `snt$`, so `subV_x` corresponds to the last sub-Stnode
-      of `snt$`. */
-      this.broken$ ||= subV_x.broken$;
-    } else {
-      /*
-      `ret` is in `snt$`, so `subV_x` corresponds to a non-last sub-Stnode of
-      `snt$`.
-      For the case `!subV_x.broken$`, consider the second line of
-      [
-        '   a "b',
-        '"  ',
-      ]
-      '"b\n"' is not broken at second line, but it's `frstLine` is before
-      `bline_$, so `this` is also broken.
-      */
-      this.broken$ ||= subV_x.broken$ ||
-        !subV_x.broken$ && ret.sntFrstLine !== this.bline_$;
-    }
-    return ret;
-  }
-  /* ~ */
+  //jjjj TOCLEANUP
+  // /**
+  //  * Set `broken$`.
+  //  * @final
+  //  * @headconst @param subV_x
+  //  * @return `subV_x.stopToken$`
+  //  */
+  // brokenBy_$(subV_x: StnodeV<T, CI, E>): Token<T> {
+  //   const ret = subV_x.stopToken$;
+  //   if (this.snt$.sntStopLoc.posSE(ret.sntStrtLoc)) {
+  //     /* `ret` is after `snt$`, so `subV_x` corresponds to the last sub-Stnode
+  //     of `snt$`. */
+  //     this.broken$ ||= subV_x.broken$;
+  //   } else {
+  //     /*
+  //     `ret` is in `snt$`, so `subV_x` corresponds to a non-last sub-Stnode of
+  //     `snt$`.
+  //     For the case `!subV_x.broken$`, consider the second line of
+  //     [
+  //       '   a "b',
+  //       '"  ',
+  //     ]
+  //     '"b\n"' is not broken at second line, but it's `frstLine` is before
+  //     `bline_$, so `this` is also broken.
+  //     */
+  //     this.broken$ ||= subV_x.broken$ ||
+  //       !subV_x.broken$ && ret.sntFrstLine !== this.bline_$;
+  //   }
+  //   return ret;
+  // }
+  // /* ~ */
 
-  //kkkk
-  protected rich$?: unknown;
+  //jjjj TOCLEANUP
+  // //kkkk
+  // protected rich$?: unknown;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
@@ -166,118 +168,121 @@ export abstract class StnodeV<
     return ret!;
   }
 
-  /** Helper */
-  protected readonly replRest$: ReplRest = [undefined];
-  /**
-   * @final
-   * @const @param i_x exclusive
-   * @const @param ldt_x
-   */
-  protected setReplRest$(i_x: uint, ldt_x: ldt_t) {
-    const subV = this.el$.childNodes[i_x].vuu as StnodeV<T, CI, E>;
-    /*#static*/ if (INOUT) {
-      assert(subV instanceof StnodeV);
-    }
-    if (StnodeV.ctorRest.inuse) {
-      /*#static*/ if (INOUT) {
-        assert(i_x === this.el$.childNodes.length - 1);
-        assert(ldt_x === 0);
-      }
-      const rest = StnodeV.ctorRest.replRest_$!;
-      let nd_i: Node | undefined;
-      for (let i = 0, iI = rest.length - 1; i < iI; ++i) {
-        nd_i = rest[i] as Node;
-        this.el$.append(nd_i);
-        /*#static*/ if (CYPRESS) {
-          nd_i["cy.use"] += 1;
-        }
-      }
-      /*#static*/ if (INOUT) {
-        assert(!nd_i || nd_i.vuu instanceof StnodeV);
-      }
+  //jjjj TOCLEANUP
+  // /** Helper */
+  // protected readonly replRest$: ReplRest = [undefined];
+  // /**
+  //  * @final
+  //  * @const @param i_x exclusive
+  //  * @const @param ldt_x
+  //  */
+  // protected setReplRest$(i_x: uint, ldt_x: ldt_t) {
+  //   const subV = this.el$.childNodes[i_x].vuu as StnodeV<T, CI, E>;
+  //   /*#static*/ if (INOUT) {
+  //     assert(subV instanceof StnodeV);
+  //   }
+  //   if (StnodeV.ctorRest.inuse) {
+  //     /*#static*/ if (INOUT) {
+  //       assert(i_x === this.el$.childNodes.length - 1);
+  //       assert(ldt_x === 0);
+  //     }
+  //     const rest = StnodeV.ctorRest.replRest_$!;
+  //     let nd_i: Node | undefined;
+  //     for (let i = 0, iI = rest.length - 1; i < iI; ++i) {
+  //       nd_i = rest[i] as Node;
+  //       this.el$.append(nd_i);
+  //       /*#static*/ if (CYPRESS) {
+  //         nd_i["cy.use"] += 1;
+  //       }
+  //     }
+  //     /*#static*/ if (INOUT) {
+  //       assert(!nd_i || nd_i.vuu instanceof StnodeV);
+  //     }
 
-      const v_ = nd_i ? (nd_i.vuu as StnodeV<T, CI, E>) : subV;
-      this.stopLoff$ = v_.stopLoff_$;
-      this.broken$ = false;
-      this.stopToken$ = v_.stopToken$;
-    } else {
-      this.replRest$.length = 1;
-      this.replRest$[0] = undefined;
-      for (let j = this.el$.childNodes.length; j-- && j > i_x;) {
-        const nd_j = this.el$.childNodes[j];
-        if (subV.broken_$ || this.eline_$.removed) {
-          nd_j.remove();
-          this.replRest$.unshift(nd_j);
-        }
-        if (nd_j.isText) {
-          (nd_j as Text)[$loff_0] += ldt_x; //!
-        } else {
-          (nd_j.vuu as StnodeV | undefined)?.translate_$(ldt_x);
-        }
-      }
+  //     const v_ = nd_i ? (nd_i.vuu as StnodeV<T, CI, E>) : subV;
+  //     this.stopLoff$ = v_.stopLoff_$;
+  //     this.broken$ = false;
+  //     this.stopToken$ = v_.stopToken$;
+  //   } else {
+  //     this.replRest$.length = 1;
+  //     this.replRest$[0] = undefined;
+  //     for (let j = this.el$.childNodes.length; j-- && j > i_x;) {
+  //       const nd_j = this.el$.childNodes[j];
+  //       if (subV.broken_$ || this.eline_$.removed) {
+  //         nd_j.remove();
+  //         this.replRest$.unshift(nd_j);
+  //       }
+  //       if (nd_j.isText) {
+  //         (nd_j as Text)[$loff_0] += ldt_x; //!
+  //       } else {
+  //         (nd_j.vuu as StnodeV | undefined)?.translate_$(ldt_x);
+  //       }
+  //     }
 
-      StnodeV.ctorRest.unshift(this.replRest$);
+  //     StnodeV.ctorRest.unshift(this.replRest$);
 
-      if (subV.broken$) {
-        this.stopLoff$ = subV.stopLoff_$;
-        this.broken$ = true;
-        this.stopToken$ = subV.stopToken$;
-      } else {
-        this.stopLoff$ += ldt_x;
-      }
-    }
-  }
+  //     if (subV.broken$) {
+  //       this.stopLoff$ = subV.stopLoff_$;
+  //       this.broken$ = true;
+  //       this.stopToken$ = subV.stopToken$;
+  //     } else {
+  //       this.stopLoff$ += ldt_x;
+  //     }
+  //   }
+  // }
 
-  /**
-   * Also set `stopLoff$`, `stopToken$`.
-   * @final
-   */
-  protected shortcut$(): boolean {
-    const rest = StnodeV.ctorRest.replRest_$;
-    const r0_ = rest?.[0];
-    if (!rest || r0_ === undefined || Is.array(r0_)) return false;
+  //jjjj TOCLEANUP
+  // /**
+  //  * Also set `stopLoff$`, `stopToken$`.
+  //  * @final
+  //  */
+  // protected shortcut$(): boolean {
+  //   const rest = StnodeV.ctorRest.replRest_$;
+  //   const r0_ = rest?.[0];
+  //   if (!rest || r0_ === undefined || Is.array(r0_)) return false;
 
-    for (let i = 0, iI = rest.length - 1; i < iI; ++i) {
-      this.el$.append(rest[i] as Node);
-      /*#static*/ if (CYPRESS) {
-        (rest[i] as Node)["cy.use"] += 1;
-      }
-    }
+  //   for (let i = 0, iI = rest.length - 1; i < iI; ++i) {
+  //     this.el$.append(rest[i] as Node);
+  //     /*#static*/ if (CYPRESS) {
+  //       (rest[i] as Node)["cy.use"] += 1;
+  //     }
+  //   }
 
-    let nd_ = rest.at(-2) as Node;
-    if (nd_.isText) {
-      this.stopLoff$ = (nd_ as Text).stopLoff;
-    } else {
-      /*#static*/ if (INOUT) {
-        assert(nd_.vuu instanceof StnodeV);
-      }
-      this.stopLoff$ = (nd_.vuu as StnodeV<T, CI, E>).stopLoff$;
-    }
+  //   let nd_ = rest.at(-2) as Node;
+  //   if (nd_.isText) {
+  //     this.stopLoff$ = (nd_ as Text).stopLoff;
+  //   } else {
+  //     /*#static*/ if (INOUT) {
+  //       assert(nd_.vuu instanceof StnodeV);
+  //     }
+  //     this.stopLoff$ = (nd_.vuu as StnodeV<T, CI, E>).stopLoff$;
+  //   }
 
-    /*#static*/ if (INOUT) {
-      assert(!this.broken$);
-    }
+  //   /*#static*/ if (INOUT) {
+  //     assert(!this.broken$);
+  //   }
 
-    for (let i = rest.length - 1; i--;) {
-      nd_ = rest[i] as Node;
-      if (nd_.vuu instanceof StnodeV) {
-        this.stopToken$ = nd_.vuu.stopToken$;
-        break;
-      }
-    }
-    /*#static*/ if (INOUT) {
-      assert(this.stopToken$);
-    }
-    return true;
-  }
+  //   for (let i = rest.length - 1; i--;) {
+  //     nd_ = rest[i] as Node;
+  //     if (nd_.vuu instanceof StnodeV) {
+  //       this.stopToken$ = nd_.vuu.stopToken$;
+  //       break;
+  //     }
+  //   }
+  //   /*#static*/ if (INOUT) {
+  //     assert(this.stopToken$);
+  //   }
+  //   return true;
+  // }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  /** @final */
-  get _info_(): string {
-    return `[${this.strtLoff$})${this.stopLoff$} ` +
-      `[${this.strtToken$})` +
-      `${this.stopToken$ === this.strtToken$ ? "" : this.stopToken$}` +
-      `${this.broken$ ? " BROKEN" : ""}`;
-  }
+  //jjjj TOCLEANUP
+  // /** @final */
+  // get _info_(): string {
+  //   return `[${this.strtLoff$})${this.stopLoff$} ` +
+  //     `[${this.strtToken$})` +
+  //     `${this.stopToken$ === this.strtToken$ ? "" : this.stopToken$}` +
+  //     `${this.broken$ ? " BROKEN" : ""}`;
+  // }
 }
 /*80--------------------------------------------------------------------------*/

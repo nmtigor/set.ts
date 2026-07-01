@@ -11,6 +11,7 @@ import { ErrMsg } from "../../util.ts";
 import { Ids } from "./Ids.ts";
 import { Key } from "./Key.ts";
 import { SetSn } from "./SetSn.ts";
+import type { SetPazr } from "../SetPazr.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
@@ -54,47 +55,56 @@ export class Rel extends SetSn {
     return this.#children = ret;
   }
 
-  override get frstToken(): SetTk {
-    return this.frstToken$ ??= this.#src
-      ? this.#src instanceof Token ? this.#src : this.#src.frstToken
+  override get frstToken_1(): SetTk {
+    return this.frstTk$ ??= this.#src
+      ? this.#src instanceof Token ? this.#src : this.#src.frstToken_1
       : this.jnr_1;
   }
-  override get lastToken(): SetTk {
-    return this.lastToken$ ??= this.#tgt
-      ? this.#tgt instanceof Token ? this.#tgt : this.#tgt.lastToken
+  override get lastToken_1(): SetTk {
+    return this.lastTk$ ??= this.#tgt
+      ? this.#tgt instanceof Token ? this.#tgt : this.#tgt.lastToken_1
       : this.jnr_2
       ? this.jnr_2
       : this.#rel
-      ? this.#rel instanceof Token ? this.#rel : this.#rel.lastToken
+      ? this.#rel instanceof Token ? this.#rel : this.#rel.lastToken_1
       : this.jnr_1;
   }
 
+  /**
+   * @headconst @param pazr_x
+   * @const @param src_x
+   * @const @param jnr_1_x
+   * @const @param rel_x
+   * @const @param jnr_2_x
+   * @const @param tgt_x
+   */
   constructor(
+    pazr_x: SetPazr,
     src_x: Key | Ids | SetTk | undefined,
     jnr_1_x: SetTk,
     rel_x?: Key | Ids | SetTk,
     jnr_2_x?: SetTk,
     tgt_x?: Key | Ids | SetTk,
   ) {
-    super();
+    super(pazr_x);
     this.#src = src_x;
     this.jnr_1 = jnr_1_x;
     this.#rel = rel_x;
     this.jnr_2 = jnr_2_x;
     this.#tgt = tgt_x;
 
-    if (src_x instanceof Key || src_x instanceof Ids) src_x.parent_$ = this;
-    if (rel_x instanceof Key || rel_x instanceof Ids) rel_x.parent_$ = this;
+    if (src_x instanceof Key || src_x instanceof Ids) src_x.attachTo_$(this);
+    if (rel_x instanceof Key || rel_x instanceof Ids) rel_x.attachTo_$(this);
     if (!jnr_2_x) this.setErr(ErrMsg.set_rel_no_2nd);
-    if (tgt_x instanceof Key || tgt_x instanceof Ids) tgt_x.parent_$ = this;
-    if (!src_x && !rel_x && !tgt_x) this.setErr(ErrMsg.set_rel_no_srt);
+    if (tgt_x instanceof Key || tgt_x instanceof Ids) tgt_x.attachTo_$(this);
+    if (!src_x || !rel_x || !tgt_x) this.setErr(ErrMsg.set_rel_no_srt);
 
-    this.ensureBdries();
+    this.ensureBdry();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   override replaceChild(oldSn_x: Key | Ids, newSn_x: Key | Ids) {
-    newSn_x.parent_$ = this;
+    newSn_x.attachTo_$(this);
 
     if (this.#src === oldSn_x) {
       this.#src = newSn_x;

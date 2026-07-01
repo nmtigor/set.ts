@@ -28,11 +28,12 @@ export const $cssstylesheet = Symbol("$cssstylesheet");
 export const $cssstylesheet_ = Symbol("$cssstylesheet_");
 /*64----------------------------------------------------------*/
 
-/** Text[ $tail_ignored ] { boolean } */
-export const $tail_ignored = Symbol("$tail_ignored");
+// /** Text[ $tail_ignored ] { boolean } */
+// export const $tail_ignored = Symbol("$tail_ignored");
 
-/** Node[ $facil_node ] { boolean } */
-export const $facil_node = Symbol("$facil_node");
+//jjjj TOCLEANUP
+// /** Node[ $facil_node ] { boolean } */
+// export const $facil_node = Symbol("$facil_node");
 
 // /** Window[ features_sym ] { Object } - ref. detector.js */
 // export const features_sym = Symbol("features_sym");
@@ -51,13 +52,13 @@ export const $lidx = Symbol("$lidx");
  */
 export const $lidx_1 = Symbol("$lidx_1");
 /**
- * SpanVuu.el[ $loff_0 ] { loff_t }
- * Start offset of the `Element` or `Text` in the `TokLine`
+ * SpanVuu.el[ $loff_0 ] { loff_t }\
+ * Start offset of the `Element` or `Text` in the `Line`
  */
 export const $loff_0 = Symbol("$loff_0");
 /**
  * SpanVuu.el[ $loff_1 ] { loff_t }
- * Stop offset of the `Element` in the `TokLine`
+ * Stop offset of the `Element` in the `Line`
  */
 export const $loff_1 = Symbol("$loff_1");
 
@@ -119,4 +120,8 @@ export const $vuu = Symbol("$vuu");
  * kkkk check use
  */
 export const $Vuu = Symbol("$Vuu");
+
+//jjjj TOCLEANUP
+// /** Range[ $eran ] { ERan? } */
+// export const $eran = Symbol("$eran");
 /*80--------------------------------------------------------------------------*/

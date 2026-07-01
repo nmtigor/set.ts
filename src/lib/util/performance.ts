@@ -11,9 +11,10 @@ export const g_count = {
   newRan: 0,
   newToken: 0,
   oldToken: 0,
+  newStnode: 0,
+  oldStnode: 0,
 
   newVuu: 0,
-  newSTNode: 0,
 
   hr_0: 0,
 };
