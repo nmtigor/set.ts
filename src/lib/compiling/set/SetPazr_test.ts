@@ -242,7 +242,6 @@ describe("SetPazr.paz_impl$()", () => {
     */
     assertEquals(pazr._err_, [
       ["Rel,1", [
-        ErrMsg.set_rel_no_srt,
         [ErrMsg.set_rel_unexp_tk, "[0-3,0-4)", "paren_open"],
       ]],
     ]);
@@ -253,7 +252,7 @@ describe("SetPazr.paz_impl$()", () => {
     assertEquals(pazr.root?._repr_(), ["Set,0", ["Rel,1", {
       src: ["Key,2", "FuzykeySeq,3 ( fuzykey[0-0,0-2))"],
       jnr_1: "joiner[0-2,0-3)",
-      rel: undefined,
+      rel: "paren_open[0-3,0-4)",
       jnr_2: "joiner[0-4,0-5)",
       tgt: "question[0-5,0-6)",
     }]]);

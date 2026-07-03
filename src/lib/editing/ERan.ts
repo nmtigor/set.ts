@@ -77,9 +77,9 @@ export class ERan {
     return this.#anchrEloc.posE(this.#focusEloc);
   }
 
-  readonly #range = new Range();
+  readonly range = new Range();
   //jjjj TOCLEANUP
-  // get rangeRect() { return this.#range.getBoundingClientRect(); }
+  // get rangeRect() { return this.range.getBoundingClientRect(); }
 
   //jjjj TOCLEANUP
   // bran$_:TokRan|null = null;
@@ -93,7 +93,7 @@ export class ERan {
    */
   constructor(focusELoc_x: ELoc, anchrELoc_x?: ELoc) {
     //jjjj TOCLEANUP
-    // this.#range[$eran] = this;
+    // this.range[$eran] = this;
     this.#focusEloc = focusELoc_x;
     this.#anchrEloc = anchrELoc_x ?? focusELoc_x.dup_ELoc();
     /*#static*/ if (INOUT) {
@@ -102,7 +102,7 @@ export class ERan {
   }
 
   reset_ERan(): this {
-    this.#range.reset();
+    this.range.reset();
     this.#focusEloc.reset_ELoc();
     this.#anchrEloc.reset_ELoc();
     return this;
@@ -172,18 +172,18 @@ export class ERan {
    */
   syncRange(): Range {
     if (this.collapsed) {
-      this.#range
+      this.range
         .setStop(this.focusCtnr, this.focusOffs)
         .collapse();
     } else {
-      this.#range
+      this.range
         .setStrt(this.anchrCtnr, this.anchrOffs)
         .setStop(this.focusCtnr, this.focusOffs);
-      if (this.#range.collapsed) {
-        this.#range.setStop(this.anchrCtnr, this.anchrOffs);
+      if (this.range.collapsed) {
+        this.range.setStop(this.anchrCtnr, this.anchrOffs);
       }
     }
-    return this.#range;
+    return this.range;
   }
 
   /**
@@ -206,19 +206,19 @@ export class ERan {
   //  */
   // getRecA_$(elnO_x: ElnO_, relPos_x?: Pos): DOMRect[] {
   //   this.syncRange();
-  //   if (this.#range.collapsed) return [];
+  //   if (this.range.collapsed) return [];
   //   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   //   const ctnr_a: Node[] = [];
 
-  //   const frstCtnr = this.#range.startContainer;
-  //   const lastCtnr = this.#range.endContainer;
+  //   const frstCtnr = this.range.startContainer;
+  //   const lastCtnr = this.range.endContainer;
   //   /*#static*/ if (INOUT) {
   //     assert(frstCtnr.isText);
   //     assert(lastCtnr.isText);
   //   }
-  //   const strtOfs = this.#range.startOffset;
-  //   const stopOfs = this.#range.endOffset;
+  //   const strtOfs = this.range.startOffset;
+  //   const stopOfs = this.range.endOffset;
 
   //   const frstBln = ELineBase.getBLine(frstCtnr);
   //   const lastBln = ELineBase.getBLine(lastCtnr);
@@ -227,7 +227,7 @@ export class ERan {
   //   let ctnr = frstCtnr;
   //   let stopBofs = (ctnr as Text).stopLoff;
   //   let bln = frstBln;
-  //   let eln = elnO_x.eline(bln.lidx_1);
+  //   let eln = elnO_x.eline_1(bln.lidx_1);
 
   //   ctnr_a.push(ctnr);
 
@@ -247,9 +247,9 @@ export class ERan {
 
   //       stopBofs = 0;
   //       bln = bln.nextLine!;
-  //       eln = elnO_x.eline(bln.lidx_1);
+  //       eln = elnO_x.eline_1(bln.lidx_1);
   //     } while (bln !== lastBln && --valve);
-  //     assert(valve, `Loop ${VALVE}±1 times`);
+  //     assert(valve, `Loop ${VALVE}(±1) times!`);
   //   }
 
   //   if (frstBln !== bln) stopBofs = 0;

@@ -156,7 +156,7 @@ export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
     this.#scronr = new EdtrScronr(this);
 
     // /*#static*/ if (DEBUG) {
-    //   this.el$.id = this._class_id_;
+    //   this.el$.id = this.class_id;
     // }
 
     /* Some common settings here. May be overridden by `style$()`. */
@@ -280,7 +280,7 @@ export class EdtrScronr<CI extends EdtrBaseCI> extends Scronr<EdtrBase<CI>> {
     super(coo_x);
 
     /*#static*/ if (CYPRESS || DEBUG) {
-      this.el$.hint = this._class_id_;
+      this.el$.hint = this.class_id;
 
       this.scrobarB$.el.hint = `${this.el$.hint}.scrobarB`;
       this.scrobarI$.el.hint = `${this.el$.hint}.scrobarI`;
@@ -352,7 +352,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
    * `in( 0 <= lidx_x && lidx_x < this.bufr$.lineN)`
    * @const @param lidx_x
    */
-  eline(lidx_x: lnum_t): ELineBase {
+  eline_1(lidx_x: lnum_t): ELineBase {
     this.#mainLidx(lidx_x);
     return this.elidx_m$.get(lidx_x)!;
   }
@@ -360,8 +360,8 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
    * `in( 0 <= lidx_x && lidx_x < this.bufr$.lineN)`
    * @const @param lidx_x
    */
-  bidi(lidx_x: lnum_t) {
-    return this.eline(lidx_x).bidi;
+  bidi_1(lidx_x: lnum_t) {
+    return this.eline_1(lidx_x).bidi;
   }
 
   #elnBSize: unum = 0;
@@ -515,7 +515,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   protected viewFocus$<C extends Caret>(retC_x: C): void {
     /*#static*/ if (_TRACE && EDTR) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.viewFocus$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.viewFocus$() >>>>>>>`,
       );
     }
     if (retC_x.focusVisible && this.bcr.containRec(retC_x.bcr_1, VFMrgin)) {
@@ -675,9 +675,9 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
 
     /*! Do not set style (or attribute) here or subclasses that may change the
     valid value of `EdtrBaseScrolr.elnBSize$`. */
-    const id_ = this.el$.id = this._class_id_;
+    const id_ = this.el$.id = this.class_id;
     /*#static*/ if (CYPRESS || DEBUG) {
-      this.el$.hint = this._class_id_;
+      this.el$.hint = this.class_id;
     }
     //jjjj TOCLEANUP
     // this.assignAttro({
@@ -836,15 +836,18 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   // }
 
   /**
+   * `in( rv_x.order >= 0)`
    * @headconst @param rv_x `focusLidx`, `focusLoff` Will be corrected
    */
   abstract getEFocusOf_$(rv_x: Ranval, retEloc_x?: ELoc): ELoc;
   /**
+   * `in( rv_x.order >= 0)`
    * @headconst @param rv_x `anchrLidx`, `anchrLoff` Will be corrected
    */
   abstract getEAnchrOf_$(rv_x: Ranval, retEloc_x?: ELoc): ELoc;
   /**
-   * @final @implement
+   * `in( rv_x.order >= 0)`
+   * @final
    * @headconst @param rv_x Will be corrected
    */
   getERanOf(rv_x: Ranval, retEran_x?: ERan): ERan {
@@ -1083,7 +1086,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   protected scrollTo$(strtLidx_x: lnum_t): void {
     /*#static*/ if (_TRACE && EDTR) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.scrollTo$( strtLidx_x: ${strtLidx_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.scrollTo$( strtLidx_x: ${strtLidx_x}) >>>>>>>`,
       );
     }
     const stopLidx = Math.min(strtLidx_x + this.nElnMax$, this.bufr$.lineN);
@@ -1144,7 +1147,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
 
     const impl_ = () => {
       this.scrollTo$(strtLidx);
-      this.refreshCarets(); // `Caret.#selec_hl` should overlay `Stnode.#main_hl`
+      this.refreshCarets(); // `Caret.#selec_hl` should overlay `Stnode.hl_a$`
       // console.log(`${trace.dent}${
       //   [
       //     this.headBSize$.fixTo(2),
@@ -1182,7 +1185,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   protected override sufScroll$(): void {
     /*#static*/ if (_TRACE && EDTR) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.sufScroll$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.sufScroll$() >>>>>>>`,
       );
     }
     this.#sufScroll?.();
@@ -1287,7 +1290,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   private _onResiz() {
     /*#static*/ if (_TRACE && RESIZ) {
       console.log(
-        `%c${trace.indent}>>>>>>> ${this._class_id_}._onResiz() >>>>>>>`,
+        `%c${trace.indent}>>>>>>> ${this.class_id}._onResiz() >>>>>>>`,
         `color:${LOG_cssc.resiz}`,
       );
       console.log(`${trace.dent}isConnected: ${this.el$.isConnected}`);
@@ -1308,7 +1311,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   // private _onIntrs(entries_x: IntersectionObserverEntry[]) {
   //   /*#static*/ if (_TRACE && INTRS) {
   //     console.log(
-  //       `%c${trace.indent}>>>>>>> ${this._class_id_}._onIntrs() >>>>>>>`,
+  //       `%c${trace.indent}>>>>>>> ${this.class_id}._onIntrs() >>>>>>>`,
   //       `color:${LOG_cssc.intrs}`,
   //     );
   //   }
@@ -1329,7 +1332,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   refresh_EdtrBaseScrolr(): this {
     // /*#static*/ if (_TRACE) {
     //   console.log(
-    //     `${trace.indent}>>>>>>> ${this._class_id_}.refresh_EdtrBaseScrolr() >>>>>>>`,
+    //     `${trace.indent}>>>>>>> ${this.class_id}.refresh_EdtrBaseScrolr() >>>>>>>`,
     //   );
     // }
     // this.reset$();
@@ -1389,7 +1392,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   #onPointerUp(evt_x: PointerEvent) {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.#onPointerUp() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.#onPointerUp() >>>>>>>`,
       );
     }
     if (evt_x.button === MouseButton.Main) {

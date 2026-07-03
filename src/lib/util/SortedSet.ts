@@ -22,7 +22,7 @@ export class SortedSet<T> extends Array<T> {
   static #ID = 0 as id_t;
   readonly id = ++SortedSet.#ID as id_t;
   /** @final */
-  get _class_id_() {
+  get class_id() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/

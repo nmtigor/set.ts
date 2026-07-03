@@ -10,6 +10,8 @@ import type { Line } from "./Line.ts";
 import type { Loc } from "./Loc.ts";
 import type { _OldInfo_, Err, ErrMsg } from "./util.ts";
 import { SortedErr } from "./util.ts";
+import type { ERan, ERanr } from "@fe-edt/ERan.ts";
+import { g_eran_fac } from "@fe-edt/ERan.ts";
 /*80--------------------------------------------------------------------------*/
 
 type NErr_ = 2;
@@ -21,7 +23,7 @@ export abstract class Snt {
   static #ID = 0 as Id_t;
   readonly id = ++Snt.#ID as Id_t;
   /** @final */
-  get _class_id_() {
+  get class_id() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -106,11 +108,39 @@ export abstract class Snt {
     return retA;
   }
   /* ~ */
+
+  /* #eran */
+  /** @using */
+  #eran?: ERan | undefined;
+  /** @final */
+  protected get eran$(): ERan {
+    return this.#eran ??= g_eran_fac.oneMore();
+  }
+  /** @final */
+  get range_$(): Range {
+    return this.eran$.range;
+  }
+
+  /** @final */
+  revERan(): void {
+    if (this.#eran) {
+      this.#eran.rev();
+      this.#eran = undefined;
+    }
+  }
+
+  /** @headconst @param eranr_x */
+  abstract syncERan(eranr_x: ERanr): ERan;
+  /* ~ */
+
+  destructor() {
+    this.revERan();
+  }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /** For testing only */
   toString() {
-    return this._class_id_;
+    return this.class_id;
   }
 
   get _oldInfo_(): _OldInfo_ {

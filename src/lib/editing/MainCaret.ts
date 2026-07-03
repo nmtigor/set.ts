@@ -4,8 +4,7 @@
  ******************************************************************************/
 
 import { Ranval } from "@fe-cpl/Ranval.ts";
-import { _TRACE, CYPRESS, DEBUG, EDTR } from "../../preNs.ts";
-import type { lnum_t } from "../alias.ts";
+import { _TRACE, EDTR } from "../../preNs.ts";
 import "../jslang.ts";
 import { bind } from "../util.ts";
 import { trace, traceOut } from "../util/trace.ts";
@@ -78,7 +77,7 @@ export class MainCaret extends Caret {
   set #focusd(_x: boolean) {
     /*#static*/ if (_TRACE && EDTR) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.#focusd( _x: ${_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.#focusd( _x: ${_x}) >>>>>>>`,
       );
     }
     if (this.focusd$ === _x) return;
@@ -102,7 +101,7 @@ export class MainCaret extends Caret {
   private _onFocus(_evt_x: FocusEvent) {
     /*#static*/ if (_TRACE && EDTR) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}._onFocus() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}._onFocus() >>>>>>>`,
       );
     }
     this.#focusd = true;
@@ -113,7 +112,7 @@ export class MainCaret extends Caret {
   private _onBlur(_evt_x: FocusEvent) {
     /*#static*/ if (_TRACE && EDTR) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}._onBlur() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}._onBlur() >>>>>>>`,
       );
     }
     // console.log(`${trace.dent}edtr.dragingM: ${this.edtr.dragingM}`);

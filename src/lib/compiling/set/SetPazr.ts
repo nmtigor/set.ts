@@ -55,10 +55,10 @@ export class SetPazr extends Pazr<SetTok> {
   private _pazSet(
     _x: PazSetO_ = { oprec: Oprec.lowest, paren: 0, selfParen: 0 },
   ): Set {
-    assert(--this.#valve, `Loop ${SetPazr.#VALVE}±1 times`);
+    assert(--this.#valve, `Loop ${SetPazr.#VALVE}(±1) times!`);
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}._pazSet() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}._pazSet() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -92,89 +92,99 @@ export class SetPazr extends Pazr<SetTok> {
   #pazRelKeyIds(): Rel | Key | Ids | SetTk {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.#pazRelKeyIds() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.#pazRelKeyIds() >>>>>>>`,
       );
     }
-    let srcSn: Key | Ids | SetTk | undefined;
-    const unexpTk_a: SetTk[] = [];
+    let srcSnt: Key | Ids | SetTk | undefined;
     switch (this.strtPazTk$.value) {
       case SetTok.fuzykey:
       case SetTok.quotkey:
-        srcSn = this.#pazKey();
+        srcSnt = this.#pazKey();
         break;
       case SetTok.priid:
-        srcSn = this.#pazIds();
+        srcSnt = this.#pazIds();
         break;
-      case SetTok.asterisk:
-      case SetTok.question:
-        srcSn = this.strtPazTk$;
-        this.forceForw$();
-        break;
+      //jjjj TOCLEANUP
+      // case SetTok.asterisk:
+      // case SetTok.question:
+      //   srcSnt = this.strtPazTk$;
+      //   this.forceForw$();
+      //   break;
       case SetTok.joiner:
         break;
       default:
-        unexpTk_a.push(this.strtPazTk$);
+        srcSnt = this.strtPazTk$;
         this.forceForw$();
         break;
     }
     if (this.reachPazBdry$() || this.strtPazTk$.value !== SetTok.joiner) {
-      if (unexpTk_a.length) {
-        /*#static*/ if (INOUT) {
-          assert(unexpTk_a.length === 1 && !srcSn);
-        }
-        srcSn = unexpTk_a[0];
-      }
-      return srcSn!;
+      //jjjj TOCLEANUP
+      // if (unexpTk_a.length) {
+      //   /*#static*/ if (INOUT) {
+      //     assert(unexpTk_a.length === 1 && !srcSnt);
+      //   }
+      //   srcSnt = unexpTk_a[0];
+      // }
+      return srcSnt!;
     }
 
     const jnr_1 = this.strtPazTk$;
     this.forceForw$();
     let retSn: Rel;
     if (this.reachPazBdry$()) {
-      retSn = new Rel(this, srcSn, jnr_1);
-      for (const tk of unexpTk_a) {
-        retSn.setErr([
-          ErrMsg.set_rel_unexp_tk,
-          Ranval.fromRan(tk.ran_$),
-          tk.name,
-        ]);
-      }
+      retSn = Rel.create({ pazr: this, src: srcSnt, jnr_1 });
+      //jjjj TOCLEANUP
+      // for (const tk of unexpTk_a) {
+      //   retSn.setErr([
+      //     ErrMsg.set_rel_unexp_tk,
+      //     Ranval.fromRan(tk.ran_$),
+      //     tk.name,
+      //   ]);
+      // }
       this.errSn_ss$.add(retSn);
       return retSn;
     }
 
-    let relSn: Key | Ids | SetTk | undefined;
+    let relSnt: Key | Ids | SetTk | undefined;
     let jnr_2;
     switch ((this.strtPazTk$ as SetTk).value) {
       case SetTok.fuzykey:
       case SetTok.quotkey:
-        relSn = this.#pazKey();
+        relSnt = this.#pazKey();
         break;
       case SetTok.priid:
-        relSn = this.#pazIds();
+        relSnt = this.#pazIds();
         break;
-      case SetTok.asterisk:
-      case SetTok.question:
-        relSn = this.strtPazTk$;
-        this.forceForw$();
-        break;
+      //jjjj TOCLEANUP
+      // case SetTok.asterisk:
+      // case SetTok.question:
+      //   relSnt = this.strtPazTk$;
+      //   this.forceForw$();
+      //   break;
       case SetTok.joiner:
         jnr_2 = this.strtPazTk$;
         break;
       default:
-        unexpTk_a.push(this.strtPazTk$);
+        relSnt = this.strtPazTk$;
         this.forceForw$();
         break;
     }
     if (this.reachPazBdry$()) {
-      retSn = new Rel(this, srcSn, jnr_1, relSn, jnr_2);
-      for (const tk of unexpTk_a) {
-        retSn.setErr([
-          ErrMsg.set_rel_unexp_tk,
-          Ranval.fromRan(tk.ran_$),
-          tk.name,
-        ]);
-      }
+      retSn = Rel.create({
+        pazr: this,
+        src: srcSnt,
+        jnr_1,
+        rel: relSnt,
+        jnr_2,
+      });
+      //jjjj TOCLEANUP
+      // for (const tk of unexpTk_a) {
+      //   retSn.setErr([
+      //     ErrMsg.set_rel_unexp_tk,
+      //     Ranval.fromRan(tk.ran_$),
+      //     tk.name,
+      //   ]);
+      // }
       this.errSn_ss$.add(retSn);
       return retSn;
     }
@@ -185,46 +195,62 @@ export class SetPazr extends Pazr<SetTok> {
     if (jnr_2) {
       this.forceForw$();
       if (this.reachPazBdry$()) {
-        retSn = new Rel(this, srcSn, jnr_1, relSn, jnr_2, undefined);
-        for (const tk of unexpTk_a) {
-          retSn.setErr([
-            ErrMsg.set_rel_unexp_tk,
-            Ranval.fromRan(tk.ran_$),
-            tk.name,
-          ]);
-        }
+        retSn = Rel.create({
+          pazr: this,
+          src: srcSnt,
+          jnr_1,
+          rel: relSnt,
+          jnr_2,
+        });
+        //jjjj TOCLEANUP
+        // for (const tk of unexpTk_a) {
+        //   retSn.setErr([
+        //     ErrMsg.set_rel_unexp_tk,
+        //     Ranval.fromRan(tk.ran_$),
+        //     tk.name,
+        //   ]);
+        // }
         if (retSn.isErr) this.errSn_ss$.add(retSn);
         return retSn;
       }
     }
 
-    let tgtSn: Key | Ids | SetTk | undefined;
+    let tgtSnt: Key | Ids | SetTk | undefined;
     switch ((this.strtPazTk$ as SetTk).value) {
       case SetTok.fuzykey:
       case SetTok.quotkey:
-        tgtSn = this.#pazKey();
+        tgtSnt = this.#pazKey();
         break;
       case SetTok.priid:
-        tgtSn = this.#pazIds();
+        tgtSnt = this.#pazIds();
         break;
-      case SetTok.asterisk:
-      case SetTok.question:
-        tgtSn = this.strtPazTk$;
-        this.forceForw$();
-        break;
+      //jjjj TOCLEANUP
+      // case SetTok.asterisk:
+      // case SetTok.question:
+      //   tgtSnt = this.strtPazTk$;
+      //   this.forceForw$();
+      //   break;
       default:
-        unexpTk_a.push(this.strtPazTk$);
+        tgtSnt = this.strtPazTk$;
         this.forceForw$();
         break;
     }
-    retSn = new Rel(this, srcSn, jnr_1, relSn, jnr_2, tgtSn);
-    for (const tk of unexpTk_a) {
-      retSn.setErr([
-        ErrMsg.set_rel_unexp_tk,
-        Ranval.fromRan(tk.ran_$),
-        tk.name,
-      ]);
-    }
+    retSn = Rel.create({
+      pazr: this,
+      src: srcSnt,
+      jnr_1,
+      rel: relSnt,
+      jnr_2,
+      tgt: tgtSnt,
+    });
+    //jjjj TOCLEANUP
+    // for (const tk of unexpTk_a) {
+    //   retSn.setErr([
+    //     ErrMsg.set_rel_unexp_tk,
+    //     Ranval.fromRan(tk.ran_$),
+    //     tk.name,
+    //   ]);
+    // }
     if (retSn.isErr) this.errSn_ss$.add(retSn);
     return retSn;
   }
@@ -233,7 +259,7 @@ export class SetPazr extends Pazr<SetTok> {
   #pazKey(): Key {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.#pazKey() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.#pazKey() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -260,15 +286,15 @@ export class SetPazr extends Pazr<SetTok> {
           this.strtPazTk$.value !== SetTok.quotkey
       ) break;
     } while (--valve);
-    assert(valve, `Loop ${VALVE}±1 times`);
-    return new Key(this, sn_a);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
+    return Key.create(this, sn_a);
   }
 
   @traceOut(_TRACE)
   #pazFuzykeySeq(): FuzykeySeq {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.#pazFuzykeySeq() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.#pazFuzykeySeq() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -287,7 +313,7 @@ export class SetPazr extends Pazr<SetTok> {
         break;
       }
     } while (--valve);
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     return new FuzykeySeq(this, tk_a);
   }
 
@@ -295,7 +321,7 @@ export class SetPazr extends Pazr<SetTok> {
   #pazQuotkeySeq(): QuotkeySeq {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.#pazQuotkeySeq() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.#pazQuotkeySeq() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -314,7 +340,7 @@ export class SetPazr extends Pazr<SetTok> {
         break;
       }
     } while (--valve);
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     return new QuotkeySeq(this, tk_a);
   }
 
@@ -322,7 +348,7 @@ export class SetPazr extends Pazr<SetTok> {
   #pazIds(): Ids {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.#pazIds() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.#pazIds() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -341,7 +367,7 @@ export class SetPazr extends Pazr<SetTok> {
         break;
       }
     } while (--valve);
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     return new Ids(this, tk_a);
   }
 
@@ -528,14 +554,14 @@ export class SetPazr extends Pazr<SetTok> {
     this.forceForw$();
     let sn_: BinaryOp;
     if (this.reachPazBdry$()) {
-      sn_ = new B_x(this, _x.lhs, op_, undefined);
+      sn_ = B_x.create(this, _x.lhs, op_, undefined);
     } else {
       const rhs = this._pazSet({
         oprec: B_x.oprec,
         paren: _x.selfParen,
         selfParen: 0,
       });
-      sn_ = new B_x(this, _x.lhs, op_, rhs);
+      sn_ = B_x.create(this, _x.lhs, op_, rhs);
     }
     if (sn_.isErr) this.errSn_ss$.add(sn_);
 

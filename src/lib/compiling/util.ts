@@ -6,7 +6,7 @@
 import { INOUT } from "../../preNs.ts";
 import type { loff_t, unum } from "../alias.ts";
 import type { Id_t, UInt16 } from "../alias_v.ts";
-import type { Cssc, CsscHexNorm } from "../color/alias.ts";
+import type { CsscHexNorm } from "../color/alias.ts";
 import type { MooHandler } from "../Moo.ts";
 import { assert } from "../util.ts";
 import * as Is from "../util/is.ts";

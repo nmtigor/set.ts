@@ -3,19 +3,80 @@
  * @license MIT
  ******************************************************************************/
 
+import type { Cssc } from "@fe-lib/color/alias.ts";
+import { Pale } from "@fe-lib/color/Pale.ts";
+import { $cssstylesheet } from "@fe-lib/symbols.ts";
 import { assert } from "@fe-lib/util.ts";
-import { INOUT } from "@fe-src/preNs.ts";
+import { DENO, INOUT } from "@fe-src/preNs.ts";
 import type { SetTk } from "../../Token.ts";
 import { Token } from "../../Token.ts";
-import { ErrMsg } from "../../util.ts";
+import { ErrMsg, paleMock } from "../../util.ts";
+import type { SetPazr } from "../SetPazr.ts";
 import { Ids } from "./Ids.ts";
 import { Key } from "./Key.ts";
 import { SetSn } from "./SetSn.ts";
-import type { SetPazr } from "../SetPazr.ts";
+import { lnum_t } from "@fe-lib/alias.ts";
+import type { ERanr } from "@fe-edt/ERan.ts";
+import { Tdt, Tuof } from "../../alias.ts";
+import { SetTok } from "../SetTok.ts";
+import { Ranval } from "../../Ranval.ts";
 /*80--------------------------------------------------------------------------*/
+
+type RelCtorP_ = {
+  pazr: SetPazr;
+  src: Key | Ids | SetTk | undefined;
+  jnr_1: SetTk;
+  rel?: Key | Ids | SetTk | undefined;
+  jnr_2?: SetTk | undefined;
+  tgt?: Key | Ids | SetTk;
+};
 
 /** @final */
 export class Rel extends SetSn {
+  /* Pale */
+  #stxFg_p = /*#static*/ DENO ? paleMock : Pale.get("cpl.set.Rel.stxFg");
+  #onStxFgCssc = (_x: Cssc) => {
+    /*#static*/ if (!DENO) {
+      document.body.style.setProperty(this.#stxFg_pn, _x);
+    }
+  };
+
+  #tkErrTd_p = /*#static*/ DENO ? paleMock : Pale.get("cpl.set.errTd");
+  #onTkErrTdCssc = (_x: Cssc) => {
+    /*#static*/ if (!DENO) {
+      document.body.style.setProperty(this.#tkErrTd_pn, _x);
+    }
+  };
+
+  #snErrTd_p = /*#static*/ DENO ? paleMock : Pale.get("cpl.set.errTd");
+  #onSnErrTdCssc = (_x: Cssc) => {
+    /*#static*/ if (!DENO) {
+      document.body.style.setProperty(this.#snErrTd_pn, _x);
+    }
+  };
+
+  #cplTd_p = /*#static*/ DENO ? paleMock : Pale.get("cpl.set.cplTd");
+  #onCplTdCssc = (_x: Cssc) => {
+    /*#static*/ if (!DENO) {
+      document.body.style.setProperty(this.#cplTd_pn, _x);
+    }
+  };
+
+  observeTheme() {
+    this.#stxFg_p.registCsscHandler(this.#onStxFgCssc);
+    this.#tkErrTd_p.registCsscHandler(this.#onTkErrTdCssc);
+    this.#snErrTd_p.registCsscHandler(this.#onSnErrTdCssc);
+    this.#cplTd_p.registCsscHandler(this.#onCplTdCssc);
+  }
+  unobserveTheme() {
+    this.#stxFg_p.removeCsscHandler(this.#onStxFgCssc);
+    this.#tkErrTd_p.removeCsscHandler(this.#onTkErrTdCssc);
+    this.#snErrTd_p.removeCsscHandler(this.#onSnErrTdCssc);
+    this.#cplTd_p.removeCsscHandler(this.#onCplTdCssc);
+  }
+  /* ~ */
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
   /** If `undefined`, must `hasErr`. */
   #src;
   get src() {
@@ -70,36 +131,138 @@ export class Rel extends SetSn {
       : this.jnr_1;
   }
 
-  /**
-   * @headconst @param pazr_x
-   * @const @param src_x
-   * @const @param jnr_1_x
-   * @const @param rel_x
-   * @const @param jnr_2_x
-   * @const @param tgt_x
-   */
-  constructor(
-    pazr_x: SetPazr,
-    src_x: Key | Ids | SetTk | undefined,
-    jnr_1_x: SetTk,
-    rel_x?: Key | Ids | SetTk,
-    jnr_2_x?: SetTk,
-    tgt_x?: Key | Ids | SetTk,
-  ) {
-    super(pazr_x);
-    this.#src = src_x;
-    this.jnr_1 = jnr_1_x;
-    this.#rel = rel_x;
-    this.jnr_2 = jnr_2_x;
-    this.#tgt = tgt_x;
+  readonly #stx_hl_name = `${this.class_id}_stx`;
+  get #stx_hl(): Highlight {
+    this.hl_a$ ??= [];
+    return this.hl_a$[0] ??= new Highlight();
+  }
 
-    if (src_x instanceof Key || src_x instanceof Ids) src_x.attachTo_$(this);
-    if (rel_x instanceof Key || rel_x instanceof Ids) rel_x.attachTo_$(this);
-    if (!jnr_2_x) this.setErr(ErrMsg.set_rel_no_2nd);
-    if (tgt_x instanceof Key || tgt_x instanceof Ids) tgt_x.attachTo_$(this);
-    if (!src_x || !rel_x || !tgt_x) this.setErr(ErrMsg.set_rel_no_srt);
+  readonly #tkErr_hl_name = `${this.class_id}_tkErr`;
+  get #tkErr_hl(): Highlight {
+    this.hl_a$ ??= [];
+    return this.hl_a$[1] ??= new Highlight();
+  }
+
+  readonly #snErr_hl_name = `${this.class_id}_snErr`;
+  get #snErr_hl(): Highlight {
+    this.hl_a$ ??= [];
+    return this.hl_a$[2] ??= new Highlight();
+  }
+
+  readonly #cpl_hl_name = `${this.class_id}_cpl`;
+  get #cpl_hl(): Highlight {
+    this.hl_a$ ??= [];
+    return this.hl_a$[3] ??= new Highlight();
+  }
+
+  readonly #stxFg_pn = `--${this.class_id}-stxFg`;
+  readonly #tkErrTd_pn = `--${this.class_id}-tkErrTd`;
+  readonly #snErrTd_pn = `--${this.class_id}-snErrTd`;
+  readonly #cplTd_pn = `--${this.class_id}-cplTd`;
+  readonly #cplTuo_pn = `--${this.class_id}-cplTuo`;
+
+  private constructor(_x: RelCtorP_) {
+    super(_x.pazr);
+    const s_ = this.#src = _x.src;
+    this.jnr_1 = _x.jnr_1;
+    const r_ = this.#rel = _x.rel;
+    this.jnr_2 = _x.jnr_2;
+    const t_ = this.#tgt = _x.tgt;
+
+    if (s_ instanceof Key || s_ instanceof Ids) {
+      s_.attachTo_$(this);
+    } else if (
+      s_ && s_.value !== SetTok.asterisk && s_.value !== SetTok.question
+    ) {
+      this.setErr([ErrMsg.set_rel_unexp_tk, Ranval.fromRan(s_.ran_$), s_.name]);
+    }
+    if (r_ instanceof Key || r_ instanceof Ids) {
+      r_.attachTo_$(this);
+    } else if (
+      r_ && r_.value !== SetTok.asterisk && r_.value !== SetTok.question
+    ) {
+      this.setErr([ErrMsg.set_rel_unexp_tk, Ranval.fromRan(r_.ran_$), r_.name]);
+    }
+    if (!this.jnr_2) this.setErr(ErrMsg.set_rel_no_2nd);
+    if (t_ instanceof Key || t_ instanceof Ids) {
+      t_.attachTo_$(this);
+    } else if (
+      t_ && t_.value !== SetTok.asterisk && t_.value !== SetTok.question
+    ) {
+      this.setErr([ErrMsg.set_rel_unexp_tk, Ranval.fromRan(t_.ran_$), t_.name]);
+    }
+    if (!s_ || !r_ || !t_) this.setErr(ErrMsg.set_rel_no_srt);
+
+    /*#static*/ if (!DENO) {
+      CSS.highlights.set(this.#stx_hl_name, this.#stx_hl);
+      CSS.highlights.set(this.#tkErr_hl_name, this.#tkErr_hl);
+      CSS.highlights.set(this.#snErr_hl_name, this.#snErr_hl);
+      CSS.highlights.set(this.#cpl_hl_name, this.#cpl_hl);
+
+      document[$cssstylesheet].insertRule(
+        `::highlight(${this.#stx_hl_name}) {
+          color: var(${this.#stxFg_pn});
+        }`,
+      );
+      document[$cssstylesheet].insertRule(
+        `::highlight(${this.#tkErr_hl_name}) {
+          text-decoration: var(${this.#tkErrTd_pn}) wavy underline;
+          text-underline-offset: .2em;
+        }`,
+      );
+      document[$cssstylesheet].insertRule(
+        `::highlight(${this.#snErr_hl_name}) {
+          text-decoration: var(${this.#snErrTd_pn}) wavy underline;
+          text-underline-offset: .2em;
+        }`,
+      );
+      document[$cssstylesheet].insertRule(
+        `::highlight(${this.#cpl_hl_name}) {
+          text-decoration: var(${this.#cplTd_pn}) underline ${Tdt}em;
+          text-underline-offset: var(${this.#cplTuo_pn});
+        }`,
+      );
+
+      document.body.style.setProperty(this.#stxFg_pn, this.#stxFg_p.cssc);
+      document.body.style.setProperty(this.#tkErrTd_pn, this.#tkErrTd_p.cssc);
+      document.body.style.setProperty(this.#snErrTd_pn, this.#snErrTd_p.cssc);
+      document.body.style.setProperty(this.#cplTd_pn, this.#cplTd_p.cssc);
+    }
 
     this.ensureBdry();
+  }
+  /** @headconst @param _x */
+  static create(_x: RelCtorP_) {
+    const ret = new Rel(_x);
+    ret.observeTheme();
+    return ret;
+  }
+
+  override destructor(): void {
+    this.unobserveTheme();
+
+    /*#static*/ if (!DENO) {
+      document[$cssstylesheet].deleteSelector(
+        `::highlight(${this.#stx_hl_name})`,
+      );
+      document[$cssstylesheet].deleteSelector(
+        `::highlight(${this.#tkErr_hl_name})`,
+      );
+      document[$cssstylesheet].deleteSelector(
+        `::highlight(${this.#snErr_hl_name})`,
+      );
+      document[$cssstylesheet].deleteSelector(
+        `::highlight(${this.#cpl_hl_name})`,
+      );
+
+      document.body.style.removeProperty(this.#stxFg_pn);
+      document.body.style.removeProperty(this.#tkErrTd_pn);
+      document.body.style.removeProperty(this.#snErrTd_pn);
+      document.body.style.removeProperty(this.#cplTd_pn);
+      document.body.style.removeProperty(this.#cplTuo_pn);
+    }
+
+    super.destructor();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -119,6 +282,82 @@ export class Rel extends SetSn {
     this.#children = undefined;
 
     this.invalBdry();
+  }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
+  protected override clrHighlight_impl$(): false {
+    this.jnr_1.revERan();
+    this.jnr_2?.revERan();
+    if (this.#src instanceof Token) this.#src.revERan();
+    if (this.#rel instanceof Token) this.#rel.revERan();
+    if (this.#tgt instanceof Token) this.#tgt.revERan();
+    this.revERan();
+
+    this.#stx_hl.clear();
+    this.#tkErr_hl.clear();
+    this.#snErr_hl.clear();
+    this.#cpl_hl.clear();
+    return false;
+  }
+
+  protected override setHighlight_impl$(
+    frstLidx_x: lnum_t,
+    lastLidx_x: lnum_t,
+    eranr_x: ERanr,
+  ): boolean {
+    if (this.sntLastLidx_1 < frstLidx_x || lastLidx_x < this.sntFrstLidx_1) {
+      return this.clrHighlight_impl$();
+    }
+
+    this.#stx_hl.clear();
+    this.#tkErr_hl.clear();
+    this.#snErr_hl.clear();
+    this.#cpl_hl.clear();
+
+    /**
+     * @headconst @param tk_y
+     * @headconst @param hl_y `#stx_hl` or `#tkErr_hl`
+     */
+    const setHl_ = (tk_y: SetTk, hl_y: Highlight) => {
+      if (tk_y.sntLastLidx_1 < frstLidx_x || lastLidx_x < tk_y.sntFrstLidx_1) {
+        tk_y.revERan();
+      } else {
+        hl_y.add(tk_y.syncERan(eranr_x).syncRange());
+      }
+    };
+
+    setHl_(this.jnr_1, this.#stx_hl);
+    if (this.jnr_2) setHl_(this.jnr_2, this.#stx_hl);
+
+    if (
+      this.#src instanceof Token &&
+      this.#src.value !== SetTok.asterisk &&
+      this.#src.value !== SetTok.question
+    ) setHl_(this.#src, this.#tkErr_hl);
+    if (
+      this.#rel instanceof Token &&
+      this.#rel.value !== SetTok.asterisk &&
+      this.#rel.value !== SetTok.question
+    ) setHl_(this.#rel, this.#tkErr_hl);
+    if (
+      this.#tgt instanceof Token &&
+      this.#tgt.value !== SetTok.asterisk &&
+      this.#tgt.value !== SetTok.question
+    ) setHl_(this.#tgt, this.#tkErr_hl);
+
+    const range = this.syncERan(eranr_x).syncRange();
+    if (
+      this.hasErrMsg(ErrMsg.set_rel_no_srt) ||
+      this.hasErrMsg(ErrMsg.set_rel_no_2nd)
+    ) this.#snErr_hl.add(range);
+
+    document.body.style.setProperty(
+      this.#cplTuo_pn,
+      `-${Math.max(1 + Tuof - this.depth_1 * Tuof, 0)}em`,
+    );
+    this.#cpl_hl.add(range);
+
+    return true;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

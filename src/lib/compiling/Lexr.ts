@@ -31,7 +31,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   static #ID = 0 as Id_t;
   readonly id = ++Lexr.#ID as Id_t;
   /** @final */
-  get _class_id_() {
+  get class_id() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -325,7 +325,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       ln_.delLastTokenBy_$(this);
       ln_ = ln_.nextLine;
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
 
     // this.bufr$ = undefined as any;
     this.strtLexTk$ = undefined as any;
@@ -528,7 +528,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   //     tk_.bakeRanval_$();
   //     tk_ = tk_.nextToken_$;
   //   }
-  //   assert(valve, `Loop ${VALVE}±1 times`);
+  //   assert(valve, `Loop ${VALVE}(±1) times!`);
   // }
   // /** @see {@linkcode bakeRanvalForw_$()} */
   // bakeRanvalBack_$(strtTk_x?: Token<T>, stopTk_x?: Token<T>): void {
@@ -541,7 +541,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   //     tk_.bakeRanval_$();
   //     tk_ = tk_.prevToken_$;
   //   }
-  //   assert(valve, `Loop ${VALVE}±1 times`);
+  //   assert(valve, `Loop ${VALVE}(±1) times!`);
   // }
   /**
    * `[ strtTk_x, stopTk_x )`
@@ -563,7 +563,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       fn_x(tk_);
       tk_ = tk_.nextToken_$;
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     //jjjj TOCLEANUP
     // /*#static*/ if (INOUT) {
     //   assert(tk_);
@@ -584,7 +584,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       fn_x(tk_);
       tk_ = tk_.prevToken_$;
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     //jjjj TOCLEANUP
     // /*#static*/ if (INOUT) {
     //   assert(tk_);
@@ -616,7 +616,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   lexmrk_$(oldRan_a_x: Ran[]): this {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.lexmrk_$( oldRan_a_x: ${oldRan_a_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.lexmrk_$( oldRan_a_x: ${oldRan_a_x}) >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -747,7 +747,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   lexadj_$(newRan_a_x: Ran[]): this {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.lexadj_$( newRan_a_x: ${newRan_a_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.lexadj_$( newRan_a_x: ${newRan_a_x}) >>>>>>>`,
       );
     }
     if (this.isErr) {
@@ -862,9 +862,9 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    */
   @traceOut(_TRACE)
   lex(valve_x = 10): void {
-    assert(--valve_x, "Cycle call!");
+    assert(--valve_x, "Loop 10(±1) times!");
     /*#static*/ if (_TRACE) {
-      console.log(`${trace.indent}>>>>>>> ${this._class_id_}.lex() >>>>>>>`);
+      console.log(`${trace.indent}>>>>>>> ${this.class_id}.lex() >>>>>>>`);
     }
     //jjjj TOCLEANUP
     // if (this.strtLexTk$ === this.stopLexTk$) { //llll review (one Bufr with different Lexr? etc)
@@ -938,7 +938,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     do {
       const scandTk_ = this._scan();
       if (!scandTk_ || scandTk_.value === BaseTok.unknown) { // 2269
-        assert(--valve, `Loop ${VALVE}±1 times`);
+        assert(--valve, `Loop ${VALVE}(±1) times!`);
         continue;
       }
       /* `lsTk$` being `undefined` means that `scandTk_` is handled. */
@@ -956,7 +956,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       }
       this.lsTk$ = scandTk_;
     } while (--valve);
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     return this;
   }
 
@@ -1113,7 +1113,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
           fail("Should not run here!");
       }
     } while (--valve);
-    assert(valve, `Loop ${VALVE_x}±1 times`);
+    assert(valve, `Loop ${VALVE_x}(±1) times!`);
     return ret;
   }
   /**
@@ -1145,7 +1145,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       if (tk_ === lastTk) break;
       tk_ = tk_.nextToken_$!;
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
   }
   #bypassTk(tk_x: Token<T>): void {
     if (tk_x.isErr) this.errTk_ss$.add(tk_x);
@@ -1289,7 +1289,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       }
       ret_a.push(`${tk_}`);
     } while (!tk_.posE(lastTk) && --valve);
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
 
     return ret_a.join("");
   }
@@ -1305,7 +1305,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       tk_ = tk_.nextToken_$!;
       ret_a.push(tk_.id);
     } while (!tk_.posE(lastTk) && --valve);
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
 
     return ret_a;
   }
@@ -1321,7 +1321,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       const r_ = tk_._repr_;
       if (r_) ret_a.push(r_);
     } while (tk_.value !== BaseTok.stopBdry && --valve);
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
 
     return ret_a;
   }

@@ -1259,16 +1259,43 @@ export default [
     "coors": [{ "qm_a": [[null, "rgb(108,24,115,1)"]] }],
     "cidx": 0,
   }],
-  ["cpl.set.errTs", {
+  ["cpl.set.errTd", {
     "coors": [{
       "axes": ["Error"],
+      "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], [{
+        "channel": "a",
+        "value": 0.5,
+      }]]],
+    }],
+    "cidx": 0,
+  }],
+  ["cpl.set.cplTd", {
+    "coors": [{
+      "axes": ["On Surface"],
+      "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], [{
+        "channel": "a",
+        "value": 0.5,
+      }]]],
+    }],
+    "cidx": 0,
+  }],
+  ["cpl.set.Set.stxFg", {
+    "coors": [{
+      "axes": ["Tertiary"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
     }],
     "cidx": 0,
   }],
-  ["cpl.set.Set.mainFg", {
+  ["cpl.set.BinaryOp.stxFg", {
     "coors": [{
-      "axes": ["Tertiary"],
+      "axes": ["Primary"],
+      "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
+    }],
+    "cidx": 0,
+  }],
+  ["cpl.set.Rel.stxFg", {
+    "coors": [{
+      "axes": ["Primary"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
     }],
     "cidx": 0,

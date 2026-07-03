@@ -102,7 +102,7 @@ export class SetLexr extends Lexr<SetTok> {
         break;
       }
     } while (--valve);
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
   }
 
   @out((self: SetLexr) => {
@@ -148,7 +148,7 @@ export class SetLexr extends Lexr<SetTok> {
           break;
       }
     } while (--valve);
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
   }
 
   /** @implement */

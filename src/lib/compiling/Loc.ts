@@ -52,7 +52,7 @@ export const enum LocCfd {
 // type BidirMap_ = Map<lnum_t, Bidir>;
 // export type _BidirMap_ = BidirMap_;
 type BidiO_ = {
-  bidi(_: lnum_t): Bidi;
+  bidi_1(_: lnum_t): Bidi;
 };
 export type _BidiO_ = BidiO_;
 
@@ -640,7 +640,7 @@ export class Loc {
    * @return effective or not
    */
   visulFarleftenIn(bidiO_x: BidiO_, row_x?: "row"): boolean {
-    const bidi = bidiO_x.bidi(this.lidx_1);
+    const bidi = bidiO_x.bidi_1(this.lidx_1);
     const oldLoff = this.loff_$;
     this.loff_$ = bidi.visulFarleften(
       row_x ? bidi.rowOf(this.loff_$) : undefined,
@@ -649,7 +649,7 @@ export class Loc {
   }
   /** @see {@linkcode visulFarleftenIn()} */
   visulFarrigtenIn(bidiO_x: BidiO_, row_x?: "row"): boolean {
-    const bidi = bidiO_x.bidi(this.lidx_1);
+    const bidi = bidiO_x.bidi_1(this.lidx_1);
     const oldLoff = this.loff_$;
     this.loff_$ = bidi.visulFarrigten(
       row_x ? bidi.rowOf(this.loff_$) : undefined,
@@ -675,7 +675,7 @@ export class Loc {
     //   return true;
     // }
 
-    const bidi = bidiO_x.bidi(this.lidx_1);
+    const bidi = bidiO_x.bidi_1(this.lidx_1);
     const ret = bidi.visulLeften(this.loff_$);
     this.loff_$ = bidi.lastLogal;
     if (ret) return true;
@@ -702,7 +702,7 @@ export class Loc {
     //   return true;
     // }
 
-    const bidi = bidiO_x.bidi(this.lidx_1);
+    const bidi = bidiO_x.bidi_1(this.lidx_1);
     const ret = bidi.visulRigten(this.loff_$);
     this.loff_$ = bidi.lastLogal;
     if (ret) return true;
@@ -717,7 +717,7 @@ export class Loc {
 
   /** @headconst @param bidiO_x */
   updateBidi(bidiO_x: BidiO_): void {
-    const bidi = bidiO_x.bidi(this.lidx_1);
+    const bidi = bidiO_x.bidi_1(this.lidx_1);
     bidi.update(this.loff_$);
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/

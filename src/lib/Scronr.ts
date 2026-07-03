@@ -245,7 +245,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     super(coo_x, div());
 
     // /*#static*/ if (DEBUG) {
-    //   this.el$.id = this._class_id_;
+    //   this.el$.id = this.class_id;
     // }
     this.assignStylo({
       display: "grid",
@@ -409,7 +409,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     // /*#static*/ if (_TRACE) {
     //   console.log(
     //     `${trace.indent}>>>>>>> `,
-    //     `${this._class_id_}.scrollScrolrTo( ${val_x.fixTo(2)}, ${inline_x})`,
+    //     `${this.class_id}.scrollScrolrTo( ${val_x.fixTo(2)}, ${inline_x})`,
     //     `>>>>>>>`,
     //   );
     // }
@@ -458,7 +458,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     // /*#static*/ if (_TRACE) {
     //   console.log(
     //     `${trace.indent}>>>>>>> `,
-    //     `${this._class_id_}.scrollScrolrContain( , ${ins_x})`,
+    //     `${this.class_id}.scrollScrolrContain( , ${ins_x})`,
     //     `>>>>>>>`,
     //   );
     // }
@@ -510,7 +510,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   refresh_Scronr(): void {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.refresh_Scronr() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.refresh_Scronr() >>>>>>>`,
       );
       console.log(
         `${trace.dent}isConnected: ${this.el$.isConnected}, #scrolrInited: ${this.#scrolrInited}`,
@@ -615,7 +615,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   private _onResiz() {
     /*#static*/ if (_TRACE && RESIZ) {
       console.log(
-        `%c${trace.indent}>>>>>>> ${this._class_id_}._onResiz() >>>>>>>`,
+        `%c${trace.indent}>>>>>>> ${this.class_id}._onResiz() >>>>>>>`,
         `color:${LOG_cssc.resiz}`,
       );
       console.log(
@@ -637,7 +637,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   private _onScroll_scrolr(_evt_x: Event) {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}._onScroll_scrolr() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}._onScroll_scrolr() >>>>>>>`,
       );
     }
     const wm_ = this.writingMode;
@@ -695,7 +695,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   private _onWheel(evt_x: WheelEvent) {
     // /*#static*/ if (_TRACE) {
     //   console.log(
-    //     `${trace.indent}>>>>>>> ${this._class_id_}._onWheel(`,
+    //     `${trace.indent}>>>>>>> ${this.class_id}._onWheel(`,
     //     evt_x._repr_,
     //     `) >>>>>>>`,
     //   );
@@ -726,7 +726,7 @@ export abstract class Scrolr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     this.host = host_x;
 
     /*#static*/ if (CYPRESS || DEBUG) {
-      this.el$.hint = this._class_id_;
+      this.el$.hint = this.class_id;
     }
     this.assignStylo({
       // position: "relative",
@@ -810,7 +810,7 @@ abstract class Scrod_<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     this.host = host_x;
 
     // /*#static*/ if (CYPRESS || DEBUG) {
-    //   this.el$.hint = this._class_id_;
+    //   this.el$.hint = this.class_id;
     // }
     this.assignStylo({
       position: "relative",
@@ -995,7 +995,7 @@ abstract class Scrobar_<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     this.host = host_x;
 
     // /*#static*/ if (CYPRESS || DEBUG) {
-    //   this.el$.hint = this._class_id_;
+    //   this.el$.hint = this.class_id;
     // }
     this.assignStylo({
       display: "none",

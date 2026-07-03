@@ -19,7 +19,7 @@ export class Unre<T extends {} | null> {
   static #ID = 0 as Id_t;
   readonly id = ++Unre.#ID as Id_t;
   /** @final */
-  get _class_id_() {
+  get class_id() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/

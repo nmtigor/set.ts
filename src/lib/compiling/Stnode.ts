@@ -3,22 +3,23 @@
  * @license MIT
  ******************************************************************************/
 
+import type { ERan, ERanr } from "@fe-edt/ERan.ts";
 import { INOUT, PRF } from "../../preNs.ts";
 import type { int, lnum_t, loff_t, uint } from "../alias.ts";
-import type { ERanr } from "@fe-edt/ERan.ts";
+import type { Ts_t } from "../alias_v.ts";
 import { assert, fail, out } from "../util.ts";
 import type { Cf } from "../util/SortedSet.ts";
 import { SortedSet } from "../util/SortedSet.ts";
+import { g_count } from "../util/performance.ts";
 import type { BaseTok } from "./BaseTok.ts";
 import type { Loc } from "./Loc.ts";
+import { Pazr } from "./Pazr.ts";
+import { Ranval } from "./Ranval.ts";
 import { Snt } from "./Snt.ts";
 import type { Token } from "./Token.ts";
 import type { Tok } from "./alias.ts";
 import type { _OldInfo_ } from "./util.ts";
 import { SortedSn_id } from "./util.ts";
-import { Pazr } from "./Pazr.ts";
-import type { Ts_t } from "../alias_v.ts";
-import { g_count } from "../util/performance.ts";
 /*80--------------------------------------------------------------------------*/
 
 type Depth_ = uint | -1;
@@ -77,7 +78,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     const VALVE = 1_000;
     let valve = VALVE;
     while (ret.#parent && --valve) ret = ret.#parent;
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     return ret;
   }
   /**
@@ -91,7 +92,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
       if (sn_x === this) return true;
       sn_x = sn_x.#parent;
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     return false;
   }
   /* ~ */
@@ -214,7 +215,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
       }
       pa_ = pa_.#parent;
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
 
     return this.#depth = retDe;
   }
@@ -234,7 +235,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     const VALVE = 1_000;
     let valve = VALVE;
     while (ret.isErr && ret.#parent && --valve) ret = ret.#parent;
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     return ret;
   }
 
@@ -362,12 +363,12 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
    * @const @param rt_x
    */
   valid_$(ts_x: Ts_t, rt_x?: Stnode<T>, valve_x = 1_000): boolean {
-    assert(valve_x, "Loop 1_000 ±1 times");
+    assert(--valve_x, "Loop 1_000(±1) times!");
     if (this.#checkTs < ts_x) {
       if (rt_x) {
         this.#valid = this.#parent === rt_x || this === rt_x
           ? true
-          : !!this.#parent?.valid_$(ts_x, rt_x, valve_x - 1);
+          : !!this.#parent?.valid_$(ts_x, rt_x, valve_x);
       } else {
         this.#valid = false;
       }
@@ -376,6 +377,19 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     return this.#valid;
   }
   /* ~ */
+
+  /** @final @implement */
+  syncERan(eranr_x: ERanr): ERan {
+    return eranr_x.getERanOf(
+      new Ranval(
+        this.sntFrstLidx_1,
+        this.sntStrtLoff,
+        this.sntLastLidx_1,
+        this.sntStopLoff,
+      ),
+      this.eran$,
+    );
+  }
 
   /** @headconst @param pazr_x */
   constructor(pazr_x?: Pazr<T>) {
@@ -389,10 +403,11 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     }
   }
 
-  destructor(): void {
+  override destructor(): void {
     /* Related Eran's (if any) should be `rev()`ed at the end of `Lexr.lex()`. */
     this.hl_a$?.forEach((hl) => hl.clear());
 
+    super.destructor();
     /*#static*/ if (PRF) {
       g_count.oldStnode += 1;
     }
@@ -667,7 +682,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
       }
       break;
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
 
     const floatupAll = (): void => {
       let len = sn_ss_x.length;

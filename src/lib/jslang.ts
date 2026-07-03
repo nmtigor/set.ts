@@ -74,7 +74,7 @@ let valve_ = 0;
  */
 function eql_impl_(lhs_x: unknown, rhs_x: unknown): boolean {
   /*#static*/ if (INOUT) {
-    assert(valve_--, "There is element referencing its ancestor.");
+    assert(--valve_, "There is element referencing its ancestor.");
   }
   if (
     lhs_x === rhs_x ||

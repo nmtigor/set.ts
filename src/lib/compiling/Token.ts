@@ -259,33 +259,10 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //  */
   // stopBdry: Token<BaseTok.stopBdry> | undefined;
 
-  /* #eran */
-  /** @using */
-  #eran?: ERan | undefined;
-  //jjjj TOCLEANUP
-  // get range(): Range | undefined {
-  //   return this.#eran?.range;
-  // }
-
-  /** @final */
-  protected get eran$(): ERan {
-    return this.#eran ??= g_eran_fac.oneMore();
-  }
-
-  /**
-   * @final
-   * @headconst @param eranr_x
-   */
+  /** @final @implement */
   syncERan(eranr_x: ERanr): ERan {
     return eranr_x.getERanOf(Ranval.fromRan(this.ran_$), this.eran$);
   }
-
-  /** @final */
-  revERan(): void {
-    this.#eran?.rev();
-    this.#eran = undefined;
-  }
-  /* ~ */
 
   /**
    * `in( lexr_x.bufr === ran_x.bufr)`
@@ -317,7 +294,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
    * later through e.g. `_oldInfo_`.
    * @final
    */
-  destructor(): void {
+  override destructor(): void {
     //jjjj TOCLEANUP
     // if (this.#destroyed) return;
 
@@ -326,8 +303,8 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     this.lexdInfo = null;
 
     this.sn_$ = undefined;
-    this.revERan();
 
+    super.destructor();
     /*#static*/ if (PRF) {
       g_count.oldToken += 1;
     }
@@ -615,7 +592,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     while (tk_.prevToken_$?.sntFrstLine === retLn && --valve) {
       tk_ = tk_.prevToken_$;
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     if (
       !tk_.isErr ||
       this.#value === BaseTok.strtBdry ||
@@ -634,7 +611,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     while (tk_.nextToken_$?.sntLastLine === retLn && --valve) {
       tk_ = tk_.nextToken_$;
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     if (
       !tk_.isErr ||
       this.#value === BaseTok.strtBdry ||

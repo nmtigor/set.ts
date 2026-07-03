@@ -29,7 +29,7 @@ export class Line implements Bidir {
   static #ID = 0 as Id_t;
   readonly id = ++Line.#ID as Id_t;
   /** @final */
-  get _class_id_() {
+  get class_id() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -509,7 +509,7 @@ export class Line implements Bidir {
   //   while (tseg !== tseg_x && tseg !== stopTSeg && --valve) {
   //     tseg = tseg.nextTSeg_$!;
   //   }
-  //   assert(valve, `Loop ${VALVE}±1 times`);
+  //   assert(valve, `Loop ${VALVE}(±1) times!`);
   //   return tseg === tseg_x;
   // }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
@@ -560,7 +560,7 @@ export class Line implements Bidir {
     // /*#static*/ if (_TRACE) {
     //   console.log([
     //     trace.indent,
-    //     `>>>>>>> ${this._class_id_}.splice_$( ${strt_x}, ${stop_x}, `,
+    //     `>>>>>>> ${this.class_id}.splice_$( ${strt_x}, ${stop_x}, `,
     //     newt_x === undefined ? "" : `"${newt_x}"`,
     //     " ) >>>>>>>",
     //   ].join(""));
@@ -601,12 +601,14 @@ export class Line implements Bidir {
     // }
     // return (ln && cb_x(ln)) ? ln : undefined;
     let ln: Line | undefined = this;
+    const VALVE = valve_x;
     while (--valve_x) {
       ln = ln!.nextLine;
       if (!ln) break;
       if (cb_x(ln)) return ln;
       else do_x?.(ln);
     }
+    assert(valve_x, `Loop ${VALVE}(±1) times!`);
     return undefined;
   }
   nextNonemptyLine(orCb_x?: (ln_y: Line) => boolean, valve_x = LnumMAX) {
@@ -631,12 +633,14 @@ export class Line implements Bidir {
     // }
     // return (ln && cb_x(ln)) ? ln : undefined;
     let ln: Line | undefined = this;
+    const VALVE = valve_x;
     while (--valve_x) {
       ln = ln!.prevLine;
       if (!ln) break;
       if (cb_x(ln)) return ln;
       else do_x?.(ln);
     }
+    assert(valve_x, `Loop ${VALVE}(±1) times!`);
     return undefined;
   }
   prevNonemptyLine(orCb_x?: (ln_y: Line) => boolean, valve_x = LnumMAX) {
@@ -833,10 +837,10 @@ export class Line implements Bidir {
 
   get _info_(): string {
     return [
-      this._class_id_,
-      this.removed ? "-" : this.bufr._class_id_,
-      `prev: ${this.prevLine?._class_id_ ?? "-"}`,
-      `next: ${this.nextLine?._class_id_ ?? "-"}`,
+      this.class_id,
+      this.removed ? "-" : this.bufr.class_id,
+      `prev: ${this.prevLine?.class_id ?? "-"}`,
+      `next: ${this.nextLine?.class_id ?? "-"}`,
     ].join(", ");
   }
 

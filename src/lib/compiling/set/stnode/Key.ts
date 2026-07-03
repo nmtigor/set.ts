@@ -3,17 +3,41 @@
  * @license MIT
  ******************************************************************************/
 
+import type { ERanr } from "@fe-edt/ERan.ts";
+import type { lnum_t } from "@fe-lib/alias.ts";
+import { Pale } from "@fe-lib/color/Pale.ts";
+import type { Cssc } from "@fe-lib/color/alias.ts";
+import { $cssstylesheet } from "@fe-lib/symbols.ts";
 import { assert } from "@fe-lib/util.ts";
-import { INOUT } from "@fe-src/preNs.ts";
+import { DENO, INOUT } from "@fe-src/preNs.ts";
 import type { SetTk } from "../../Token.ts";
+import { Tdt, Tuof } from "../../alias.ts";
+import { paleMock } from "../../util.ts";
+import type { SetPazr } from "../SetPazr.ts";
 import { FuzykeySeq } from "./FuzykeySeq.ts";
 import { QuotkeySeq } from "./QuotkeySeq.ts";
 import { SetSn } from "./SetSn.ts";
-import type { SetPazr } from "../SetPazr.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** @final */
 export class Key extends SetSn {
+  /* Pale */
+  #cplTd_p = /*#static*/ DENO ? paleMock : Pale.get("cpl.set.cplTd");
+  #onCplTdCssc = (_x: Cssc) => {
+    /*#static*/ if (!DENO) {
+      document.body.style.setProperty(this.#cplTd_pn, _x);
+    }
+  };
+
+  observeTheme() {
+    this.#cplTd_p.registCsscHandler(this.#onCplTdCssc);
+  }
+  unobserveTheme() {
+    this.#cplTd_p.removeCsscHandler(this.#onCplTdCssc);
+  }
+  /* ~ */
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
   #children;
   override get children(): (FuzykeySeq | QuotkeySeq)[] {
     return this.#children;
@@ -26,11 +50,16 @@ export class Key extends SetSn {
     return this.lastTk$ ??= this.children.at(-1)!.lastToken_1;
   }
 
-  /**
-   * @headconst @param pazr_x
-   * @headconst @param sns_x
-   */
-  constructor(pazr_x: SetPazr, sns_x: (FuzykeySeq | QuotkeySeq)[]) {
+  readonly #cpl_hl_name = `${this.class_id}_cpl`;
+  get #cpl_hl(): Highlight {
+    this.hl_a$ ??= [];
+    return this.hl_a$[0] ??= new Highlight();
+  }
+
+  readonly #cplTd_pn = `--${this.class_id}-cplTd`;
+  readonly #cplTuo_pn = `--${this.class_id}-cplTuo`;
+
+  private constructor(pazr_x: SetPazr, sns_x: (FuzykeySeq | QuotkeySeq)[]) {
     /*#static*/ if (INOUT) {
       assert(sns_x.length);
     }
@@ -38,6 +67,43 @@ export class Key extends SetSn {
     this.#children = sns_x;
 
     for (const sn of sns_x) sn.attachTo_$(this);
+
+    /*#static*/ if (!DENO) {
+      CSS.highlights.set(this.#cpl_hl_name, this.#cpl_hl);
+
+      document[$cssstylesheet].insertRule(
+        `::highlight(${this.#cpl_hl_name}) {
+          text-decoration: var(${this.#cplTd_pn}) underline ${Tdt}em;
+          text-underline-offset: var(${this.#cplTuo_pn});
+        }`,
+      );
+
+      document.body.style.setProperty(this.#cplTd_pn, this.#cplTd_p.cssc);
+    }
+  }
+  /**
+   * @headconst @param pazr_x
+   * @headconst @param sns_x
+   */
+  static create(pazr_x: SetPazr, sns_x: (FuzykeySeq | QuotkeySeq)[]) {
+    const ret = new Key(pazr_x, sns_x);
+    ret.observeTheme();
+    return ret;
+  }
+
+  override destructor(): void {
+    this.unobserveTheme();
+
+    /*#static*/ if (!DENO) {
+      document[$cssstylesheet].deleteSelector(
+        `::highlight(${this.#cpl_hl_name})`,
+      );
+
+      document.body.style.removeProperty(this.#cplTd_pn);
+      document.body.style.removeProperty(this.#cplTuo_pn);
+    }
+
+    super.destructor();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -53,6 +119,34 @@ export class Key extends SetSn {
     }
 
     if (i_ === 0 || i_ === c_a.length - 1) this.invalBdry();
+  }
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
+
+  protected override clrHighlight_impl$(): false {
+    this.revERan();
+    this.#cpl_hl.clear();
+    return false;
+  }
+
+  protected override setHighlight_impl$(
+    frstLidx_x: lnum_t,
+    lastLidx_x: lnum_t,
+    eranr_x: ERanr,
+  ): boolean {
+    this.#cpl_hl.clear();
+    let highlighted = false;
+
+    if (this.sntLastLidx_1 < frstLidx_x || lastLidx_x < this.sntFrstLidx_1) {
+      this.revERan();
+    } else {
+      document.body.style.setProperty(
+        this.#cplTuo_pn,
+        `-${Math.max(1 + Tuof - this.depth_1 * Tuof, 0)}em`,
+      );
+      this.#cpl_hl.add(this.syncERan(eranr_x).syncRange());
+      highlighted = true;
+    }
+    return highlighted;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

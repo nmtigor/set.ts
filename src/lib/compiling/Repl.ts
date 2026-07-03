@@ -41,7 +41,7 @@ export class Repl {
   static #ID = 0 as Id_t;
   readonly id = ++Repl.#ID as Id_t;
   /** @final */
-  get _class_id_() {
+  get class_id() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -174,7 +174,7 @@ export class Repl {
       srcLn = srcLn.nextLine;
       i_++;
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     /*#static*/ if (INOUT) {
       assert(srcLn);
     }
@@ -191,7 +191,7 @@ export class Repl {
       //   srcLn.rmvSelf_$();
       //   srcLn = ln_;
       // }
-      // assert(valve, `Loop ${VALVE}±1 times`);
+      // assert(valve, `Loop ${VALVE}(±1) times!`);
       // /*#static*/ if (INOUT) {
       //   assert(srcLn);
       // }
@@ -406,7 +406,7 @@ export class Repl {
   ) {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}._impl_cb() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}._impl_cb() >>>>>>>`,
       );
     }
     const inRan_a = this.#pre(inRv_x);

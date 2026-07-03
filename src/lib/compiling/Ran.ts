@@ -56,10 +56,10 @@ export class Ran {
     return this.#ranval;
   }
   syncRanvalAnchr_$(): void {
-    this.#ranval.setAnchr(this.frstLine.lidx_1, this.strtLoff);
+    this.#ranval.setAnchr(this.frstLidx_1, this.strtLoff);
   }
   syncRanvalFocus_$(): void {
-    this.#ranval.setFocus(this.lastLine.lidx_1, this.stopLoff);
+    this.#ranval.setFocus(this.lastLidx_1, this.stopLoff);
   }
   syncRanval_$(): void {
     this.syncRanvalAnchr_$();
@@ -75,6 +75,9 @@ export class Ran {
   get frstLine() {
     return this.strtLoc$.line;
   }
+  get frstLidx_1() {
+    return this.frstLine.lidx_1;
+  }
   get strtLoff() {
     return this.strtLoc$.loff_$;
   }
@@ -87,6 +90,9 @@ export class Ran {
   }
   get lastLine() {
     return this.stopLoc$.line;
+  }
+  get lastLidx_1() {
+    return this.lastLine.lidx_1;
   }
   get stopLoff() {
     return this.stopLoc$.loff_$;
@@ -290,13 +296,13 @@ export class Ran {
       ln = ln.nextLine!;
       ret += ln.uchrLen;
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
     ret += this.stopLoff;
     return ret;
   }
 
   get lineN_1(): lnum_t {
-    return this.lastLine.lidx_1 - this.frstLine.lidx_1 + 1;
+    return this.lastLidx_1 - this.frstLidx_1 + 1;
   }
 
   /**
@@ -360,7 +366,7 @@ export class Ran {
         ret.push(ln_.text);
         ln_ = ln_.nextLine;
       }
-      assert(valve, `Loop ${VALVE}±1 times`);
+      assert(valve, `Loop ${VALVE}(±1) times!`);
       /*#static*/ if (INOUT) {
         assert(ln_);
       }
@@ -385,18 +391,18 @@ export class Ran {
   calcRanp(lidx_x: lnum_t, loff_x: loff_t, out_x: RanpData): void {
     let ranp = Ranp.unknown;
     let offs: loff_t | lnum_t = 0;
-    if (lidx_x === this.lastLine.lidx_1 && this.stopLoff <= loff_x) {
+    if (lidx_x === this.lastLidx_1 && this.stopLoff <= loff_x) {
       ranp = Ranp.lastLineAfter; //! MUST before `frstLineBefor`
       offs = loff_x - this.stopLoff;
-    } else if (lidx_x === this.frstLine.lidx_1 && loff_x <= this.strtLoff) {
+    } else if (lidx_x === this.frstLidx_1 && loff_x <= this.strtLoff) {
       ranp = Ranp.frstLineBefor;
       offs = this.strtLoff - loff_x; //!
-    } else if (this.lastLine.lidx_1 < lidx_x) {
+    } else if (this.lastLidx_1 < lidx_x) {
       ranp = Ranp.ranLinesAfter;
-      offs = lidx_x - this.lastLine.lidx_1;
-    } else if (lidx_x < this.frstLine.lidx_1) {
+      offs = lidx_x - this.lastLidx_1;
+    } else if (lidx_x < this.frstLidx_1) {
       ranp = Ranp.ranLinesBefor;
-      offs = this.frstLine.lidx_1 - lidx_x; //!
+      offs = this.frstLidx_1 - lidx_x; //!
     } else {
       ranp = Ranp.inOldRan;
       offs = -1;

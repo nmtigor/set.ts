@@ -224,14 +224,14 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   }
   /* ~ */
 
-  readonly #selecBg_pn = `--${this._class_id_}-selecBg`;
+  readonly #selecBg_pn = `--${this.class_id}-selecBg`;
 
   /* #selec_hl */
   //jjjj TOCLEANUP
   // readonly #selec_fac: SelecFac;
 
   readonly #selec_hl = new Highlight();
-  readonly #selec_hl_name = `${this._class_id_}_selec`;
+  readonly #selec_hl_name = `${this.class_id}_selec`;
   #hideSelec() {
     //jjjj TOCLEANUP
     // this.#selec_fac.reset_Factory();
@@ -288,9 +288,9 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     //jjjj TOCLEANUP
     // this.#selec_fac = new SelecFac(coo_x);
 
-    this.el$.id = this._class_id_; // Otherwise, Chrome DevTools will issue "A form field element has neither an id nor a name attribute."
+    this.el$.id = this.class_id; // Otherwise, Chrome DevTools will issue "A form field element has neither an id nor a name attribute."
     /*#static*/ if (CYPRESS || DEBUG) {
-      this.el$.hint = this._class_id_;
+      this.el$.hint = this.class_id;
     }
     this.assignAttro({
       // className: "editor-selection",
@@ -305,7 +305,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
       autocorrect: "off",
 
       /* To prevent Edge from complaining. See [Form <input> elements must have labels](https://dequeuniversity.com/rules/axe/4.4/label) */
-      "aria-label": this._class_id_,
+      "aria-label": this.class_id,
     }).assignStylo({
       display: "none",
       position: "absolute",
@@ -458,7 +458,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   private _onRanvalChange(rv_x: Ranval) {
     /*#static*/ if (_TRACE && EDTR) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}._onRanvalChange( [${rv_x}]) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}._onRanvalChange( [${rv_x}]) >>>>>>>`,
       );
     }
     /*#static*/ if (CYPRESS) {
@@ -524,7 +524,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   // private _onFocus(_evt_x: FocusEvent) {
   //   /*#static*/ if (_TRACE && EDTR) {
   //     console.log(
-  //       `${trace.indent}>>>>>>> ${this._class_id_}._onFocus() >>>>>>>`,
+  //       `${trace.indent}>>>>>>> ${this.class_id}._onFocus() >>>>>>>`,
   //     );
   //   }
   //   this.focusd$ = true;
@@ -535,7 +535,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   // private _onBlur(_evt_x: FocusEvent) {
   //   /*#static*/ if (_TRACE && EDTR) {
   //     console.log(
-  //       `${trace.indent}>>>>>>> ${this._class_id_}._onBlur() >>>>>>>`,
+  //       `${trace.indent}>>>>>>> ${this.class_id}._onBlur() >>>>>>>`,
   //     );
   //   }
   //   // console.log(`${trace.dent}edtr.dragingM: ${this.edtr.dragingM}`);
@@ -549,7 +549,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   // #onKeyUp = (evt_x: KeyboardEvent) => {
   //   /*#static*/ if (_TRACE && EDTR) {
   //     console.log(
-  //       `${trace.indent}>>>>>>> ${this._class_id_}.#onKeyUp() >>>>>>>`,
+  //       `${trace.indent}>>>>>>> ${this.class_id}.#onKeyUp() >>>>>>>`,
   //     );
   //     console.log(`${trace.dent}value = "${this.el$.value}"`);
   //   }
@@ -563,7 +563,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   // #onInput = (evt_x: Event) => {
   //   /*#static*/ if (_TRACE && EDTR) {
   //     console.log(
-  //       `${trace.indent}>>>>>>> ${this._class_id_}.#onInput() >>>>>>>`,
+  //       `${trace.indent}>>>>>>> ${this.class_id}.#onInput() >>>>>>>`,
   //     );
   //     console.log(
   //       `${trace.dent}inputType = "${(evt_x as InputEvent).inputType}"`,
@@ -621,7 +621,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   // setByRanval(rv_x: Ranval, force_x?: "force"): void {
   //   /*#static*/ if (_TRACE && EDTR) {
   //     console.log(
-  //       `${trace.indent}>>>>>>> ${this._class_id_}.setByRanval([${rv_x}]${
+  //       `${trace.indent}>>>>>>> ${this.class_id}.setByRanval([${rv_x}]${
   //         force_x ? `, "${force_x}"` : ""
   //       }) >>>>>>>`,
   //     );
@@ -637,7 +637,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   @traceOut(_TRACE && EDTR)
   draw_$() {
     /*#static*/ if (_TRACE && EDTR) {
-      console.log(`${trace.indent}>>>>>>> ${this._class_id_}.draw_$() >>>>>>>`);
+      console.log(`${trace.indent}>>>>>>> ${this.class_id}.draw_$() >>>>>>>`);
     }
     this.#drawEndpt();
     //jjjj TOCLEANUP
@@ -651,7 +651,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   #drawEndpt() {
     /*#static*/ if (_TRACE && EDTR) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.#drawEndpt() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.#drawEndpt() >>>>>>>`,
       );
     }
     const rv_ = this.ranval;
@@ -745,7 +745,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   #drawRange(): void {
     /*#static*/ if (_TRACE && EDTR) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.#drawRange() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.#drawRange() >>>>>>>`,
       );
     }
     const rv_ = this.ranval;

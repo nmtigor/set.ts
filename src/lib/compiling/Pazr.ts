@@ -22,7 +22,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   static #ID = 0 as Id_t;
   readonly id = ++Pazr.#ID as Id_t;
   /** @final */
-  get _class_id_() {
+  get class_id() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -239,7 +239,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
         if (sn_y === this.drtSn_$) break;
         sn_y = sn_y.parent;
       }
-      assert(valve, `Loop ${VALVE}±1 times`);
+      assert(valve, `Loop ${VALVE}(±1) times!`);
     };
     for (
       let tk_ = this.strtPazTk$.nextToken_$;
@@ -248,7 +248,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     ) {
       invalUp_(tk_.sn_$);
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
 
     this.#tmpSn_ss.reset_SortedArray();
   }
@@ -314,7 +314,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     while (
       !snClrTk_0.sn_$ && (snClrTk_0 = snClrTk_0.prevToken_$) && --valve
     );
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
 
     if (snClrTk_0?.sn_$!.lastToken_1.posSE(strtLexTk)) {
       let sn_: Stnode<T> | undefined = snClrTk_0.sn_$!;
@@ -333,7 +333,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     while (
       !snClrTk_1.sn_$ && (snClrTk_1 = snClrTk_1.nextToken_$) && --valve
     );
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
 
     if (snClrTk_1?.sn_$!.frstToken_1.posGE(stopLexTk)) {
       let sn_: Stnode<T> | undefined = snClrTk_1.sn_$!;
@@ -355,7 +355,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
       while ((tk_ = tk_.nextToken_$) && tk_ !== snClrTk_1 && --valve) {
         if (tk_.sn_$) Stnode.sn_ss.push(tk_.sn_$);
       }
-      assert(valve, `Loop ${VALVE}±1 times`);
+      assert(valve, `Loop ${VALVE}(±1) times!`);
       Stnode.sn_ss.push(...this.errSn_ss$);
       this.drtSn_$ = this.setPazRegion$(
         Stnode.calcCommon({ unrelSn_ss: this.unrelSn_ss_$, unrelSn_a }),
@@ -364,12 +364,12 @@ export abstract class Pazr<T extends Tok = BaseTok> {
       if (snClrTk_0) {
         let sn_: Stnode<T> | undefined = snClrTk_0.sn_$!;
         while ((sn_ = sn_.prevStnod) && --valve) sn_.filterTo(unrelSn_a);
-        assert(valve, `Loop ${VALVE}±1 times`);
+        assert(valve, `Loop ${VALVE}(±1) times!`);
       }
       if (snClrTk_1) {
         let sn_: Stnode<T> | undefined = snClrTk_1.sn_$!;
         while ((sn_ = sn_.nextStnod) && --valve) sn_.filterTo(unrelSn_a);
-        assert(valve, `Loop ${VALVE}±1 times`);
+        assert(valve, `Loop ${VALVE}(±1) times!`);
       }
       this.unrelSn_ss_$.add_O(unrelSn_a);
       this.drtSn_$ = this.setPazRegion$();

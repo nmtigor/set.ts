@@ -129,9 +129,9 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     super(coo_x, div());
     this.bline_$ = bln_x;
 
-    this.el$.id = this._class_id_;
+    this.el$.id = this.class_id;
     /*#static*/ if (CYPRESS || DEBUG) {
-      this.el$.hint = this._class_id_;
+      this.el$.hint = this.class_id;
     }
     // this.assignStylo({
     //   /* It works not well for, say, 5000 individual tiny divs.
@@ -212,7 +212,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   refreshPlain(): this {
     // /*#static*/ if (_TRACE) {
     //   console.log(
-    //     `${trace.indent}>>>>>>> ${this._class_id_}.refreshPlain() >>>>>>>`,
+    //     `${trace.indent}>>>>>>> ${this.class_id}.refreshPlain() >>>>>>>`,
     //   );
     // }
     this.reset_ELineBase$();
@@ -309,7 +309,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   protected setBidi$(): void {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this._class_id_}.setBidi$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.setBidi$() >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -374,7 +374,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   // private _onCvasc(evt_x: ContentVisibilityAutoStateChangeEvent) {
   //   /*#static*/ if (_TRACE) {
   //     console.log(
-  //       `%c${trace.indent}>>>>>>> ${this._class_id_}._onCvasc() (${this.bline_$._class_id_}) >>>>>>>`,
+  //       `%c${trace.indent}>>>>>>> ${this.class_id}._onCvasc() (${this.bline_$.class_id}) >>>>>>>`,
   //       `color:${LOG_cssc.cvasc}`,
   //     );
   //     console.log(`${trace.dent}evt_x.skipped: ${evt_x.skipped}`);
@@ -389,7 +389,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   // private _onResiz() {
   //   /*#static*/ if (_TRACE && RESIZ) {
   //     console.log(
-  //       `%c${trace.indent}>>>>>>> ${this._class_id_}._onResiz() (${this.bline_$._class_id_}) >>>>>>>`,
+  //       `%c${trace.indent}>>>>>>> ${this.class_id}._onResiz() (${this.bline_$.class_id}) >>>>>>>`,
   //       `color:${LOG_cssc.resiz}`,
   //     );
   //     console.log(`${trace.dent}isConnected: ${this.el$.isConnected}`);

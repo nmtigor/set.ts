@@ -43,19 +43,23 @@ export const isOctalDigit = (_x: uint): boolean => (0x30 <= _x && _x <= 0x37); /
  * A..Z
  * @const @param _x
  */
-export const isASCIIUpLetter = (_x: uint): boolean => 0x41 <= _x && _x <= 0x5A;
+export const isASCIIUpAlpha = (_x: uint): boolean => 0x41 <= _x && _x <= 0x5A;
 /**
  * a..z
  * @const @param _x
  */
-export const isASCIILoLetter = (_x: uint): boolean => 0x61 <= _x && _x <= 0x7A;
+export const isASCIILoAlpha = (_x: uint): boolean => 0x61 <= _x && _x <= 0x7A;
 /** @see {@linkcode isSpaceOrTab()} */
-export const isASCIILetter = (_x: uint16): boolean =>
-  isASCIIUpLetter(_x) || isASCIILoLetter(_x);
+export const isASCIIAlpha = (_x: uint): boolean =>
+  isASCIIUpAlpha(_x) || isASCIILoAlpha(_x);
 
 /** @const @param _x */
-export const isWordLetter = (_x: uint): boolean =>
-  isDecimalDigit(_x) || isASCIILetter(_x) || _x === /* "_" */ 0x5F;
+export const isASCIIAlphanumeric = (_x: uint): boolean =>
+  isDecimalDigit(_x) || isASCIIAlpha(_x);
+//jjjj TOCLEANUP
+// /** @const @param _x */
+// export const isWordLetter = (_x: uint): boolean =>
+//   isASCIIAlphanumeric(_x) || _x === /* "_" */ 0x5F;
 
 /** @const @param _x */
 export const isASCIIControl = (_x: uint): boolean =>

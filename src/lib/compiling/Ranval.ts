@@ -77,9 +77,9 @@ export class Ranval extends Array<lnum_t | loff_t> {
   /** @primaryconst @param ran_x */
   static fromRan(ran_x: Ran): Ranval {
     return new Ranval(
-      ran_x.frstLine.lidx_1,
+      ran_x.frstLidx_1,
       ran_x.strtLoff,
-      ran_x.lastLine.lidx_1,
+      ran_x.lastLidx_1,
       ran_x.stopLoff,
     );
   }
@@ -109,9 +109,9 @@ export class Ranval extends Array<lnum_t | loff_t> {
   /** @primaryconst @param ran_x */
   setByRan(ran_x: Ran): this {
     return this.set_Ranval(
-      ran_x.frstLine.lidx_1,
+      ran_x.frstLidx_1,
       ran_x.strtLoff,
-      ran_x.lastLine.lidx_1,
+      ran_x.lastLidx_1,
       ran_x.stopLoff,
     );
   }

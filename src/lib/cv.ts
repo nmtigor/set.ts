@@ -63,7 +63,7 @@ export abstract class Vuu<C extends Coo = Coo, E extends Element = Element> {
     return this.constructor.name;
   }
   /** @final */
-  get _class_id_() {
+  get class_id() {
     return `${this.class}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/

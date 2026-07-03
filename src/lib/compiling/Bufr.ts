@@ -39,7 +39,7 @@ export class Bufr {
   static #ID = 0 as Id_t;
   readonly id = ++Bufr.#ID as Id_t;
   /** @final */
-  get _class_id_() {
+  get class_id() {
     return `${this.constructor.name}_${this.id}`;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -88,7 +88,7 @@ export class Bufr {
 
     for (const ran of this.oldRan_a_$) {
       for (
-        let i = ran.frstLine.lidx_1, iI = ran.lastLine.lidx_1;
+        let i = ran.frstLidx_1, iI = ran.lastLidx_1;
         i <= iI;
         i++
       ) {
@@ -359,7 +359,7 @@ export class Bufr {
     const VALVE = 30;
     let valve = VALVE;
     while (!(ret & this.#sigPool) && --valve) ret <<= 1;
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
 
     this.#sigPool &= ~ret;
     // console.log(`0x${this.#sigPool.toString(16)}`);
@@ -464,7 +464,7 @@ export class Bufr {
     //   ln_.rmvSelf_$();
     //   ln_ = ln_1;
     // }
-    // assert(valve, `Loop ${VALVE}±1 times`);
+    // assert(valve, `Loop ${VALVE}(±1) times!`);
     // ln_!.rmvSelf_$();
     if (this.lineN > 1) this.rmvLines(1);
     this.frstLine_$.resetText_$();
@@ -580,12 +580,14 @@ export class Bufr {
     // }
     // return cb_x(ln_) ? ln_ : undefined;
     let ln_: Line | undefined;
+    const VALVE = valve_x;
     while (--valve_x) {
       if (ln_) ln_ = ln_.nextLine;
       else ln_ = this.frstLine_$;
       if (!ln_) break;
       if (cb_x(ln_)) return ln_;
     }
+    assert(valve_x, `Loop ${VALVE}(±1) times!`);
     return undefined;
   }
   frstNonemptyLine(valve_x = LnumMAX) {
@@ -597,6 +599,7 @@ export class Bufr {
     //   ln_ = ln_.prevLine;
     // }
     // return cb_x(ln_) ? ln_ : undefined;
+    const VALVE = valve_x;
     let ln_: Line | undefined;
     while (--valve_x) {
       if (ln_) ln_ = ln_.prevLine;
@@ -604,6 +607,7 @@ export class Bufr {
       if (!ln_) break;
       if (cb_x(ln_)) return ln_;
     }
+    assert(valve_x, `Loop ${VALVE}(±1) times!`);
     return undefined;
   }
   lastNonemptyLine(valve_x = LnumMAX) {
@@ -707,7 +711,7 @@ export class Bufr {
       }
       ln = ln.nextLine;
     }
-    assert(valve, `Loop ${VALVE}±1 times`);
+    assert(valve, `Loop ${VALVE}(±1) times!`);
 
     return ret;
   }
