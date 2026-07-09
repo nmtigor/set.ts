@@ -7,7 +7,7 @@ import type { ERanr } from "@fe-edt/ERan.ts";
 import type { lnum_t } from "@fe-lib/alias.ts";
 import { Pale } from "@fe-lib/color/Pale.ts";
 import type { Cssc } from "@fe-lib/color/alias.ts";
-import { $cssstylesheet } from "@fe-lib/symbols.ts";
+import { $CSS } from "@fe-lib/symbols.ts";
 import { assert } from "@fe-lib/util.ts";
 import { DENO, INOUT } from "@fe-src/preNs.ts";
 import type { SetTk } from "../../Token.ts";
@@ -43,6 +43,11 @@ export class Key extends SetSn {
     return this.#children;
   }
 
+  //jjjj TOCLEANUP
+  // override get known(): boolean {
+  //   return this.#children[0].known && this.#children.at(-1)!.known;
+  // }
+
   override get frstToken_1(): SetTk {
     return this.frstTk$ ??= this.children[0].frstToken_1;
   }
@@ -54,6 +59,9 @@ export class Key extends SetSn {
   get #cpl_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[0] ??= new Highlight();
+  }
+  #clr_cpl_hl(): void {
+    this.hl_a$?.at(0)?.clear();
   }
 
   readonly #cplTd_pn = `--${this.class_id}-cplTd`;
@@ -71,14 +79,14 @@ export class Key extends SetSn {
     /*#static*/ if (!DENO) {
       CSS.highlights.set(this.#cpl_hl_name, this.#cpl_hl);
 
-      document[$cssstylesheet].insertRule(
+      document.body.style.setProperty(this.#cplTd_pn, this.#cplTd_p.cssc);
+
+      document[$CSS].insertRule(
         `::highlight(${this.#cpl_hl_name}) {
           text-decoration: var(${this.#cplTd_pn}) underline ${Tdt}em;
           text-underline-offset: var(${this.#cplTuo_pn});
         }`,
       );
-
-      document.body.style.setProperty(this.#cplTd_pn, this.#cplTd_p.cssc);
     }
   }
   /**
@@ -95,12 +103,14 @@ export class Key extends SetSn {
     this.unobserveTheme();
 
     /*#static*/ if (!DENO) {
-      document[$cssstylesheet].deleteSelector(
+      document[$CSS].deleteSelector(
         `::highlight(${this.#cpl_hl_name})`,
       );
 
       document.body.style.removeProperty(this.#cplTd_pn);
       document.body.style.removeProperty(this.#cplTuo_pn);
+
+      CSS.highlights.delete(this.#cpl_hl_name);
     }
 
     super.destructor();
@@ -124,7 +134,7 @@ export class Key extends SetSn {
 
   protected override clrHighlight_impl$(): false {
     this.revERan();
-    this.#cpl_hl.clear();
+    this.#clr_cpl_hl();
     return false;
   }
 
@@ -133,7 +143,7 @@ export class Key extends SetSn {
     lastLidx_x: lnum_t,
     eranr_x: ERanr,
   ): boolean {
-    this.#cpl_hl.clear();
+    this.#clr_cpl_hl();
     let highlighted = false;
 
     if (this.sntLastLidx_1 < frstLidx_x || lastLidx_x < this.sntFrstLidx_1) {

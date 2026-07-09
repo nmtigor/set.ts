@@ -28,9 +28,9 @@ const esc_a_ = /* deno-fmt-ignore */ [
 //llll limit `VALVE` editing according to compiling
 /** @final */
 export class SetLexr extends Lexr<SetTok> {
-  /** Adjust `strtLexTk$`, `stopLexTk$`, and assign `curLoc$` */
+  /** Adjust `curLexTk$`, `stopLexTk$`, and assign `curLoc$` */
   protected override preLex$(): void {
-    if (this.strtLexTk$.value === SetTok.subtract) {
+    if (this.curLexTk$.value === SetTok.subtract) {
       this.enlrgStrtTk$();
     }
     if (

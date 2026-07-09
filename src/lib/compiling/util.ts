@@ -12,6 +12,7 @@ import { assert } from "../util.ts";
 import * as Is from "../util/is.ts";
 import { SortedIdo, SortedSet } from "../util/SortedSet.ts";
 import type { Locval, Tok } from "./alias.ts";
+import { BaseTok } from "./BaseTok.ts";
 import type { Line } from "./Line.ts";
 import type { Ranval } from "./Ranval.ts";
 import type { Snt } from "./Snt.ts";
@@ -157,6 +158,10 @@ export const sntFrstTk = <T extends Tok>(
 export const sntLastTk = <T extends Tok>(
   snt_x: Stnode<T> | Token<T>,
 ): Token<T> => snt_x instanceof Stnode ? snt_x.lastToken_1 : snt_x;
+
+//jjjj TOCLEANUP
+// export const sntKnown = <T extends Tok>(snt_x: Stnode<T> | Token<T>): boolean =>
+//   snt_x instanceof Stnode ? snt_x.known : snt_x.value !== BaseTok.unknown;
 /*80--------------------------------------------------------------------------*/
 
 export type _OldInfo_ = {
@@ -165,7 +170,15 @@ export type _OldInfo_ = {
 };
 
 export class SortedSnt_id<T extends Snt = Snt> extends SortedIdo<T> {
+  /** @final */
   _repr_(): string[] {
+    const ret: _OldInfo_[] = [];
+    for (const v of this) ret.push(v._oldInfo_);
+    return ret.map((_y) => _y.info);
+  }
+
+  /** @final */
+  _reprSorted_(): string[] {
     const ret: _OldInfo_[] = [];
     for (const v of this) ret.push(v._oldInfo_);
     return ret.sort((a_y, b_y) => {
@@ -434,13 +447,12 @@ export const enum ErrMsg {
     "Unexpected non-space characters in table context caused voodoo mode.",
   "unexpected-hidden-input-in-table" =
     "Unexpected input with type hidden in table context.",
-  html_table_unexp_form = "unexpected-form-in-table", // "Unexpected form in table context.",
-  html_table_opntag_voodoo = "unexpected-start-tag-implies-table-voodoo", // "Unexpected start tag (%(name)s) in table context caused voodoo mode.",
+  html_table_unexp_form = "unexpected-form-in-table", // "Unexpected form in table context."
+  html_table_opntag_voodoo = "unexpected-start-tag-implies-table-voodoo", // "Unexpected start tag (%(name)s) in table context caused voodoo mode."
   "unexpected-end-tag-implies-table-voodoo" =
     "Unexpected end tag (%(name)s) in table context caused voodoo mode.",
   html_tbody_unexp_cell = "unexpected-cell-in-table-body", // "Unexpected table cell start tag (%(name)s) in the table body phase.",
-  "unexpected-cell-end-tag" =
-    "Got table cell end tag (%(name)s) while required end tags are missing.",
+  html_cell_unexp_endtag = "unexpected-cell-end-tag", // "Got table cell end tag (%(name)s) while required end tags are missing.",
   html_tbody_unexp_endtag = "unexpected-end-tag-in-table-body", // "Unexpected end tag (%(name)s) in the table body phase. Ignored.",
   "unexpected-implied-end-tag-in-table-row" =
     "Unexpected implied end tag (%(name)s) in the table row phase.",

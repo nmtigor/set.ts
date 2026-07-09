@@ -7,7 +7,7 @@ import type { ERanr } from "@fe-edt/ERan.ts";
 import type { lnum_t } from "@fe-lib/alias.ts";
 import { Pale } from "@fe-lib/color/Pale.ts";
 import type { Cssc } from "@fe-lib/color/alias.ts";
-import { $cssstylesheet } from "@fe-lib/symbols.ts";
+import { $CSS } from "@fe-lib/symbols.ts";
 import { assert } from "@fe-lib/util.ts";
 import { DENO, INOUT } from "@fe-src/preNs.ts";
 import { Ranval } from "../../Ranval.ts";
@@ -75,6 +75,12 @@ export abstract class BinaryOp extends SetSn {
     return this.#children = ret;
   }
 
+  //jjjj TOCLEANUP
+  // override get known(): boolean {
+  //   return this.lhs$.known &&
+  //     (this.rhs$?.known ?? this.opTk.value !== BaseTok.unknown);
+  // }
+
   override get frstToken_1(): SetTk {
     return this.frstTk$ ??= this.lhs$.frstToken_1;
   }
@@ -87,11 +93,17 @@ export abstract class BinaryOp extends SetSn {
     this.hl_a$ ??= [];
     return this.hl_a$[0] ??= new Highlight();
   }
+  #clr_stx_hl(): void {
+    this.hl_a$?.at(0)?.clear();
+  }
 
   readonly #cpl_hl_name = `${this.class_id}_cpl`;
   get #cpl_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[1] ??= new Highlight();
+  }
+  #clr_cpl_hl(): void {
+    this.hl_a$?.at(1)?.clear();
   }
 
   readonly #stxFg_pn = `--${this.class_id}-stxFg`;
@@ -114,35 +126,35 @@ export abstract class BinaryOp extends SetSn {
       CSS.highlights.set(this.#stx_hl_name, this.#stx_hl);
       CSS.highlights.set(this.#cpl_hl_name, this.#cpl_hl);
 
-      document[$cssstylesheet].insertRule(
+      document.body.style.setProperty(this.#stxFg_pn, this.#stxFg_p.cssc);
+      document.body.style.setProperty(this.#cplTd_pn, this.#cplTd_p.cssc);
+
+      document[$CSS].insertRule(
         `::highlight(${this.#stx_hl_name}) {
           color: var(${this.#stxFg_pn});
         }`,
       );
-      document[$cssstylesheet].insertRule(
+      document[$CSS].insertRule(
         `::highlight(${this.#cpl_hl_name}) {
               text-decoration: var(${this.#cplTd_pn}) underline ${Tdt}em;
               text-underline-offset: var(${this.#cplTuo_pn});
             }`,
       );
-
-      document.body.style.setProperty(this.#stxFg_pn, this.#stxFg_p.cssc);
-      document.body.style.setProperty(this.#cplTd_pn, this.#cplTd_p.cssc);
     }
   }
 
   override destructor(): void {
     /*#static*/ if (!DENO) {
-      document[$cssstylesheet].deleteSelector(
-        `::highlight(${this.#stx_hl_name})`,
-      );
-      document[$cssstylesheet].deleteSelector(
-        `::highlight(${this.#cpl_hl_name})`,
-      );
+      const css_ = document[$CSS];
+      css_.deleteSelector(`::highlight(${this.#stx_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.#cpl_hl_name})`);
 
       document.body.style.removeProperty(this.#stxFg_pn);
       document.body.style.removeProperty(this.#cplTd_pn);
       document.body.style.removeProperty(this.#cplTuo_pn);
+
+      CSS.highlights.delete(this.#stx_hl_name);
+      CSS.highlights.delete(this.#cpl_hl_name);
     }
 
     super.destructor();
@@ -171,8 +183,8 @@ export abstract class BinaryOp extends SetSn {
     this.opTk.revERan();
     this.revERan();
 
-    this.#stx_hl.clear();
-    this.#cpl_hl.clear();
+    this.#clr_stx_hl();
+    this.#clr_cpl_hl();
     return false;
   }
 
@@ -185,8 +197,8 @@ export abstract class BinaryOp extends SetSn {
       return this.clrHighlight_impl$();
     }
 
-    this.#stx_hl.clear();
-    this.#cpl_hl.clear();
+    this.#clr_stx_hl();
+    this.#clr_cpl_hl();
 
     if (
       this.opTk.sntLastLidx_1 < frstLidx_x ||
@@ -258,11 +270,17 @@ export class BinaryErr extends BinaryOp {
     this.hl_a$ ??= [];
     return this.hl_a$[2] ??= new Highlight();
   }
+  #clr_stx_hl(): void {
+    this.hl_a$?.at(2)?.clear();
+  }
 
   readonly #err_hl_name = `${this.class_id}_err`;
   get #err_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[3] ??= new Highlight();
+  }
+  #clr_err_hl(): void {
+    this.hl_a$?.at(3)?.clear();
   }
 
   readonly #stxTd_pn = `--${this.class_id}-stxTd`;
@@ -298,21 +316,21 @@ export class BinaryErr extends BinaryOp {
       CSS.highlights.set(this.#stx_hl_name, this.#stx_hl);
       CSS.highlights.set(this.#err_hl_name, this.#err_hl);
 
-      document[$cssstylesheet].insertRule(
+      document.body.style.setProperty(this.#stxTd_pn, this.#stxTd_p.cssc);
+      document.body.style.setProperty(this.#errTd_pn, this.#errTd_p.cssc);
+
+      document[$CSS].insertRule(
         `::highlight(${this.#stx_hl_name}) {
           text-decoration: var(${this.#stxTd_pn}) wavy underline;
           text-underline-offset: .2em;
         }`,
       );
-      document[$cssstylesheet].insertRule(
+      document[$CSS].insertRule(
         `::highlight(${this.#err_hl_name}) {
           text-decoration: var(${this.#errTd_pn}) wavy underline;
           text-underline-offset: .2em;
         }`,
       );
-
-      document.body.style.setProperty(this.#stxTd_pn, this.#stxTd_p.cssc);
-      document.body.style.setProperty(this.#errTd_pn, this.#errTd_p.cssc);
     }
 
     this.ensureBdry();
@@ -338,15 +356,15 @@ export class BinaryErr extends BinaryOp {
     this.unobserveTheme();
 
     /*#static*/ if (!DENO) {
-      document[$cssstylesheet].deleteSelector(
-        `::highlight(${this.#stx_hl_name})`,
-      );
-      document[$cssstylesheet].deleteSelector(
-        `::highlight(${this.#err_hl_name})`,
-      );
+      const css_ = document[$CSS];
+      css_.deleteSelector(`::highlight(${this.#stx_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.#err_hl_name})`);
 
       document.body.style.removeProperty(this.#stxTd_pn);
       document.body.style.removeProperty(this.#errTd_pn);
+
+      CSS.highlights.delete(this.#stx_hl_name);
+      CSS.highlights.delete(this.#err_hl_name);
     }
 
     super.destructor();
@@ -360,8 +378,8 @@ export class BinaryErr extends BinaryOp {
   ): boolean {
     const snHled = super.setHighlight_impl$(frstLidx_x, lastLidx_x, eranr_x);
 
-    this.#stx_hl.clear();
-    this.#err_hl.clear();
+    this.#clr_stx_hl();
+    this.#clr_err_hl();
 
     if (
       !snHled ||

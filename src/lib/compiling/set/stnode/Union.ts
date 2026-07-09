@@ -7,7 +7,7 @@ import type { ERanr } from "@fe-edt/ERan.ts";
 import type { lnum_t } from "@fe-lib/alias.ts";
 import type { Cssc } from "@fe-lib/color/alias.ts";
 import { Pale } from "@fe-lib/color/Pale.ts";
-import { $cssstylesheet } from "@fe-lib/symbols.ts";
+import { $CSS } from "@fe-lib/symbols.ts";
 import { DENO } from "@fe-src/preNs.ts";
 import type { SetTk } from "../../Token.ts";
 import { ErrMsg, paleMock } from "../../util.ts";
@@ -44,7 +44,10 @@ export class Union extends BinaryOp {
   readonly #err_hl_name = `${this.class_id}_err`;
   get #err_hl(): Highlight {
     this.hl_a$ ??= [];
-    return this.hl_a$[3] ??= new Highlight();
+    return this.hl_a$[2] ??= new Highlight();
+  }
+  #clr_err_hl(): void {
+    this.hl_a$?.at(2)?.clear();
   }
 
   readonly #errTd_pn = `--${this.class_id}-errTd`;
@@ -66,14 +69,14 @@ export class Union extends BinaryOp {
     /*#static*/ if (!DENO) {
       CSS.highlights.set(this.#err_hl_name, this.#err_hl);
 
-      document[$cssstylesheet].insertRule(
+      document.body.style.setProperty(this.#errTd_pn, this.#errTd_p.cssc);
+
+      document[$CSS].insertRule(
         `::highlight(${this.#err_hl_name}) {
           text-decoration: var(${this.#errTd_pn}) wavy underline;
           text-underline-offset: .2em;
         }`,
       );
-
-      document.body.style.setProperty(this.#errTd_pn, this.#errTd_p.cssc);
     }
 
     this.ensureBdry();
@@ -99,11 +102,13 @@ export class Union extends BinaryOp {
     this.unobserveTheme();
 
     /*#static*/ if (!DENO) {
-      document[$cssstylesheet].deleteSelector(
+      document[$CSS].deleteSelector(
         `::highlight(${this.#err_hl_name})`,
       );
 
       document.body.style.removeProperty(this.#errTd_pn);
+
+      CSS.highlights.delete(this.#err_hl_name);
     }
 
     super.destructor();
@@ -117,7 +122,7 @@ export class Union extends BinaryOp {
   ): boolean {
     const snHled = super.setHighlight_impl$(frstLidx_x, lastLidx_x, eranr_x);
 
-    this.#err_hl.clear();
+    this.#clr_err_hl();
 
     if (snHled && this.hasErrMsg(ErrMsg.set_union_no_rhs)) {
       this.#err_hl.add(this.range_$);

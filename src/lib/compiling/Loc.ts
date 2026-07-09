@@ -723,6 +723,7 @@ export class Loc {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
+   * @primaryconst
    * @out @param ret_x
    * @const @param endpt_x
    */

@@ -11,7 +11,7 @@ import { assert, fail, out } from "../util.ts";
 import type { Cf } from "../util/SortedSet.ts";
 import { SortedSet } from "../util/SortedSet.ts";
 import { g_count } from "../util/performance.ts";
-import type { BaseTok } from "./BaseTok.ts";
+import { BaseTok } from "./BaseTok.ts";
 import type { Loc } from "./Loc.ts";
 import { Pazr } from "./Pazr.ts";
 import { Ranval } from "./Ranval.ts";
@@ -242,7 +242,10 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /* frstTk$ */
   /** @final */
   protected frstTk$: Token<T> | undefined;
-  /** @primaryconst */
+  /**
+   * `in( this.known)`
+   * @primaryconst
+   */
   get frstToken_1(): Token<T> {
     return fail("Not implemented");
   }
@@ -274,7 +277,10 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /* lastTk$ */
   /** @final */
   protected lastTk$: Token<T> | undefined;
-  /** @primaryconst */
+  /**
+   * `in( this.known)`
+   * @primaryconst
+   */
   get lastToken_1(): Token<T> {
     return fail("Not implemented");
   }
@@ -337,6 +343,21 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   // resetBdry(): void {
   //   this.invalBdry().ensureBdry();
   // }
+
+  //jjjj TOCLEANUP
+  // /**
+  //  * Used to justify `frstToken_1`, `lastToken_1` in `Pazr.pazmrk_$()`.\
+  //  * Override this if `Pazr.pazmrk_$()` is invoked after `Lexr.lex()`.\
+  //  * May depend on `children`\
+  //  */
+  /**
+   * 3256
+   * @final
+   */
+  get known(): boolean {
+    return !!this.frstTk$ && this.frstTk$.value !== BaseTok.unknown &&
+      !!this.lastTk$ && this.lastTk$.value !== BaseTok.unknown;
+  }
 
   /** @final */
   contain(loc_x: Loc): boolean {
@@ -405,7 +426,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
 
   override destructor(): void {
     /* Related Eran's (if any) should be `rev()`ed at the end of `Lexr.lex()`. */
-    this.hl_a$?.forEach((hl) => hl.clear());
+    this.hl_a$?.forEach((hl) => hl.clear()); // `Array.forEach()` is not invoked for empty slots in sparse arrays.
 
     super.destructor();
     /*#static*/ if (PRF) {
@@ -476,16 +497,19 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
 
   /** \>=1 */
   static FilterDepth = 2;
+  // static FilterDepth = 10;
   /**
    * @final
    * @out @param outSn_a
    * @headconst @param except_x
+   * @const @param cln_x
    * @const @param fd_x \>=1
    * @return Same as `hasErr_1`
    */
   filterTo(
     outSn_a: Stnode<T>[],
     except_x?: Stnode<T>,
+    cln_x?: "cln",
     fd_x = Stnode.FilterDepth,
   ): boolean {
     if (this === except_x) return false;
@@ -496,23 +520,26 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
       for (const sn of c_a) {
         hasErr = fd_x === 1
           ? sn.hasErr_1
-          : sn.filterTo(outSn_a, except_x, fd_x - 1);
+          : sn.filterTo(outSn_a, except_x, cln_x, fd_x - 1);
         if (hasErr) break;
       }
     }
-    if (hasErr) return true;
+    if (hasErr || this.isErr) return true;
 
-    if (this.isErr) hasErr = true;
-    else outSn_a.push(this);
-    return hasErr;
+    if (cln_x || !this.isAncestorOf(except_x)) outSn_a.push(this);
+    return false;
   }
   /** @see {@linkcode filterTo()} */
-  filterChildrenTo(outSn_a: Stnode<T>[], except_x?: Stnode<T>): boolean {
+  filterChildrenTo(
+    outSn_a: Stnode<T>[],
+    except_x?: Stnode<T>,
+    cln_x?: "cln",
+  ): boolean {
     let ret = false;
     const c_a = this.children;
     if (c_a?.length) {
       for (const sn of c_a) {
-        ret ||= sn.filterTo(outSn_a, except_x);
+        ret ||= sn.filterTo(outSn_a, except_x, cln_x);
       }
     }
     ret ||= this.isErr;
@@ -616,7 +643,16 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
       let sn_i = sn_ss_x[i_y];
       let de_ = sn_i.depth;
       while (n_y--) {
-        unrelSn_ss?.add_O(sn_i.siblings);
+        //jjjj TOCLEANUP
+        // unrelSn_ss?.add_O(sn_i.siblings);
+        /* 3257 */ if (unrelSn_ss) {
+          const siblings = sn_i.siblings;
+          if (siblings) {
+            for (const sn of siblings) {
+              if (sn.known) unrelSn_ss.add(sn);
+            }
+          }
+        }
         sn_i = sn_ss_x[i_y] = sn_i.#parent!;
         sn_i.depth_$ = --de_;
       }

@@ -144,7 +144,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     /* The problem of this setting (instead of uisng `TailV`) is that it would
     be very complex to position the Caret on an empty ELineBase (of different
     BufrDir and WritingMode). */
-    // document[$cssstylesheet].insertRule(
+    // document[$CSS].insertRule(
     //   `#${this.el$.id}:empty::before {
     //     display: inline-block;
     //     content: "\\feff";
@@ -401,7 +401,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   //   }
   //   if (!this.el$.isConnected) return;
 
-  //   //jjjj TOCLEANUP because width of `el$` is always same as size of `main_el$`
+  //   //jjjj TOCLEANUP because width of `el$` is always same as size of `code_el$`
   //   // this.coo$.updateLastBcrTs(); //!
 
   //   // this.setBidi$();
@@ -449,7 +449,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
           );
         }
         if (subNd.vuu instanceof TailV) {
-          ret = subNd.vuu.text;
+          ret = subNd.vuu.tn;
           break;
         }
 

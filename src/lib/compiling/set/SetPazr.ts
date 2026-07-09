@@ -8,7 +8,6 @@ import { trace, traceOut } from "@fe-lib/util/trace.ts";
 import { _TRACE, INOUT } from "@fe-src/preNs.ts";
 import type { uint } from "../../alias.ts";
 import { Pazr } from "../Pazr.ts";
-import { Ranval } from "../Ranval.ts";
 import type { SetTk } from "../Token.ts";
 import { Token } from "../Token.ts";
 import { ErrMsg } from "../util.ts";
@@ -30,8 +29,8 @@ import { Union } from "./stnode/Union.ts";
 
 type PazSetO_ = {
   readonly oprec: Oprec;
-  readonly paren: Paren;
-  selfParen: Paren;
+  readonly ctxParen: Paren;
+  setParen: Paren;
   lhs?: Set;
 };
 
@@ -53,7 +52,7 @@ export class SetPazr extends Pazr<SetTok> {
   /** @headconst @param _x */
   @traceOut(_TRACE)
   private _pazSet(
-    _x: PazSetO_ = { oprec: Oprec.lowest, paren: 0, selfParen: 0 },
+    _x: PazSetO_ = { oprec: Oprec.lowest, ctxParen: 0, setParen: 0 },
   ): Set {
     assert(--this.#valve, `Loop ${SetPazr.#VALVE}(±1) times!`);
     /*#static*/ if (_TRACE) {
@@ -63,7 +62,7 @@ export class SetPazr extends Pazr<SetTok> {
     }
     /*#static*/ if (INOUT) {
       assert(!this.reachPazBdry$());
-      if (!_x.lhs) assert(_x.selfParen === 0);
+      if (!_x.lhs) assert(_x.setParen === 0);
     }
     if (!_x.lhs) {
       if (this.#pazLhs(_x)) return _x.lhs!;
@@ -412,7 +411,9 @@ export class SetPazr extends Pazr<SetTok> {
     if (this.drtSn_$) {
       this.#visitDrtSn();
       if (!this.newSn_$ || this.newSn_$.isErr || !this.reachPazBdry$()) {
-        this.enlrgBdriesTo_$(this.drtSn_$.parent!);
+        let drtSn = this.drtSn_$.parent!;
+        /* 3254 */ if (drtSn instanceof BinaryOp) drtSn = drtSn.parent!;
+        this.enlrgBdriesTo_$(drtSn);
         this.forceForw$(); //!
         if (this.drtSn_$) this.#visitDrtSn();
         else this.newSn_$ = this._pazSet();
@@ -477,7 +478,7 @@ export class SetPazr extends Pazr<SetTok> {
    */
   #pazLhs_impl(_x: PazSetO_): void {
     const reusdSn = this.#reuseSn((sn_y) =>
-      sn_y instanceof Set && !(sn_y.unpanenSet instanceof BinaryOp)
+      sn_y instanceof Set && !(sn_y.unparenSet instanceof BinaryOp)
     );
     if (reusdSn) {
       _x.lhs = reusdSn as Set;
@@ -488,14 +489,14 @@ export class SetPazr extends Pazr<SetTok> {
     if (this.strtPazTk$.value === SetTok.paren_open) {
       const tk_0 = this.strtPazTk$;
       do {
-        _x.selfParen += 1;
+        _x.setParen += 1;
         this.forceForw$();
         if (this.reachPazBdry$()) {
           _x.lhs = Set.create(this, tk_0, 0);
           //jjjj TOCLEANUP
           // _x.lhs.setErr(ErrMsg.set_no_cloz_paren);
 
-          _x.selfParen = 0;
+          _x.setParen = 0;
           this.strtPazTk$ = tk_0.nextToken_$!;
           return;
         }
@@ -516,9 +517,9 @@ export class SetPazr extends Pazr<SetTok> {
         this.forceForw$();
         break;
     }
-    _x.lhs = Set.create(this, snt, _x.selfParen);
+    _x.lhs = Set.create(this, snt, _x.setParen);
     if (this.reachPazBdry$()) {
-      if (_x.selfParen) {
+      if (_x.setParen) {
         _x.lhs.setErr(ErrMsg.set_no_cloz_paren);
       }
     }
@@ -537,7 +538,7 @@ export class SetPazr extends Pazr<SetTok> {
     if (_x.lhs!.isErr) this.errSn_ss$.add(_x.lhs!);
     if (p_ === undefined) return true;
 
-    _x.selfParen = p_;
+    _x.setParen = p_;
     return false;
   }
 
@@ -558,16 +559,16 @@ export class SetPazr extends Pazr<SetTok> {
     } else {
       const rhs = this._pazSet({
         oprec: B_x.oprec,
-        paren: _x.selfParen,
-        selfParen: 0,
+        ctxParen: _x.setParen,
+        setParen: 0,
       });
       sn_ = B_x.create(this, _x.lhs, op_, rhs);
     }
     if (sn_.isErr) this.errSn_ss$.add(sn_);
 
-    _x.lhs = Set.create(this, sn_, _x.selfParen);
+    _x.lhs = Set.create(this, sn_, _x.setParen);
     if (this.reachPazBdry$()) {
-      if (_x.selfParen) {
+      if (_x.setParen) {
         _x.lhs.setErr(ErrMsg.set_no_cloz_paren);
       }
     }
@@ -589,31 +590,36 @@ export class SetPazr extends Pazr<SetTok> {
     if (_x.lhs!.isErr) this.errSn_ss$.add(_x.lhs!);
     if (p_ === undefined) return true;
 
-    _x.selfParen = p_;
+    _x.setParen = p_;
     return false;
   }
 
   /**
    * @headconst @param _x
-   * @const @param selfParen
+   * @const @param setParen
    * @out @param lhs
    */
   #pazClozParen_impl(
-    { paren, selfParen, lhs }: Required<PazSetO_>,
+    { ctxParen, setParen, lhs }: Required<PazSetO_>,
   ): Paren | undefined {
-    let retParen = selfParen;
+    let retParen = setParen;
     if (this.strtPazTk$.value !== SetTok.paren_cloz) {
-      lhs.paren_$ = 0;
+      if (this.reusdSn_ss_$.includes(lhs)) {
+        /* 3250 */
+      } else {
+        lhs.paren_$ = 0;
+      }
       return retParen;
     }
 
     let paren_1: Paren = 0;
     let tk_1: SetTk | undefined;
     do {
-      if (retParen > 0) retParen--;
-      else {
+      if (retParen > 0) {
+        retParen -= 1;
+      } else {
         if (paren_1 === 0) tk_1 = this.strtPazTk$;
-        paren_1++;
+        paren_1 += 1;
       }
       this.forceForw$();
     } while (
@@ -621,8 +627,8 @@ export class SetPazr extends Pazr<SetTok> {
       this.strtPazTk$.value === SetTok.paren_cloz
     );
     if (retParen) {
-      lhs.paren_$ = selfParen - retParen;
-    } else if (paren) {
+      lhs.paren_$ = setParen - retParen;
+    } else if (ctxParen) {
       if (paren_1) {
         this.strtPazTk$ = tk_1!;
         return undefined;

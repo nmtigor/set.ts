@@ -14,7 +14,7 @@ import { Pale } from "../color/Pale.ts";
 import { HTMLVuu } from "../cv.ts";
 import { html, span } from "../dom.ts";
 import "../jslang.ts";
-import { $cssstylesheet } from "../symbols.ts";
+import { $CSS } from "../symbols.ts";
 import { assert, bind, out } from "../util.ts";
 import { trace, traceOut } from "../util/trace.ts";
 import { Caret_passive_z, Caret_proactive_z } from "./alias.ts";
@@ -338,7 +338,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
     });
 
     CSS.highlights.set(this.#selec_hl_name, this.#selec_hl);
-    document[$cssstylesheet].insertRule(
+    document[$CSS].insertRule(
       `::highlight(${this.#selec_hl_name}) {
         background-color: var(${this.#selecBg_pn});
       }`,
@@ -371,7 +371,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   // destructor() {
   //   this.unobserveTheme();
 
-  //   document[$cssstylesheet].deleteSelector(
+  //   document[$CSS].deleteSelector(
   //     `::highlight(${this.#selec_hl_name})`,
   //   );
   //   CSS.highlights.delete(this.#selec_hl_name);

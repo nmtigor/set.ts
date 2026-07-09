@@ -28,7 +28,7 @@ declare global {
 // };
 
 /**
- * Wrapper of one `Range`: `range`
+ * Wrapper of the Range `range`
  *
  * Like `Range`, `ERan` has no visual effects. `Caret` has visual effects.\
  * Should sync with `EdtrScrolr`s modification as soon as possible.

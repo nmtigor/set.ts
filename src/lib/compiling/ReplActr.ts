@@ -44,7 +44,9 @@ export class ReplActr {
                   assert(this.#bufr.oldRan_a_$.at(0));
                 }
                 this.#lexr?.lexmrk_$(this.#bufr.oldRan_a_$);
-                this.#pazr?.pazmrk_$();
+                //jjjj TOCLEANUP
+                // this.#pazr?.pazmrk_$();
+                this.#pazr?.root?.ensureAllBdries(); //kkkk Performance ok? Add `prePazmrk$()`
                 //jjjj TOCLEANUP
                 // this.#tfmr?.tfmmrk_$(this.#bufr.oldRan_a_$);
               },
@@ -62,7 +64,11 @@ export class ReplActr {
                 this.#lexr
                   ?.lexadj_$(this.#bufr.newRan_a_$)
                   .lex();
-                this.#pazr?.paz();
+                //jjjj TOCLEANUP
+                // this.#pazr?.paz();
+                this.#pazr
+                  ?.pazmrk_$()
+                  .paz();
                 //jjjj TOCLEANUP
                 // this.#tfmr
                 //   ?.tfmadj_$(this.#bufr.newRan_a_$)

@@ -58,33 +58,33 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   }
   /* ~ */
 
-  /* strtLexTk$ */
+  /* curLexTk$ */
+  /** @final */
+  protected curLexTk$!: Token<T>;
+  get _curLexTk_() {
+    return this.curLexTk$;
+  }
+
   /** @final */
   protected strtLexTk$!: Token<T>;
-  /** @final */
   get strtLexTk_$() {
     return this.strtLexTk$;
   }
-  /** @final */
-  protected strtLexTk_0$!: Token<T>;
-  // get strtToken_0_$() {
-  //   return this.strtLexTk_0$;
-  // }
 
   /**
-   * `in( this.strtLexTk$.value !== BaseTok.strtBdry)`
+   * `in( this.curLexTk$.value !== BaseTok.strtBdry)`
    * @final
    */
   protected enlrgStrtTk$(): void {
-    this.drtenTk$(this.strtLexTk$);
-    this.strtLexTk$ = this.strtLexTk$.prevToken_$!;
+    this.drtenTk$(this.curLexTk$);
+    this.curLexTk$ = this.curLexTk$.prevToken_$!;
   }
 
   //kkkk justify this by tests
   /** @final */
   protected enlrgStrtTk_2$(): void {
     this.enlrgStrtTk$();
-    if (this.strtLexTk$.sntStopLoc.posE(this.stopLexTk$.sntStrtLoc)) {
+    if (this.curLexTk$.sntStopLoc.posE(this.stopLexTk$.sntStrtLoc)) {
       this.enlrgStopTk$();
     }
   }
@@ -143,7 +143,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    * @final
    */
   protected enlrgStrtTk_1$(): void {
-    const loc = this.strtLexTk$.sntStopLoc;
+    const loc = this.curLexTk$.sntStopLoc;
     this.enlrgStrtTk$();
     if (loc.posE(this.stopLexTk_1$!.sntStrtLoc)) {
       this.enlrgStopTk_1$();
@@ -198,9 +198,9 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   protected curLoc$!: Loc;
   //jjjj TOCLEANUP
   // initCurLoc() {
-  //   let loc = this.strtLexTk$.nextToken_$?.sntStrtLoc;
+  //   let loc = this.curLexTk$.nextToken_$?.sntStrtLoc;
   //   if (!loc?.posS(this.stopLexTk$.sntStrtLoc)) {
-  //     loc = this.strtLexTk$.sntStopLoc;
+  //     loc = this.curLexTk$.sntStopLoc;
   //   }
   //   this.curLoc$.become(loc);
   // }
@@ -328,9 +328,9 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     assert(valve, `Loop ${VALVE}(±1) times!`);
 
     // this.bufr$ = undefined as any;
-    this.strtLexTk$ = undefined as any;
+    this.curLexTk$ = undefined as any;
     this.stopLexTk$ = undefined as any;
-    this.strtLexTk_0$ = undefined as any;
+    this.strtLexTk$ = undefined as any;
 
     this.#strtLexTk_a.length = 0;
     this.#stopLexTk_a.length = 0;
@@ -370,7 +370,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
 
     this.bufr$ = bufr_x;
 
-    this.strtLexTk$ = new Token(
+    this.curLexTk$ = new Token(
       this,
       g_ran_fac.byLoff(bufr_x.frstLine, strtLoff_x),
       BaseTok.strtBdry as T,
@@ -380,16 +380,16 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       g_ran_fac.byLoff(bufr_x.lastLine, stopLoff_x),
       BaseTok.stopBdry as T,
     );
-    this.strtLexTk$.linkNext(this.stopLexTk$);
+    this.curLexTk$.linkNext(this.stopLexTk$);
     //jjjj TOCLEANUP
-    // bufr_x.frstLine.setFrstToken_$(this.strtLexTk$);
+    // bufr_x.frstLine.setFrstToken_$(this.curLexTk$);
     // bufr_x.lastLine.setLastToken_$(this.stopLexTk$);
     /*#static*/ if (INOUT) {
-      assert(bufr_x.frstLine.frstTokenBy(this) === this.strtLexTk$);
+      assert(bufr_x.frstLine.frstTokenBy(this) === this.curLexTk$);
       assert(bufr_x.lastLine.lastTokenBy(this) === this.stopLexTk$);
     }
 
-    this.curLoc$ = this.strtLexTk$.sntStopLoc.dup_Loc();
+    this.curLoc$ = this.curLexTk$.sntStopLoc.dup_Loc();
 
     // this.initialized_ = false; /** @member { Boolean } */
 
@@ -423,7 +423,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   //   }
   //   const out = () => {
   //     assert( this.bufr$ );
-  //     assert( this.strtLexTk$ && this.stopLexTk$ );
+  //     assert( this.curLexTk$ && this.stopLexTk$ );
   //     assert( this.initialized_ );
   //   }
 
@@ -433,7 +433,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   //   // this.stoploc_ = this.curLoc$.dup();
 
   //   /** @member { Token } */
-  //   this.strtLexTk$ = new Token( new TokLoc(bufr.frstLine), BaseTok.strtBdry );
+  //   this.curLexTk$ = new Token( new TokLoc(bufr.frstLine), BaseTok.strtBdry );
   //   /** @member { Token } */
   //   this.stopLexTk$ = new Token( new TokLoc(bufr.lastLine,bufr.lastLine.uchrLen), BaseTok.stopBdry );
 
@@ -602,16 +602,16 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    *
    * Assign `#strtLexTk_a`, `#stopLexTk_a`, `#lv_oldStop_a`, `#dtLoff_a`,
    * `#adjStrtTk_a`, `#adjStopTk_a`.\
-   * Set `strtLexTk$`, `stopLexTk$`.
+   * Set `curLexTk$`, `stopLexTk$`.
    *
    * @final
    * @headconst @param oldRan_a_x
    */
   @traceOut(_TRACE)
   @out((self: Lexr<T>) => {
-    assert(!self.strtLexTk$.isErr);
+    assert(!self.curLexTk$.isErr);
     assert(!self.stopLexTk$.isErr);
-    assert(self.strtLexTk$.posS(self.stopLexTk$));
+    assert(self.curLexTk$.posS(self.stopLexTk$));
   })
   lexmrk_$(oldRan_a_x: Ran[]): this {
     /*#static*/ if (_TRACE) {
@@ -679,23 +679,23 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       }
     }
 
-    if (this.strtLexTk$ === this.stopLexTk$) {
-      this.strtLexTk$ = this.#strtLexTk_a[0];
+    if (this.curLexTk$ === this.stopLexTk$) {
+      this.curLexTk$ = this.#strtLexTk_a[0];
       this.stopLexTk$ = this.#stopLexTk_a.at(-1)!;
     } else {
-      if (this.strtLexTk$.posG(this.#strtLexTk_a[0])) {
-        this.strtLexTk$ = this.#strtLexTk_a[0];
+      if (this.curLexTk$.posG(this.#strtLexTk_a[0])) {
+        this.curLexTk$ = this.#strtLexTk_a[0];
       }
       if (this.stopLexTk$.posS(this.#stopLexTk_a.at(-1)!)) {
         this.stopLexTk$ = this.#stopLexTk_a.at(-1)!;
       }
     }
-    if (this.strtLexTk$.isErr) {
+    if (this.curLexTk$.isErr) {
       /*#static*/ if (INOUT) {
-        assert(this.strtLexTk$.value === BaseTok.strtBdry);
+        assert(this.curLexTk$.value === BaseTok.strtBdry);
       }
-      this.strtLexTk$.clrErr();
-      this.errTk_ss$.rmv(this.strtLexTk$);
+      this.curLexTk$.clrErr();
+      this.errTk_ss$.rmv(this.curLexTk$);
     }
     if (this.stopLexTk$.isErr) {
       /*#static*/ if (INOUT) {
@@ -709,7 +709,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       //jjjj TOCLEANUP
       // (tk) => tk.reset_Token().saveRanval_$(),
       this.drtenTk$,
-      this.strtLexTk$.nextToken_$,
+      this.curLexTk$.nextToken_$,
       this.stopLexTk$,
     );
     this.sufLexmrk$(oldRan_a_x);
@@ -736,7 +736,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   /**
    * Adjust lex region
    *
-   * Adjust `strtLexTk$`, and tokens before at the same line.\
+   * Adjust `curLexTk$`, and tokens before at the same line.\
    * Adjust `stopLexTk$`, and tokens after at the same line.\
    * Reset `errTk_ss$`
    *
@@ -753,7 +753,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     if (this.isErr) {
       /*#static*/ if (INOUT) {
         assert(
-          this.strtLexTk$.posS(this.errTk_ss$[0]) &&
+          this.curLexTk$.posS(this.errTk_ss$[0]) &&
             this.stopLexTk$.posG(this.errTk_ss$.at(-1)!),
         );
       }
@@ -851,13 +851,13 @@ export abstract class Lexr<T extends Tok = BaseTok> {
 
   /** Assign `curLoc$` */
   protected preLex$(): void {
-    this.curLoc$.become_Loc(this.strtLexTk$.sntStopLoc);
+    this.curLoc$.become_Loc(this.curLexTk$.sntStopLoc);
   }
 
   protected sufLex$(_valve_x: uint): void {}
 
   /**
-   * Lex [ strtLexTk$.stopLoc, stopLexTk$.strtLoc )
+   * Lex [ curLexTk$.stopLoc, stopLexTk$.strtLoc )
    * @final
    */
   @traceOut(_TRACE)
@@ -867,7 +867,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       console.log(`${trace.indent}>>>>>>> ${this.class_id}.lex() >>>>>>>`);
     }
     //jjjj TOCLEANUP
-    // if (this.strtLexTk$ === this.stopLexTk$) { //llll review (one Bufr with different Lexr? etc)
+    // if (this.curLexTk$ === this.stopLexTk$) { //llll review (one Bufr with different Lexr? etc)
     //   /* This is the case of one `Bufr` with two or more `EdtrScrolr`. */
     //   return;
     // }
@@ -875,11 +875,11 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     /*#static*/ if (INOUT) {
       /* Error tokens, if any, are included in the lex region. */
       assert(!this.isErr);
-      assert(this.strtLexTk$.posS(this.stopLexTk$));
+      assert(this.curLexTk$.posS(this.stopLexTk$));
     }
     this.preLex$();
 
-    this.strtLexTk_0$ = this.strtLexTk$;
+    this.strtLexTk$ = this.curLexTk$;
     // this.#valve = Lexr.#VALVE;
     this.lex_impl$()
       .concatTokens$();
@@ -919,7 +919,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   }
 
   /**
-   * Lex [ `strtLexTk$.sntStopLoc`, `stopLexTk$.sntStrtLoc` )\
+   * Lex [ `curLexTk$.sntStopLoc`, `stopLexTk$.sntStrtLoc` )\
   //  * `in( this.#valve > 0)`
    * @final
    */
@@ -932,7 +932,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       }
       this.scandTk_a$.length = 0;
     }
-    this.lsTk$ = this.strtLexTk$;
+    this.lsTk$ = this.curLexTk$;
     const VALVE = LnumMAX;
     let valve = VALVE;
     do {
@@ -947,7 +947,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
         if (scandTk_.isErr) this.errTk_ss$.add(scandTk_);
       }
 
-      if (!this.isErr) this.strtLexTk$ = scandTk_;
+      if (!this.isErr) this.curLexTk$ = scandTk_;
       if (scandTk_ === this.stopLexTk$) break;
 
       if (this.lsTk$) {
@@ -1037,9 +1037,9 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   ): Token<T> | undefined {
     this.curLoc$.correctLoff(); // Could `overEol`
     /*#static*/ if (INOUT) {
-      // assert( this.strtLexTk$ && this.stopLexTk$ );
+      // assert( this.curLexTk$ && this.stopLexTk$ );
       assert(
-        this.strtLexTk$.sntStopLoc.posSE(this.curLoc$) &&
+        this.curLexTk$.sntStopLoc.posSE(this.curLoc$) &&
           this.curLoc$.posSE(this.stopLexTk$.sntStrtLoc),
       );
     }
@@ -1180,6 +1180,8 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   }
 
   /**
+   * `out( ret; !ret ||
+   *    _tk_0_x.value !== BaseTok.strtBdry && _tk_1_x !== BaseTok.stopBdry)`
    * @const @param _tk_0_x
    * @const @param _tk_1_x
    */
@@ -1187,13 +1189,14 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     return false;
   }
 
-  protected concatAll$ = false;
+  protected concatBdry$ = true;
+  protected concatInnr$ = false;
   /**
-   * Try to concat `[strtLexTk_0$, ...scandTk_a$, stopLexTk$]`.\
-   * `strtLexTk_0$` could be adjusted to keep valid, which will be used in
+   * Try to concat `[strtLexTk$, ...scandTk_a$, stopLexTk$]`.\
+   * `strtLexTk$` could be adjusted to keep valid, which will be used in
    * `Pazr.paz()`.
    *
-   * Priority to keep unchanged: `stopLexTk$` > `strtLexTk_0$` > `scandTk_a$`
+   * Priority to keep unchanged: `stopLexTk$` > `strtLexTk$` > `scandTk_a$`
    *
    * @final
    */
@@ -1201,41 +1204,43 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     /*#static*/ if (INOUT) {
       if (this.scandTk_a$.length) {
         assert(
-          this.scandTk_a$[0].prevToken_$ === this.strtLexTk_0$ &&
+          this.scandTk_a$[0].prevToken_$ === this.strtLexTk$ &&
             this.scandTk_a$.at(-1)!.nextToken_$ === this.stopLexTk$,
         );
       } else {
-        assert(this.strtLexTk_0$.isConcatedTo(this.stopLexTk$));
+        assert(this.strtLexTk$.isConcatedTo(this.stopLexTk$));
       }
     }
     let tk_0, tk_1: Token<T> | undefined;
     if (this.scandTk_a$.length) {
-      tk_0 = this.strtLexTk_0$;
-      tk_1 = this.scandTk_a$[0];
-      if (tk_0 !== this.frstLexTk && this.canConcat$(tk_0, tk_1)) { // 1894
-        tk_0.setStop(tk_1.sntStopLoc);
-        if (this.errTk_ss$.includes(tk_1)) {
-          this.errTk_ss$.rmv(tk_1.tfrErr(tk_0));
-          this.errTk_ss$.add(tk_0);
+      if (this.concatBdry$) {
+        tk_0 = this.strtLexTk$;
+        tk_1 = this.scandTk_a$[0];
+        if (tk_0 !== this.frstLexTk && this.canConcat$(tk_0, tk_1)) { // 1894
+          tk_0.setStop(tk_1.sntStopLoc);
+          if (this.errTk_ss$.includes(tk_1)) {
+            this.errTk_ss$.rmv(tk_1.tfrErr(tk_0));
+            this.errTk_ss$.add(tk_0);
+          }
+
+          this.rmvScandTk_$(tk_1, 0);
         }
 
-        this.rmvScandTk_$(tk_1, 0);
-      }
+        tk_0 = this.scandTk_a$.at(-1);
+        tk_1 = this.stopLexTk$;
+        if (tk_1 !== this.lastLexTk && tk_0 && this.canConcat$(tk_0, tk_1)) { // 1895
+          tk_1.setStrt(tk_0.sntStrtLoc);
+          if (this.errTk_ss$.includes(tk_0)) {
+            tk_1.tfrErr(tk_0).clrErr(); // to keep the order of Err's
+            this.errTk_ss$.rmv(tk_0.tfrErr(tk_1));
+            this.errTk_ss$.add(tk_1);
+          }
 
-      tk_0 = this.scandTk_a$.at(-1);
-      tk_1 = this.stopLexTk$;
-      if (tk_1 !== this.lastLexTk && tk_0 && this.canConcat$(tk_0, tk_1)) { // 1895
-        tk_1.setStrt(tk_0.sntStrtLoc);
-        if (this.errTk_ss$.includes(tk_0)) {
-          tk_1.tfrErr(tk_0).clrErr(); // to keep the order of Err's
-          this.errTk_ss$.rmv(tk_0.tfrErr(tk_1));
-          this.errTk_ss$.add(tk_1);
+          this.rmvScandTk_$(tk_0, -1);
         }
-
-        this.rmvScandTk_$(tk_0, -1);
       }
 
-      if (this.concatAll$) {
+      if (this.concatInnr$) {
         for (let i = this.scandTk_a$.length; i-- > 1;) {
           tk_0 = this.scandTk_a$[i - 1];
           tk_1 = this.scandTk_a$[i];
@@ -1253,15 +1258,15 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       }
     }
 
-    if (this.scandTk_a$.length === 0) {
-      tk_0 = this.strtLexTk_0$;
+    if (this.concatBdry$ && this.scandTk_a$.length === 0) {
+      tk_0 = this.strtLexTk$;
       tk_1 = this.stopLexTk$;
       if (
         tk_0 !== this.frstLexTk && tk_1 !== this.lastLexTk &&
         this.canConcat$(tk_0, tk_1)
       ) {
         tk_1.setStrt(tk_0.sntStrtLoc);
-        this.strtLexTk_0$ = tk_1;
+        this.strtLexTk$ = tk_1.prevToken_$!;
 
         tk_0.removeSelf()!.destructor();
       }

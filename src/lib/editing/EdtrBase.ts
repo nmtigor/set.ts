@@ -373,7 +373,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     if (this.#elnBSize > 0) return this.#elnBSize;
 
     const elnEl = div("|");
-    this.main_el$.append(elnEl);
+    this.code_el$.append(elnEl);
     const elnBs = this.coo$._writingMode & WritingDir.v
       ? elnEl.clientWidth
       : elnEl.clientHeight;
@@ -407,13 +407,13 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   /** Scrollee, the Element being scrolled */
   readonly scrole_el = div();
 
-  /* main_el$ */
-  protected readonly main_el$ = div();
+  /* code_el$ */
+  protected readonly code_el$ = div();
 
-  protected get mainBSize$(): unum {
+  protected get codeBSize$(): unum {
     return this.coo$._writingMode & WritingDir.v
-      ? this.main_el$.clientWidth
-      : this.main_el$.clientHeight;
+      ? this.code_el$.clientWidth
+      : this.code_el$.clientHeight;
   }
   /* ~ */
 
@@ -473,6 +473,9 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   static readonly revEln$ = (eln_x: ELineBase): void => {
     ELineBaseFac.rev(eln_x);
   };
+
+  protected rich_el$?: HTMLDivElement;
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /* bufr */
   protected bufr$!: Bufr;
@@ -713,7 +716,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       isolation: "isolate", //!
     });
     //jjjj TOCLEANUP
-    // document[$cssstylesheet].insertRule(
+    // document[$CSS].insertRule(
     //   /*#static*/ _COLR
     //     ? `#${id_} ::selection { background-color: yellow; }`
     //     : `#${id_} ::selection { background-color: transparent; }`,
@@ -722,10 +725,10 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     /*#static*/ if (CYPRESS || DEBUG) {
       // this.scrole_el.hint = `${this.el$.hint}.scrole`;
       // this.#head_el.hint = `${this.el$.hint}.head`;
-      this.main_el$.hint = `${this.el$.hint}.main`;
+      this.code_el$.hint = `${this.el$.hint}.main`;
       // this.#foot_el.hint = `${this.el$.hint}.foot`;
     }
-    this.main_el$.assignStylo({
+    this.code_el$.assignStylo({
       position: "relative",
       zIndex: EdtrMain_z,
       //
@@ -738,7 +741,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
 
     this.scrole_el.append(
       this.#head_el,
-      this.main_el$,
+      this.code_el$,
       this.#foot_el,
     );
 
@@ -802,7 +805,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     this.headBSize$ = 0;
     //jjjj TOCLEANUP
     // this.headBDt$ = 0;
-    this.main_el$.removeAllChild();
+    this.code_el$.removeAllChild();
     this.footBSize$ = 0;
     //jjjj TOCLEANUP
     // this.footBDt$ = 0;
@@ -976,7 +979,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       const eln = this.getEln$(this.bufr$.line(tgtStopLidx_x - 1 - i));
       elnEl_a.push(eln.el);
     }
-    elnBefo ? elnBefo.el.before(...elnEl_a) : this.main_el$.append(...elnEl_a);
+    elnBefo ? elnBefo.el.before(...elnEl_a) : this.code_el$.append(...elnEl_a);
 
     this.headBSize$ -= this.#getLidxBSize(srcStopLidx_x, this.strtLidx$) +
       this.#getLidxBSize(tgtStopLidx_x - n_x, tgtStopLidx_x);
@@ -1057,7 +1060,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       const eln = this.getEln$(this.bufr$.line(tgtStrtLidx_x + i));
       elnEl_a.push(eln.el);
     }
-    elnAftr ? elnAftr.el.after(...elnEl_a) : this.main_el$.append(...elnEl_a);
+    elnAftr ? elnAftr.el.after(...elnEl_a) : this.code_el$.append(...elnEl_a);
 
     this.footBSize$ -= this.#getLidxBSize(this.stopLidx$, srcStrtLidx_x) +
       this.#getLidxBSize(tgtStrtLidx_x, tgtStrtLidx_x + n_x);
@@ -1131,10 +1134,10 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     // console.log(`${trace.dent}${
     //   [
     //     this.headBSize$.fixTo(2),
-    //     this.mainBSize$.fixTo(2),
+    //     this.codeBSize$.fixTo(2),
     //     this.footBSize$.fixTo(2),
     //   ].join(" + ")
-    // } = ${(this.headBSize$ + this.mainBSize$ + this.footBSize$).fixTo(2)}`);
+    // } = ${(this.headBSize$ + this.codeBSize$ + this.footBSize$).fixTo(2)}`);
     let strtLidx = 0;
     if (bstrt > 0) {
       const ln_ = this.bufr$.lineTree.getMax((ln_y) =>
@@ -1151,10 +1154,10 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       // console.log(`${trace.dent}${
       //   [
       //     this.headBSize$.fixTo(2),
-      //     this.mainBSize$.fixTo(2),
+      //     this.codeBSize$.fixTo(2),
       //     this.footBSize$.fixTo(2),
       //   ].join(" + ")
-      // } = ${(this.headBSize$ + this.mainBSize$ + this.footBSize$).fixTo(2)}`);
+      // } = ${(this.headBSize$ + this.codeBSize$ + this.footBSize$).fixTo(2)}`);
       this.#sufScroll = undefined;
       /* This happens e.g. after removal in `#head_el` in `vrl`.
        */ if (bstrt !== this.bstrt) {
@@ -1406,7 +1409,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       /* Adding ` + 0` is to prevent `-0`, which, stangely, is different to `0`
       in cypress tesing. */
       bstrt: this.bstrt + 0,
-      bsize: `${this.headBSize$}:${this.mainBSize$}:${this.footBSize$}`,
+      bsize: `${this.headBSize$}:${this.codeBSize$}:${this.footBSize$}`,
       lidx: `[${this.strtLidx$},${this.stopLidx$})`,
     };
   }

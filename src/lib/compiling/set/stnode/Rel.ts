@@ -3,23 +3,23 @@
  * @license MIT
  ******************************************************************************/
 
+import type { ERanr } from "@fe-edt/ERan.ts";
+import { lnum_t } from "@fe-lib/alias.ts";
 import type { Cssc } from "@fe-lib/color/alias.ts";
 import { Pale } from "@fe-lib/color/Pale.ts";
-import { $cssstylesheet } from "@fe-lib/symbols.ts";
+import { $CSS } from "@fe-lib/symbols.ts";
 import { assert } from "@fe-lib/util.ts";
 import { DENO, INOUT } from "@fe-src/preNs.ts";
+import { Tdt, Tuof } from "../../alias.ts";
+import { Ranval } from "../../Ranval.ts";
 import type { SetTk } from "../../Token.ts";
 import { Token } from "../../Token.ts";
-import { ErrMsg, paleMock } from "../../util.ts";
+import { ErrMsg, paleMock, sntFrstTk, sntLastTk } from "../../util.ts";
 import type { SetPazr } from "../SetPazr.ts";
+import { SetTok } from "../SetTok.ts";
 import { Ids } from "./Ids.ts";
 import { Key } from "./Key.ts";
 import { SetSn } from "./SetSn.ts";
-import { lnum_t } from "@fe-lib/alias.ts";
-import type { ERanr } from "@fe-edt/ERan.ts";
-import { Tdt, Tuof } from "../../alias.ts";
-import { SetTok } from "../SetTok.ts";
-import { Ranval } from "../../Ranval.ts";
 /*80--------------------------------------------------------------------------*/
 
 type RelCtorP_ = {
@@ -116,18 +116,33 @@ export class Rel extends SetSn {
     return this.#children = ret;
   }
 
+  //jjjj TOCLEANUP
+  // override get known(): boolean {
+  //   let ret = this.#src
+  //     ? sntKnown(this.#src)
+  //     : this.jnr_1.value !== BaseTok.unknown;
+  //   if (!ret) return ret;
+
+  //   ret = this.#tgt
+  //     ? sntKnown(this.#tgt)
+  //     : this.jnr_2
+  //     ? this.jnr_2.value !== BaseTok.unknown
+  //     : this.#rel
+  //     ? sntKnown(this.#rel)
+  //     : this.jnr_1.value !== BaseTok.unknown;
+  //   return ret;
+  // }
+
   override get frstToken_1(): SetTk {
-    return this.frstTk$ ??= this.#src
-      ? this.#src instanceof Token ? this.#src : this.#src.frstToken_1
-      : this.jnr_1;
+    return this.frstTk$ ??= this.#src ? sntFrstTk(this.#src) : this.jnr_1;
   }
   override get lastToken_1(): SetTk {
     return this.lastTk$ ??= this.#tgt
-      ? this.#tgt instanceof Token ? this.#tgt : this.#tgt.lastToken_1
+      ? sntLastTk(this.#tgt)
       : this.jnr_2
       ? this.jnr_2
       : this.#rel
-      ? this.#rel instanceof Token ? this.#rel : this.#rel.lastToken_1
+      ? sntLastTk(this.#rel)
       : this.jnr_1;
   }
 
@@ -136,11 +151,17 @@ export class Rel extends SetSn {
     this.hl_a$ ??= [];
     return this.hl_a$[0] ??= new Highlight();
   }
+  #clr_stx_hl(): void {
+    this.hl_a$?.at(0)?.clear();
+  }
 
   readonly #tkErr_hl_name = `${this.class_id}_tkErr`;
   get #tkErr_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[1] ??= new Highlight();
+  }
+  #clr_tkErr_hl(): void {
+    this.hl_a$?.at(1)?.clear();
   }
 
   readonly #snErr_hl_name = `${this.class_id}_snErr`;
@@ -148,11 +169,17 @@ export class Rel extends SetSn {
     this.hl_a$ ??= [];
     return this.hl_a$[2] ??= new Highlight();
   }
+  #clr_snErr_hl(): void {
+    this.hl_a$?.at(2)?.clear();
+  }
 
   readonly #cpl_hl_name = `${this.class_id}_cpl`;
   get #cpl_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[3] ??= new Highlight();
+  }
+  #clr_cpl_hl(): void {
+    this.hl_a$?.at(3)?.clear();
   }
 
   readonly #stxFg_pn = `--${this.class_id}-stxFg`;
@@ -199,34 +226,34 @@ export class Rel extends SetSn {
       CSS.highlights.set(this.#snErr_hl_name, this.#snErr_hl);
       CSS.highlights.set(this.#cpl_hl_name, this.#cpl_hl);
 
-      document[$cssstylesheet].insertRule(
+      document.body.style.setProperty(this.#stxFg_pn, this.#stxFg_p.cssc);
+      document.body.style.setProperty(this.#tkErrTd_pn, this.#tkErrTd_p.cssc);
+      document.body.style.setProperty(this.#snErrTd_pn, this.#snErrTd_p.cssc);
+      document.body.style.setProperty(this.#cplTd_pn, this.#cplTd_p.cssc);
+
+      document[$CSS].insertRule(
         `::highlight(${this.#stx_hl_name}) {
           color: var(${this.#stxFg_pn});
         }`,
       );
-      document[$cssstylesheet].insertRule(
+      document[$CSS].insertRule(
         `::highlight(${this.#tkErr_hl_name}) {
           text-decoration: var(${this.#tkErrTd_pn}) wavy underline;
           text-underline-offset: .2em;
         }`,
       );
-      document[$cssstylesheet].insertRule(
+      document[$CSS].insertRule(
         `::highlight(${this.#snErr_hl_name}) {
           text-decoration: var(${this.#snErrTd_pn}) wavy underline;
           text-underline-offset: .2em;
         }`,
       );
-      document[$cssstylesheet].insertRule(
+      document[$CSS].insertRule(
         `::highlight(${this.#cpl_hl_name}) {
           text-decoration: var(${this.#cplTd_pn}) underline ${Tdt}em;
           text-underline-offset: var(${this.#cplTuo_pn});
         }`,
       );
-
-      document.body.style.setProperty(this.#stxFg_pn, this.#stxFg_p.cssc);
-      document.body.style.setProperty(this.#tkErrTd_pn, this.#tkErrTd_p.cssc);
-      document.body.style.setProperty(this.#snErrTd_pn, this.#snErrTd_p.cssc);
-      document.body.style.setProperty(this.#cplTd_pn, this.#cplTd_p.cssc);
     }
 
     this.ensureBdry();
@@ -242,24 +269,22 @@ export class Rel extends SetSn {
     this.unobserveTheme();
 
     /*#static*/ if (!DENO) {
-      document[$cssstylesheet].deleteSelector(
-        `::highlight(${this.#stx_hl_name})`,
-      );
-      document[$cssstylesheet].deleteSelector(
-        `::highlight(${this.#tkErr_hl_name})`,
-      );
-      document[$cssstylesheet].deleteSelector(
-        `::highlight(${this.#snErr_hl_name})`,
-      );
-      document[$cssstylesheet].deleteSelector(
-        `::highlight(${this.#cpl_hl_name})`,
-      );
+      const css_ = document[$CSS];
+      css_.deleteSelector(`::highlight(${this.#stx_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.#tkErr_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.#snErr_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.#cpl_hl_name})`);
 
       document.body.style.removeProperty(this.#stxFg_pn);
       document.body.style.removeProperty(this.#tkErrTd_pn);
       document.body.style.removeProperty(this.#snErrTd_pn);
       document.body.style.removeProperty(this.#cplTd_pn);
       document.body.style.removeProperty(this.#cplTuo_pn);
+
+      CSS.highlights.delete(this.#stx_hl_name);
+      CSS.highlights.delete(this.#tkErr_hl_name);
+      CSS.highlights.delete(this.#snErr_hl_name);
+      CSS.highlights.delete(this.#cpl_hl_name);
     }
 
     super.destructor();
@@ -293,10 +318,10 @@ export class Rel extends SetSn {
     if (this.#tgt instanceof Token) this.#tgt.revERan();
     this.revERan();
 
-    this.#stx_hl.clear();
-    this.#tkErr_hl.clear();
-    this.#snErr_hl.clear();
-    this.#cpl_hl.clear();
+    this.#clr_stx_hl();
+    this.#clr_tkErr_hl();
+    this.#clr_snErr_hl();
+    this.#clr_cpl_hl();
     return false;
   }
 
@@ -309,10 +334,10 @@ export class Rel extends SetSn {
       return this.clrHighlight_impl$();
     }
 
-    this.#stx_hl.clear();
-    this.#tkErr_hl.clear();
-    this.#snErr_hl.clear();
-    this.#cpl_hl.clear();
+    this.#clr_stx_hl();
+    this.#clr_tkErr_hl();
+    this.#clr_snErr_hl();
+    this.#clr_cpl_hl();
 
     /**
      * @headconst @param tk_y

@@ -19,13 +19,13 @@ Ref. https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/#using-
 export const $inuse = Symbol("$inuse");
 /*64----------------------------------------------------------*/
 
-/** document[ $cssstylesheet ] { Getter } */
-export const $cssstylesheet = Symbol("$cssstylesheet");
+/** document[ $CSS ] { Getter } */
+export const $CSS = Symbol("$CSS");
 /**
- * document[ $cssstylesheet_ ] { CSSStyleSheet }
+ * document[ $CSS_ ] { CSSStyleSheet }
  * @deprecated See lib/dom
  */
-export const $cssstylesheet_ = Symbol("$cssstylesheet_");
+export const $CSS_ = Symbol("$CSS_");
 /*64----------------------------------------------------------*/
 
 // /** Text[ $tail_ignored ] { boolean } */

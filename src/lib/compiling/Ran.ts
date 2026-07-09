@@ -412,7 +412,10 @@ export class Ran {
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  /** @out @param ret_x */
+  /**
+   * @primaryconst
+   * @out @param ret_x
+   */
   toRanval(ret_x?: Ranval): Ranval {
     ret_x = this.strtLoc$.toRanval(ret_x, Endpt.anchr);
     this.stopLoc$.toRanval(ret_x, Endpt.focus);

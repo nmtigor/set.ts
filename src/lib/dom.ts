@@ -7,7 +7,7 @@ import type { Pos } from "@fe-edt/alias.ts";
 import { DENO } from "../preNs.ts";
 import type { CSSStyle, loff_t, uint, unum } from "./alias.ts";
 import type { Vuu } from "./cv.ts";
-import { $cssstylesheet, $loff_0, $ovlap } from "./symbols.ts";
+import { $CSS, $loff_0, $ovlap } from "./symbols.ts";
 import * as Is from "./util/is.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -221,13 +221,13 @@ if (globalThis.Node) {
 declare global {
   interface Document {
     /** Used for adding CSS pseudo-element like `::-webkit-scrollbar` */
-    [$cssstylesheet]: CSSStyleSheet;
+    [$CSS]: CSSStyleSheet;
   }
 }
 
 if (globalThis.Document) {
   let cssstylesheet_: CSSStyleSheet | undefined;
-  Reflect.defineProperty(Document.prototype, $cssstylesheet, {
+  Reflect.defineProperty(Document.prototype, $CSS, {
     get(this: Document) {
       cssstylesheet_ ??= this.head.appendChild(html("style")).sheet!;
       return cssstylesheet_;
@@ -503,11 +503,43 @@ if (globalThis.DOMRect) {
 /*64----------------------------------------------------------*/
 
 declare global {
-  //jjjj TOCLEANUP
-  // interface AbstractRange {
-  //   [$eran]?: ERan;
-  // }
+  interface AbstractRange {
+    //jjjj TOCLEANUP
+    // [$eran]?: ERan;
 
+    /**
+     * @const @param strtCtnr_x
+     * @const @param strtOffs_x
+     * @const @param stopCtnr_x
+     * @const @param stopOffs_x
+     */
+    eql(
+      strtCtnr_x: Node,
+      strtOffs_x: uint,
+      stopCtnr_x: Node,
+      stopOffs_x: uint,
+    ): boolean;
+  }
+}
+
+if (globalThis.AbstractRange) {
+  Reflect.defineProperty(AbstractRange.prototype, "eql", {
+    value(
+      this: AbstractRange,
+      strtCtnr_x: Node,
+      strtOffs_x: uint,
+      stopCtnr_x: Node,
+      stopOffs_x: uint,
+    ) {
+      return (
+        this.startContainer === strtCtnr_x && this.startOffset === strtOffs_x &&
+        this.endContainer === stopCtnr_x && this.endOffset === stopOffs_x
+      );
+    },
+  });
+}
+
+declare global {
   interface Range {
     /**
      * @out @param out_a_x
@@ -585,22 +617,36 @@ if (globalThis.Range) {
 }
 /*64----------------------------------------------------------*/
 
-//jjjj TOCLEANUP
-// declare global {
-//   interface Highlight {
-//     revERans(): void;
-//   }
-// }
+declare global {
+  interface Highlight {
+    //jjjj TOCLEANUP
+    // revERans(): void;
 
-//jjjj TOCLEANUP
-// if (globalThis.Highlight) {
-//   Highlight.prototype.revERans = function (this) {
-//     if (this.size) {
-//       this.forEach((r) => r[$eran]?.rev());
-//       this.clear();
-//     }
-//   };
-// }
+    /** @const @param rd_x range data */
+    eql(rd_x: [Node, uint, Node, uint][]): boolean;
+  }
+}
+
+if (globalThis.Highlight) {
+  //jjjj TOCLEANUP
+  // Highlight.prototype.revERans = function (this) {
+  //   if (this.size) {
+  //     this.forEach((r) => r[$eran]?.rev());
+  //     this.clear();
+  //   }
+  // };
+
+  Reflect.defineProperty(Highlight.prototype, "eql", {
+    value(this: Highlight, rd_x: [Node, uint, Node, uint][]) {
+      let i_ = 0;
+      for (const range of this.values()) {
+        if (!range.eql(...rd_x[i_])) return false;
+        i_ += 1;
+      }
+      return true;
+    },
+  });
+}
 /*64----------------------------------------------------------*/
 
 declare global {

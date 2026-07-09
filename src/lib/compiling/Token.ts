@@ -829,7 +829,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   }
 
   override get _oldInfo_(): _OldInfo_ {
-    const rv_ = this.#oldRanval ?? this.ran_$.toRanval();
+    const rv_ = this.#oldRanval ?? this.ran_$.rv;
     return {
       sort: [rv_.anchrLidx, rv_.anchrLoff],
       info: `${this.name}${this.#oldRanval ? "" : "*"}${rv_}`,

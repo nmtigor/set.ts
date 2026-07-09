@@ -22,7 +22,7 @@ export class TextV<CI extends EdtrBaseCI = EdtrBaseCI>
   /** @implement */
   protected snt$!: never;
 
-  get text(): Text {
+  get tn(): Text {
     return this.el$.firstChild as Text;
   }
 

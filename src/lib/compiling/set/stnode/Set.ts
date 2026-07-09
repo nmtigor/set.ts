@@ -7,13 +7,13 @@ import type { ERanr } from "@fe-edt/ERan.ts";
 import { lnum_t } from "@fe-lib/alias.ts";
 import { Pale } from "@fe-lib/color/Pale.ts";
 import type { Cssc } from "@fe-lib/color/alias.ts";
-import { $cssstylesheet } from "@fe-lib/symbols.ts";
+import { $CSS } from "@fe-lib/symbols.ts";
 import { assert } from "@fe-lib/util.ts";
 import { DENO, INOUT } from "@fe-src/preNs.ts";
 import { Ranval } from "../../Ranval.ts";
 import type { SetTk } from "../../Token.ts";
 import { Token } from "../../Token.ts";
-import { ErrMsg, paleMock } from "../../util.ts";
+import { ErrMsg, paleMock, sntFrstTk, sntLastTk } from "../../util.ts";
 import type { SetPazr } from "../SetPazr.ts";
 import { SetTok } from "../SetTok.ts";
 import type { Paren, UnparenSet } from "../alias.ts";
@@ -48,10 +48,10 @@ export class Set extends SetSn {
   /* ~ */
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  /** If `this.#unpanenSet instanceof SetTk`, must `hasErr`. */
-  #unpanenSet: UnparenSet | SetTk;
-  get unpanenSet() {
-    return this.#unpanenSet;
+  /** If `this.#unparenSet instanceof SetTk`, must `hasErr`. */
+  #unparenSet: UnparenSet | SetTk;
+  get unparenSet() {
+    return this.#unparenSet;
   }
 
   #paren: Paren;
@@ -71,35 +71,52 @@ export class Set extends SetSn {
     if (this.#children) return this.#children;
 
     const ret: UnparenSet[] = [];
-    if (!(this.#unpanenSet instanceof Token)) ret.push(this.#unpanenSet);
+    if (!(this.#unparenSet instanceof Token)) ret.push(this.#unparenSet);
     return this.#children = ret;
   }
+
+  //jjjj TOCLEANUP
+  // override get known(): boolean {
+  //   const unparenKnown = sntKnown(this.#unparenSet);
+  //   if (!unparenKnown || this.#paren === 0) return unparenKnown;
+
+  //   let tk_;
+  //   tk_ = sntFrstTk(this.#unparenSet) as SetTk;
+  //   for (let i = this.#paren; i--;) {
+  //     tk_ = tk_.prevToken_$;
+  //     if (tk_?.value === BaseTok.unknown) return false;
+  //     if (tk_?.value !== SetTok.paren_open) break;
+  //   }
+  //   tk_ = sntLastTk(this.#unparenSet) as SetTk;
+  //   for (let i = this.#paren; i--;) {
+  //     tk_ = tk_.nextToken_$;
+  //     if (tk_?.value === BaseTok.unknown) return false;
+  //     if (tk_?.value !== SetTok.paren_cloz) break;
+  //   }
+  //   return true;
+  // }
 
   override get frstToken_1() {
     if (this.frstTk$) return this.frstTk$;
 
-    let ret = this.#unpanenSet instanceof Token
-      ? this.#unpanenSet
-      : this.#unpanenSet.frstToken_1;
+    let retTk = sntFrstTk(this.#unparenSet) as SetTk;
     for (let i = this.#paren; i--;) {
-      const tk_ = ret.prevToken_$;
-      if (!tk_ || tk_.value === SetTok.strtBdry) break;
-      ret = tk_;
+      const tk_ = retTk.prevToken_$;
+      /* 3255 */ if (tk_?.value !== SetTok.paren_open) break;
+      retTk = tk_;
     }
-    return this.frstTk$ = ret;
+    return this.frstTk$ = retTk;
   }
   override get lastToken_1() {
     if (this.lastTk$) return this.lastTk$;
 
-    let ret = this.#unpanenSet instanceof Token
-      ? this.#unpanenSet
-      : this.#unpanenSet.lastToken_1;
+    let retTk = sntLastTk(this.#unparenSet) as SetTk;
     for (let i = this.#paren; i--;) {
-      const tk_ = ret.nextToken_$;
-      if (!tk_ || tk_.value === SetTok.stopBdry) break;
-      ret = tk_;
+      const tk_ = retTk.nextToken_$;
+      if (tk_?.value !== SetTok.paren_cloz) break;
+      retTk = tk_;
     }
-    return this.lastTk$ = ret;
+    return this.lastTk$ = retTk;
   }
 
   readonly #stx_hl_name = `${this.class_id}_stx`;
@@ -107,11 +124,17 @@ export class Set extends SetSn {
     this.hl_a$ ??= [];
     return this.hl_a$[0] ??= new Highlight();
   }
+  #clr_stx_hl(): void {
+    this.hl_a$?.at(0)?.clear();
+  }
 
   readonly #err_hl_name = `${this.class_id}_err`;
   get #err_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[1] ??= new Highlight();
+  }
+  #clr_err_hl(): void {
+    this.hl_a$?.at(1)?.clear();
   }
 
   readonly #stxFg_pn = `--${this.class_id}-stxFg`;
@@ -123,7 +146,7 @@ export class Set extends SetSn {
     paren_x: Paren,
   ) {
     super(pazr_x);
-    this.#unpanenSet = unparnSet_x;
+    this.#unparenSet = unparnSet_x;
     this.#paren = paren_x;
 
     if (unparnSet_x instanceof Token) {
@@ -140,12 +163,15 @@ export class Set extends SetSn {
       CSS.highlights.set(this.#stx_hl_name, this.#stx_hl);
       CSS.highlights.set(this.#err_hl_name, this.#err_hl);
 
-      document[$cssstylesheet].insertRule(
+      document.body.style.setProperty(this.#stxFg_pn, this.#stxFg_p.cssc);
+      document.body.style.setProperty(this.#errTd_pn, this.#errTd_p.cssc);
+
+      document[$CSS].insertRule(
         `::highlight(${this.#stx_hl_name}) {
           color: var(${this.#stxFg_pn});
         }`,
       );
-      document[$cssstylesheet].insertRule(
+      document[$CSS].insertRule(
         //jjjj TOCLEANUP
         // `::highlight(${this.#err_hl_name}) {
         //   text-shadow: 0 -.2em var(${this.#errTd_pn});
@@ -155,9 +181,6 @@ export class Set extends SetSn {
           text-underline-offset: .2em;
         }`,
       );
-
-      document.body.style.setProperty(this.#stxFg_pn, this.#stxFg_p.cssc);
-      document.body.style.setProperty(this.#errTd_pn, this.#errTd_p.cssc);
     }
 
     this.ensureBdry();
@@ -181,15 +204,15 @@ export class Set extends SetSn {
     this.unobserveTheme();
 
     /*#static*/ if (!DENO) {
-      document[$cssstylesheet].deleteSelector(
-        `::highlight(${this.#stx_hl_name})`,
-      );
-      document[$cssstylesheet].deleteSelector(
-        `::highlight(${this.#err_hl_name})`,
-      );
+      const css_ = document[$CSS];
+      css_.deleteSelector(`::highlight(${this.#stx_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.#err_hl_name})`);
 
       document.body.style.removeProperty(this.#stxFg_pn);
       document.body.style.removeProperty(this.#errTd_pn);
+
+      CSS.highlights.delete(this.#stx_hl_name);
+      CSS.highlights.delete(this.#err_hl_name);
     }
 
     super.destructor();
@@ -198,7 +221,7 @@ export class Set extends SetSn {
 
   override replaceChild(_oldSn_x: UnparenSet, newSn_x: UnparenSet) {
     newSn_x.attachTo_$(this);
-    this.#unpanenSet = newSn_x;
+    this.#unparenSet = newSn_x;
     this.#children = undefined;
 
     this.invalBdry();
@@ -216,10 +239,10 @@ export class Set extends SetSn {
       tk_.value === SetTok.paren_cloz;
       tk_ = tk_.prevToken_$!
     ) tk_.revERan();
-    if (this.unpanenSet instanceof Token) this.unpanenSet.revERan();
+    if (this.unparenSet instanceof Token) this.unparenSet.revERan();
 
-    this.#stx_hl.clear();
-    this.#err_hl.clear();
+    this.#clr_stx_hl();
+    this.#clr_err_hl();
     return false;
   }
 
@@ -235,8 +258,8 @@ export class Set extends SetSn {
       return this.clrHighlight_impl$();
     }
 
-    this.#stx_hl.clear();
-    this.#err_hl.clear();
+    this.#clr_stx_hl();
+    this.#clr_err_hl();
     let highlighted = false;
 
     /**
@@ -252,30 +275,38 @@ export class Set extends SetSn {
       }
     };
 
+    const unparenFrstTk = this.#unparenSet instanceof Token
+      ? this.#unparenSet
+      : this.#unparenSet.frstToken_1;
+    const unparenLastTk = this.#unparenSet instanceof Token
+      ? this.#unparenSet
+      : this.#unparenSet.lastToken_1;
     if (this.#paren) {
       for (
         let tk_ = this.frstToken_1;
-        tk_.value === SetTok.paren_open;
+        tk_ !== unparenFrstTk;
         tk_ = tk_.nextToken_$!
       ) setHl_(tk_, this.#stx_hl);
       for (
         let tk_ = this.lastToken_1;
-        tk_.value === SetTok.paren_cloz;
+        tk_ !== unparenLastTk;
         tk_ = tk_.prevToken_$!
       ) setHl_(tk_, this.#stx_hl);
     }
 
     if (this.hasErrMsg(ErrMsg.set_unexp_tk)) {
       /*#static*/ if (INOUT) {
-        assert(this.unpanenSet instanceof Token);
+        assert(this.unparenSet instanceof Token);
       }
-      setHl_(this.unpanenSet as SetTk, this.#err_hl);
+      setHl_(this.unparenSet as SetTk, this.#err_hl);
     }
     if (this.hasErrMsg(ErrMsg.set_no_cloz_paren)) {
       let nCloz: Paren = 0;
       for (
         let tk_ = this.lastToken_1;
-        tk_.value === SetTok.paren_cloz && tk_ !== this.unpanenSet;
+        /* 3253 `tk_.value === SetTok.paren_cloz` does not work because
+        `#unparenSet` itself may end with ")" (e.g. "( 1\\ (0)"). */
+        tk_ !== unparenLastTk;
         tk_ = tk_.prevToken_$!
       ) nCloz += 1;
       /*#static*/ if (INOUT) {
@@ -291,7 +322,7 @@ export class Set extends SetSn {
       let nOpen: Paren = 0;
       for (
         let tk_ = this.frstToken_1;
-        tk_.value === SetTok.paren_open;
+        tk_ !== unparenFrstTk;
         tk_ = tk_.nextToken_$!
       ) nOpen += 1;
       /*#static*/ if (INOUT) {
@@ -310,21 +341,21 @@ export class Set extends SetSn {
   override toString() {
     return `${this._info_} ( ${
       new Array(this.#paren).fill("(").join("")
-    }${this.#unpanenSet}${new Array(this.#paren).fill(")").join("")})`;
+    }${this.#unparenSet}${new Array(this.#paren).fill(")").join("")})`;
   }
 
   override _repr_() {
-    const unpanenSet = this.#unpanenSet instanceof Token
-      ? this.#unpanenSet.toString()
-      : this.#unpanenSet._repr_();
+    const unparenSet = this.#unparenSet instanceof Token
+      ? this.#unparenSet.toString()
+      : this.#unparenSet._repr_();
     return this.#paren
       ? [
         this._info_,
         new Array(this.#paren).fill("(").join(""),
-        unpanenSet,
+        unparenSet,
         new Array(this.#paren).fill(")").join(""),
       ]
-      : [this._info_, unpanenSet];
+      : [this._info_, unparenSet];
   }
 }
 /*80--------------------------------------------------------------------------*/

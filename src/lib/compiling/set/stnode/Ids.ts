@@ -14,6 +14,12 @@ import { SetSn } from "./SetSn.ts";
 export class Ids extends SetSn {
   readonly #tk_a;
 
+  //jjjj TOCLEANUP
+  // override get known(): boolean {
+  //   return this.#tk_a[0].value !== BaseTok.unknown &&
+  //     this.#tk_a.at(-1)!.value !== BaseTok.unknown;
+  // }
+
   override get frstToken_1(): SetTk {
     return this.frstTk$ ??= this.#tk_a[0];
   }

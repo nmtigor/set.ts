@@ -286,21 +286,17 @@ export abstract class Pazr<T extends Tok = BaseTok> {
    */
   @out((self: Pazr<T>) => {
     assert(self.strtPazTk$.posS(self.stopPazTk$));
-    if (self.drtSn_$) {
-      assert(!self.drtSn_$.isRoot && !self.drtSn_$.isErr);
-      assert(self.strtPazTk$ === self.drtSn_$.frstToken_1.prevToken_$);
-      assert(self.stopPazTk$ === self.drtSn_$.lastToken_1.nextToken_$);
-    } else {
+    if (!self.drtSn_$) {
       assert(self.strtPazTk$ === self.lexr$.frstLexTk);
       assert(self.stopPazTk$ === self.lexr$.lastLexTk);
     }
   })
-  pazmrk_$(): this {
+  pazmrk_$(strtLexTk_x?: Token<T>, stopLexTk_x?: Token<T>): this {
     //jjjj TOCLEANUP
-    // this.headBdryClrTk_$ = this.lexr$.strtLexTk_$;
+    // this.headBdryClrTk_$ = this.lexr$._curLexTk_;
     // this.tailBdryClrTk_$ = this.lexr$.stopLexTk_$;
-    const strtLexTk = this.lexr$.strtLexTk_$;
-    const stopLexTk = this.lexr$.stopLexTk_$;
+    strtLexTk_x ??= this.lexr$.strtLexTk_$;
+    stopLexTk_x ??= this.lexr$.stopLexTk_$;
     this.newSn_$ = undefined; //!
     this.unrelSn_ss_$.reset_SortedArray();
     this.reusdSn_ss_$.reset_SortedArray();
@@ -310,44 +306,44 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     let valve = VALVE;
 
     /* find boundary token backward */
-    let snClrTk_0: Token<T> | undefined = strtLexTk;
+    let snClrTk_0: Token<T> | undefined = strtLexTk_x;
     while (
-      !snClrTk_0.sn_$ && (snClrTk_0 = snClrTk_0.prevToken_$) && --valve
+      !snClrTk_0.sn_$?.known && (snClrTk_0 = snClrTk_0.prevToken_$) && --valve
     );
     assert(valve, `Loop ${VALVE}(±1) times!`);
 
-    if (snClrTk_0?.sn_$!.lastToken_1.posSE(strtLexTk)) {
+    if (snClrTk_0?.sn_$!.lastToken_1.posSE(strtLexTk_x)) {
       let sn_: Stnode<T> | undefined = snClrTk_0.sn_$!;
       let sn_1: Stnode<T> | undefined;
       do {
-        if (sn_.filterTo(unrelSn_a, sn_1)) break;
+        if (sn_.filterTo(unrelSn_a, sn_1, "cln")) break;
         sn_1 = sn_;
       } while (
-        (sn_ = sn_.parent) && sn_.lastToken_1.posSE(strtLexTk) &&
-        --valve
+        (sn_ = sn_.parent) &&
+        sn_.known && sn_.lastToken_1.posSE(strtLexTk_x) && --valve
       );
     }
 
     /* find boundary token forward */
-    let snClrTk_1: Token<T> | undefined = stopLexTk;
+    let snClrTk_1: Token<T> | undefined = stopLexTk_x;
     while (
-      !snClrTk_1.sn_$ && (snClrTk_1 = snClrTk_1.nextToken_$) && --valve
+      !snClrTk_1.sn_$?.known && (snClrTk_1 = snClrTk_1.nextToken_$) && --valve
     );
     assert(valve, `Loop ${VALVE}(±1) times!`);
 
-    if (snClrTk_1?.sn_$!.frstToken_1.posGE(stopLexTk)) {
+    if (snClrTk_1?.sn_$!.frstToken_1.posGE(stopLexTk_x)) {
       let sn_: Stnode<T> | undefined = snClrTk_1.sn_$!;
       let sn_1: Stnode<T> | undefined;
       do {
-        if (sn_.filterTo(unrelSn_a, sn_1)) break;
+        if (sn_.filterTo(unrelSn_a, sn_1, "cln")) break;
         sn_1 = sn_;
       } while (
-        (sn_ = sn_.parent) && sn_.frstToken_1.posGE(stopLexTk) &&
-        --valve
+        (sn_ = sn_.parent) &&
+        sn_.known && sn_.frstToken_1.posGE(stopLexTk_x) && --valve
       );
     }
 
-    if (snClrTk_0 && snClrTk_1) { // 1916
+    /* 1916 */ if (snClrTk_0 && snClrTk_1) {
       Stnode.sn_ss
         .reset_SortedArray().messUp()
         .push(snClrTk_0.sn_$!, snClrTk_1.sn_$!);
@@ -360,7 +356,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
       this.drtSn_$ = this.setPazRegion$(
         Stnode.calcCommon({ unrelSn_ss: this.unrelSn_ss_$, unrelSn_a }),
       );
-    } else { // 1915
+    } /* 1915 */ else {
       if (snClrTk_0) {
         let sn_: Stnode<T> | undefined = snClrTk_0.sn_$!;
         while ((sn_ = sn_.prevStnod) && --valve) sn_.filterTo(unrelSn_a);
@@ -376,7 +372,15 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     }
     this.errSn_ss$.reset_SortedArray();
 
-    this.#enlrgBdries(strtLexTk, stopLexTk);
+    if (this.drtSn_$) {
+      /* Will `#invalBdries()` in `#enlrgBdries`, so check `drtSn_$` here. */
+      /*#static*/ if (INOUT) {
+        assert(!this.drtSn_$.isRoot && !this.drtSn_$.isErr);
+        assert(this.strtPazTk$ === this.drtSn_$.frstToken_1.prevToken_$);
+        assert(this.stopPazTk$ === this.drtSn_$.lastToken_1.nextToken_$);
+      }
+    }
+    this.#enlrgBdries(strtLexTk_x, stopLexTk_x);
     this.sufPazmrk$();
     return this;
   }
