@@ -634,6 +634,7 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   //   this.caretrvm$![1].val = rv_x;
   // }
 
+  /** @final */
   @traceOut(_TRACE && EDTR)
   draw_$() {
     /*#static*/ if (_TRACE && EDTR) {

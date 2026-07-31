@@ -204,6 +204,44 @@ export abstract class Pazr<T extends Tok = BaseTok> {
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
+  pazPremrk_$(): this {
+    let tip;
+
+    /* Take `.prevToken_$`, `.nextToken_$` to avoid the impact of
+    `Lexr.concatTokens$()`. */
+    const strtLexTk = this.lexr$.curLexTk_$.prevToken_$;
+    const stopLexTk = this.lexr$.stopLexTk_$.nextToken_$;
+    if (strtLexTk && stopLexTk) {
+      const VALVE = 10_000;
+      let valve = VALVE;
+
+      /* find boundary token backward */
+      let snClrTk_0: Token<T> | undefined = strtLexTk;
+      while (!snClrTk_0.sn_$ && (snClrTk_0 = snClrTk_0.prevToken_$) && --valve);
+      assert(valve, `Loop ${VALVE}(±1) times!`);
+
+      /* find boundary token forward */
+      let snClrTk_1: Token<T> | undefined = stopLexTk;
+      while (!snClrTk_1.sn_$ && (snClrTk_1 = snClrTk_1.nextToken_$) && --valve);
+      assert(valve, `Loop ${VALVE}(±1) times!`);
+
+      if (snClrTk_0 && snClrTk_1) {
+        Stnode.sn_ss
+          .reset_SortedArray().messUp()
+          .push(snClrTk_0.sn_$!, snClrTk_1.sn_$!);
+        Stnode.sn_ss.push(...this.errSn_ss$);
+        tip = Stnode.calcCommon();
+      } else {
+        tip = this.root$;
+      }
+    } else {
+      tip = this.root$;
+    }
+
+    tip?.ensureAllBdries();
+    return this;
+  }
+
   /**
    * Set `strtPazTk$`, `stopPazTk$`
    * @final
@@ -234,7 +272,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
     let valve = VALVE;
     const invalUp_ = (sn_y: Stnode<T> | undefined) => {
       while (sn_y && !this.#tmpSn_ss.includes(sn_y) && --valve) {
-        sn_y.invalBdry();
+        sn_y.invalBdries();
         this.#tmpSn_ss.add(sn_y);
         if (sn_y === this.drtSn_$) break;
         sn_y = sn_y.parent;
@@ -291,9 +329,9 @@ export abstract class Pazr<T extends Tok = BaseTok> {
       assert(self.stopPazTk$ === self.lexr$.lastLexTk);
     }
   })
-  pazmrk_$(strtLexTk_x?: Token<T>, stopLexTk_x?: Token<T>): this {
+  pazMrk_$(strtLexTk_x?: Token<T>, stopLexTk_x?: Token<T>): this {
     //jjjj TOCLEANUP
-    // this.headBdryClrTk_$ = this.lexr$._curLexTk_;
+    // this.headBdryClrTk_$ = this.lexr$.curLexTk_$;
     // this.tailBdryClrTk_$ = this.lexr$.stopLexTk_$;
     strtLexTk_x ??= this.lexr$.strtLexTk_$;
     stopLexTk_x ??= this.lexr$.stopLexTk_$;
@@ -465,7 +503,7 @@ export abstract class Pazr<T extends Tok = BaseTok> {
 /*80--------------------------------------------------------------------------*/
 
 export class DoNothingPazr<T extends Tok = BaseTok> extends Pazr<T> {
-  override pazmrk_$(): this {
+  override pazMrk_$(): this {
     this.setPazRegion$();
     return this;
   }

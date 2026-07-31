@@ -62,18 +62,21 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     return this;
   }
 
-  bline_$;
-  get lidx_1(): lnum_t {
-    return this.bline_$.lidx_1;
+  /* #bline */
+  #bline!: Line;
+  get bline_$() {
+    return this.#bline;
   }
-  //jjjj TOCLEANUP
-  // get bline_$(): Line {
-  //   return this.#bline;
-  // }
-  // setBLine_$(_x: Line) {
-  //   this.bline_$ = _x;
-  //   _x.eline = this;
-  // }
+
+  setBLine_$(_x: Line): void {
+    this.#bline = _x;
+    this.#forceSetBidiOnce = true;
+  }
+
+  get lidx_1(): lnum_t {
+    return this.#bline.lidx_1;
+  }
+  /* ~ */
 
   /** To be consistent with `StnodeV.eline_$` */
   eline_$ = this;
@@ -83,16 +86,20 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   // /** `#bidi.valid` if there is wrapping. Otherwise, use `bline_$.bidi`. */
   readonly #bidi = new Bidi();
 
+  #forceSetBidiOnce = false;
   /** @final @implement */
   get bidi(): Bidi {
-    if (
+    if (this.#forceSetBidiOnce) {
+      this.#forceSetBidiOnce = false;
+      this.setBidi$();
+    } else if (
       this.#bidi.bidiLastCont_ts <
-        Math.max(this.bline_$.lineLastCont_ts, this.coo$.lastBcr_ts)
+        Math.max(this.#bline.lineLastCont_ts, this.coo$.lastBcr_ts)
     ) {
       this.setBidi$();
     }
     //jjjj TOCLEANUP
-    // return this.#bidi.valid ? this.#bidi : this.bline_$.bidi;
+    // return this.#bidi.valid ? this.#bidi : this.#bline.bidi;
     return this.#bidi;
   }
   /* ~ */
@@ -103,12 +110,12 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
    * @const
    */
   get empty() {
-    return this.bline_$.text.length === 0;
+    return this.#bline.text.length === 0;
   }
 
   //jjjj TOCLEANUP
   // get #fsrec_a() {
-  //   return this.bline_$.getFsrecaOn(this.coo$._scrolr.id);
+  //   return this.#bline.getFsrecaOn(this.coo$._scrolr.id);
   // }
   // get _fsrec_a_() {
   //   return this.#fsrec_a;
@@ -127,7 +134,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
    */
   constructor(coo_x: EdtrBase<CI>, bln_x: Line) {
     super(coo_x, div());
-    this.bline_$ = bln_x;
+    this.setBLine_$(bln_x);
 
     this.el$.id = this.class_id;
     /*#static*/ if (CYPRESS || DEBUG) {
@@ -218,7 +225,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     this.reset_ELineBase$();
 
     if (!this.empty) {
-      this.el$.append(textnode(this.bline_$.text));
+      this.el$.append(textnode(this.#bline.text));
     }
     this.el$.append(new TailV(this).el);
 
@@ -258,18 +265,18 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   /** @final */
   syncBSize(): this {
     const id_ = this.coo$._scrolr.id;
-    const bsize_0 = this.bline_$.getBSizeOn(id_);
+    const bsize_0 = this.#bline.getBSizeOn(id_);
     const bsize_1 = this.bsize;
     if (!Number.apxE(bsize_0, bsize_1)) {
-      this.bline_$.invTpBSizeOn(id_);
-      this.bline_$.setBSizeOn(id_, bsize_1);
+      this.#bline.invTpBSizeOn(id_);
+      this.#bline.setBSizeOn(id_, bsize_1);
     }
     return this;
   }
   //jjjj TOCLEANUP
   // /** @final */
   // get viewBSize(): unum {
-  //   return this.bline_$.getBSizeOn(this.coo$._scrolr.id);
+  //   return this.#bline.getBSizeOn(this.coo$._scrolr.id);
   // }
 
   //jjjj TOCLEANUP
@@ -315,7 +322,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
     /*#static*/ if (INOUT) {
       assert(this.el$.isConnected);
     }
-    const bln = this.bline_$;
+    const bln = this.#bline;
     const LEN = bln.uchrLen;
     //jjjj TOCLEANUP
     // const wrap_a_0 = this.#wrap_a.slice();
@@ -358,8 +365,6 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
 
     this.#bidi.reset_Bidi(
       bln.text,
-      //jjjj TOCLEANUP
-      // edtr._scrolr.bufrDir,
       bln.dir,
       this.#wrap_a,
       bln.bidi.embedLevels, //!
@@ -374,7 +379,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   // private _onCvasc(evt_x: ContentVisibilityAutoStateChangeEvent) {
   //   /*#static*/ if (_TRACE) {
   //     console.log(
-  //       `%c${trace.indent}>>>>>>> ${this.class_id}._onCvasc() (${this.bline_$.class_id}) >>>>>>>`,
+  //       `%c${trace.indent}>>>>>>> ${this.class_id}._onCvasc() (${this.#bline.class_id}) >>>>>>>`,
   //       `color:${LOG_cssc.cvasc}`,
   //     );
   //     console.log(`${trace.dent}evt_x.skipped: ${evt_x.skipped}`);
@@ -389,7 +394,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
   // private _onResiz() {
   //   /*#static*/ if (_TRACE && RESIZ) {
   //     console.log(
-  //       `%c${trace.indent}>>>>>>> ${this.class_id}._onResiz() (${this.bline_$.class_id}) >>>>>>>`,
+  //       `%c${trace.indent}>>>>>>> ${this.class_id}._onResiz() (${this.#bline.class_id}) >>>>>>>`,
   //       `color:${LOG_cssc.resiz}`,
   //     );
   //     console.log(`${trace.dent}isConnected: ${this.el$.isConnected}`);
@@ -430,7 +435,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
    */
   caretNodeAt(loff_x: loff_t): HTMLElement | Text {
     let ret;
-    // loff_x = Math.clamp(0, loff_x, this.bline_$.uchrLen - 1);
+    // loff_x = Math.clamp(0, loff_x, this.#bline.uchrLen - 1);
     let loff = 0, loff_1 = 0;
     for (const subNd of this.el$.childNodes) {
       if (subNd.isText) {
@@ -475,7 +480,7 @@ export class ELineBase<CI extends EdtrBaseCI = EdtrBaseCI>
    * @final
    */
   get lastCaretNode(): HTMLElement | Text {
-    return this.caretNodeAt(this.bline_$.uchrLen);
+    return this.caretNodeAt(this.#bline.uchrLen);
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -595,7 +600,7 @@ export class ELineBaseFac extends Factory<ELineBase> {
 
   protected override reuseVal$(v_x: ELineBase): void {
     v_x.setCoo_$(this.#coo);
-    v_x.bline_$ = this.#bln;
+    v_x.setBLine_$(this.#bln);
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 

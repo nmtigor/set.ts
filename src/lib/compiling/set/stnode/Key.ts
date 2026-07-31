@@ -128,7 +128,7 @@ export class Key extends SetSn {
       c_a.splice(i_, 1, newSn_x);
     }
 
-    if (i_ === 0 || i_ === c_a.length - 1) this.invalBdry();
+    if (i_ === 0 || i_ === c_a.length - 1) this.invalBdries();
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 

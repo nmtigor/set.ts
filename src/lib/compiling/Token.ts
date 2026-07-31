@@ -355,7 +355,7 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     if (stopLoc_x) this.setStop(stopLoc_x);
     this.setValue(value_x);
     if (this.isErr) this.clrErr();
-    /* `pazmrk_$()` needs `sn_$` of Token in dirty region. */
+    /* `pazMrk_$()` needs `sn_$` of Token in dirty region. */
     // this.sn_$ = undefined;
     return this;
   }

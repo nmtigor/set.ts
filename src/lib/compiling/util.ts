@@ -4,7 +4,7 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
-import type { loff_t, unum } from "../alias.ts";
+import type { loff_t, ts_t, unum } from "../alias.ts";
 import type { Id_t, UInt16 } from "../alias_v.ts";
 import type { CsscHexNorm } from "../color/alias.ts";
 import type { MooHandler } from "../Moo.ts";
@@ -12,7 +12,6 @@ import { assert } from "../util.ts";
 import * as Is from "../util/is.ts";
 import { SortedIdo, SortedSet } from "../util/SortedSet.ts";
 import type { Locval, Tok } from "./alias.ts";
-import { BaseTok } from "./BaseTok.ts";
 import type { Line } from "./Line.ts";
 import type { Ranval } from "./Ranval.ts";
 import type { Snt } from "./Snt.ts";
@@ -335,17 +334,18 @@ export const enum ErrMsg {
   "attributes-in-end-tag" = "End tag contains unexpected attributes.",
   "self-closing-flag-on-end-tag" =
     "End tag contains unexpected self-closing flag.",
-  "expected-tag-name-but-got-right-bracket" =
-    "Expected tag name. Got '>' instead.",
   //jjjj TOCLEANUP
+  // "expected-tag-name-but-got-right-bracket" =
+  //   "Expected tag name. Got '>' instead.",
   // "expected-tag-name-but-got-question-mark" =
   //   "Expected tag name. Got '?' instead. (HTML doesn't support processing instructions.)",
   "expected-tag-name" = "Expected tag name. Got something else instead",
   "expected-closing-tag-but-got-right-bracket" =
     "Expected closing tag. Got '>' instead. Ignoring '</>'.",
   html_no_endtag_eof = "expected-closing-tag-but-got-eof", // "Expected closing tag. Unexpected end of file.",
-  "expected-closing-tag-but-got-char" =
-    "Expected closing tag. Unexpected character '%(data)s' found.",
+  //jjjj TOCLEANUP
+  // "expected-closing-tag-but-got-char" =
+  //   "Expected closing tag. Unexpected character '%(data)s' found.",
   "eof-in-tag-name" = "Unexpected end of file in the tag name.",
   "expected-attribute-name-but-got-eof" =
     "Unexpected end of file. Expected attribute name instead.",
@@ -375,8 +375,8 @@ export const enum ErrMsg {
     "Unexpected end of file in tag. Expected >",
   "unexpected-character-after-solidus-in-tag" =
     "Unexpected character after / in tag. Expected >",
-  "expected-dashes-or-doctype" = "Expected '--' or 'DOCTYPE'. Not found.",
   //jjjj TOCLEANUP
+  // "expected-dashes-or-doctype" = "Expected '--' or 'DOCTYPE'. Not found.",
   // "unexpected-bang-after-double-dash-in-comment" =
   //   "Unexpected ! after -- in comment",
   "unexpected-space-after-double-dash-in-comment" =
@@ -413,8 +413,7 @@ export const enum ErrMsg {
   html_unexp_opntag_doctype = "expected-doctype-but-got-start-tag", // "Unexpected start tag (%(name)s). Expected DOCTYPE.",
   html_unexp_endtag_doctype = "expected-doctype-but-got-end-tag", // "Unexpected end tag (%(name)s). Expected DOCTYPE.",
   html_html_unexp_endtag = "end-tag-after-implied-root", // "Unexpected end tag (%(name)s) after the (implied) root element.",
-  "expected-named-closing-tag-but-got-eof" =
-    "expected-named-closing-tag-but-got-eof",
+  html_no_named_endtag_eof = "expected-named-closing-tag-but-got-eof", // "Unexpected end of file. Expected end tag (%(name)s).",
   html_two_heads = "two-heads-are-not-better-than-one", // "Unexpected start tag head in existing head. Ignored.",
   html_unexp_endtag = "unexpected-end-tag", // "Unexpected end tag (%(name)s). Ignored.",
   html_head_unexp_opntag = "unexpected-start-tag-out-of-my-head", // "Unexpected start tag (%(name)s) that can be in head. Moved.",
@@ -443,14 +442,12 @@ export const enum ErrMsg {
     "Unexpected implied end tag (%(name)s) in the table phase.",
   "unexpected-implied-end-tag-in-table-body" =
     "Unexpected implied end tag (%(name)s) in the table body phase.",
-  "unexpected-char-implies-table-voodoo" =
-    "Unexpected non-space characters in table context caused voodoo mode.",
+  html_table_unexp_char = "unexpected-char-implies-table-voodoo", // "Unexpected non-space characters in table context caused voodoo mode.",
   "unexpected-hidden-input-in-table" =
     "Unexpected input with type hidden in table context.",
   html_table_unexp_form = "unexpected-form-in-table", // "Unexpected form in table context."
   html_table_opntag_voodoo = "unexpected-start-tag-implies-table-voodoo", // "Unexpected start tag (%(name)s) in table context caused voodoo mode."
-  "unexpected-end-tag-implies-table-voodoo" =
-    "Unexpected end tag (%(name)s) in table context caused voodoo mode.",
+  html_table_endtag_voodoo = "unexpected-end-tag-implies-table-voodoo", // "Unexpected end tag (%(name)s) in table context caused voodoo mode.",
   html_tbody_unexp_cell = "unexpected-cell-in-table-body", // "Unexpected table cell start tag (%(name)s) in the table body phase.",
   html_cell_unexp_endtag = "unexpected-cell-end-tag", // "Got table cell end tag (%(name)s) while required end tags are missing.",
   html_tbody_unexp_endtag = "unexpected-end-tag-in-table-body", // "Unexpected end tag (%(name)s) in the table body phase. Ignored.",
@@ -459,12 +456,10 @@ export const enum ErrMsg {
   html_tr_unexp_endtag = "unexpected-end-tag-in-table-row", // "Unexpected end tag (%(name)s) in the table row phase. Ignored.",
   html_select_unexp_select = "unexpected-select-in-select", // "Unexpected select start tag in the select phase treated as select end tag.",
   html_select_unexp_input = "unexpected-input-in-select", // "Unexpected input start tag in the select phase.",
-  "unexpected-start-tag-in-select" =
-    "Unexpected start tag token (%(name)s in the select phase. Ignored.",
-  "unexpected-end-tag-in-select" =
-    "Unexpected end tag (%(name)s) in the select phase. Ignored.",
-  "unexpected-table-element-start-tag-in-select-in-table" =
-    "Unexpected table element start tag (%(name)s) in the select in table phase.",
+  html_select_unexp_opntag = "unexpected-start-tag-in-select", // "Unexpected start tag token (%(name)s in the select phase. Ignored.",
+  html_select_unexp_endtag = "unexpected-end-tag-in-select", // "Unexpected end tag (%(name)s) in the select phase. Ignored.",
+  html_table_select_unexp_opntag =
+    "unexpected-table-element-start-tag-in-select-in-table", // "Unexpected table element start tag (%(name)s) in the select in table phase."
   "unexpected-table-element-end-tag-in-select-in-table" =
     "Unexpected table element end tag (%(name)s) in the select in table phase.",
   "unexpected-char-after-body" =
@@ -495,8 +490,8 @@ export const enum ErrMsg {
     "Unexpected start tag (%(name)s). Expected end of file.",
   "expected-eof-but-got-end-tag" =
     "Unexpected end tag (%(name)s). Expected end of file.",
-  "eof-in-table" = "Unexpected end of file. Expected table content.",
-  "eof-in-select" = "Unexpected end of file. Expected select content.",
+  html_table_eof = "eof-in-table", // "Unexpected end of file. Expected table content.",
+  html_select_eof = "eof-in-select", // "Unexpected end of file. Expected select content.",
   "eof-in-frameset" = "Unexpected end of file. Expected frameset content.",
   "eof-in-script-in-script" =
     "Unexpected end of file. Expected script content.",
@@ -523,10 +518,11 @@ export const enum ErrMsg {
   // unrecognizable_linkdest = "The link destination is unrecognizable.",
 }
 
-export type ErrRv = [ErrMsg, Ranval, string?];
-
-export type Err = ErrMsg | ErrRv;
 //jjjj TOCLEANUP
+// export type ErrRv = [ErrMsg, Ranval, string?];
+
+//jjjj TOCLEANUP
+// export type Err = ErrMsg | ErrRv;
 // /**
 //  * @constborrow @param lhs_x
 //  * @constborrow @param rhs_x
@@ -538,13 +534,19 @@ export type Err = ErrMsg | ErrRv;
 //   if (Is.array(rhs_x)) rhs_x = rhs_x[0];
 //   return lhs_x === rhs_x;
 // };
+export type Err = {
+  msg: ErrMsg;
+  rv?: Ranval;
+  txt?: string;
+  ts?: ts_t | undefined;
+};
 
 /** @final */
 export class SortedErr extends SortedSet<Err> {
   /** @headconst @param val_a_x */
   constructor(val_a_x?: Err[]) {
     super(
-      (a, b) => Is.array(a) && Is.array(b) ? a[1].posS(b[1]) : false,
+      (a, b) => a.rv && b.rv ? a.rv.posS(b.rv) : false,
       val_a_x,
       (a, b) => a === b,
     );

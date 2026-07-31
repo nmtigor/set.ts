@@ -38,7 +38,7 @@ export class Ids extends SetSn {
     super(pazr_x);
     this.#tk_a = tks_x;
 
-    this.ensureBdry();
+    this.ensureBdries();
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 

@@ -520,7 +520,7 @@ export class SetPazr extends Pazr<SetTok> {
     _x.lhs = Set.create(this, snt, _x.setParen);
     if (this.reachPazBdry$()) {
       if (_x.setParen) {
-        _x.lhs.setErr(ErrMsg.set_no_cloz_paren);
+        _x.lhs.setErr({ msg: ErrMsg.set_no_cloz_paren });
       }
     }
   }
@@ -569,7 +569,7 @@ export class SetPazr extends Pazr<SetTok> {
     _x.lhs = Set.create(this, sn_, _x.setParen);
     if (this.reachPazBdry$()) {
       if (_x.setParen) {
-        _x.lhs.setErr(ErrMsg.set_no_cloz_paren);
+        _x.lhs.setErr({ msg: ErrMsg.set_no_cloz_paren });
       }
     }
   }
@@ -635,12 +635,12 @@ export class SetPazr extends Pazr<SetTok> {
       }
     } else if (paren_1) {
       lhs.paren_$ = lhs.paren + paren_1;
-      lhs.setErr(ErrMsg.set_no_open_paren);
+      lhs.setErr({ msg: ErrMsg.set_no_open_paren });
     }
     if (this.reachPazBdry$()) {
       if (retParen) {
         lhs.paren_$ = lhs.paren + retParen;
-        lhs.setErr(ErrMsg.set_no_cloz_paren);
+        lhs.setErr({ msg: ErrMsg.set_no_cloz_paren });
       }
       return undefined;
     }

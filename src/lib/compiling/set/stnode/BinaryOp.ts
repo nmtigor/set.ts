@@ -174,7 +174,7 @@ export abstract class BinaryOp extends SetSn {
     }
     this.#children = undefined;
 
-    this.invalBdry();
+    this.invalBdries();
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -300,16 +300,16 @@ export class BinaryErr extends BinaryOp {
       );
     }
     super(pazr_x, lhs_x, opTk_x);
-    this.setErr([
-      ErrMsg.set_inval_binary_op,
-      Ranval.fromRan(opTk_x.ran_$),
-      opTk_x.name,
-    ]);
+    this.setErr({
+      msg: ErrMsg.set_inval_binary_op,
+      rv: Ranval.fromRan(opTk_x.ran_$),
+      txt: opTk_x.name,
+    });
     if (rhs_x) {
       rhs_x.attachTo_$(this);
       this.rhs$ = rhs_x;
     } else {
-      this.setErr(ErrMsg.set_binaryerr_no_rhs);
+      this.setErr({ msg: ErrMsg.set_binaryerr_no_rhs });
     }
 
     /*#static*/ if (!DENO) {
@@ -333,7 +333,7 @@ export class BinaryErr extends BinaryOp {
       );
     }
 
-    this.ensureBdry();
+    this.ensureBdries();
   }
   /**
    * @headconst @param pazr_x

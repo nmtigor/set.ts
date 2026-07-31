@@ -63,7 +63,7 @@ export class Intersect extends BinaryOp {
       rhs_x.attachTo_$(this);
       this.rhs$ = rhs_x;
     } else {
-      this.setErr(ErrMsg.set_intersect_no_rhs);
+      this.setErr({ msg: ErrMsg.set_intersect_no_rhs });
     }
 
     /*#static*/ if (!DENO) {
@@ -79,7 +79,7 @@ export class Intersect extends BinaryOp {
       );
     }
 
-    this.ensureBdry();
+    this.ensureBdries();
   }
   /**
    * @headconst @param pazr_x

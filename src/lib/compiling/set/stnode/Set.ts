@@ -63,7 +63,7 @@ export class Set extends SetSn {
 
     this.#paren = _x;
 
-    this.invalBdry().ensureBdry();
+    this.invalBdries().ensureBdries();
   }
 
   #children: UnparenSet[] | undefined;
@@ -150,11 +150,11 @@ export class Set extends SetSn {
     this.#paren = paren_x;
 
     if (unparnSet_x instanceof Token) {
-      this.setErr([
-        ErrMsg.set_unexp_tk,
-        Ranval.fromRan(unparnSet_x.ran_$),
-        unparnSet_x.name,
-      ]);
+      this.setErr({
+        msg: ErrMsg.set_unexp_tk,
+        rv: Ranval.fromRan(unparnSet_x.ran_$),
+        txt: unparnSet_x.name,
+      });
     } else {
       unparnSet_x.attachTo_$(this);
     }
@@ -183,7 +183,7 @@ export class Set extends SetSn {
       );
     }
 
-    this.ensureBdry();
+    this.ensureBdries();
   }
   /**
    * @headconst @param pazr_x
@@ -224,7 +224,7 @@ export class Set extends SetSn {
     this.#unparenSet = newSn_x;
     this.#children = undefined;
 
-    this.invalBdry();
+    this.invalBdries();
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 

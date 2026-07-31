@@ -201,24 +201,36 @@ export class Rel extends SetSn {
     } else if (
       s_ && s_.value !== SetTok.asterisk && s_.value !== SetTok.question
     ) {
-      this.setErr([ErrMsg.set_rel_unexp_tk, Ranval.fromRan(s_.ran_$), s_.name]);
+      this.setErr({
+        msg: ErrMsg.set_rel_unexp_tk,
+        rv: Ranval.fromRan(s_.ran_$),
+        txt: s_.name,
+      });
     }
     if (r_ instanceof Key || r_ instanceof Ids) {
       r_.attachTo_$(this);
     } else if (
       r_ && r_.value !== SetTok.asterisk && r_.value !== SetTok.question
     ) {
-      this.setErr([ErrMsg.set_rel_unexp_tk, Ranval.fromRan(r_.ran_$), r_.name]);
+      this.setErr({
+        msg: ErrMsg.set_rel_unexp_tk,
+        rv: Ranval.fromRan(r_.ran_$),
+        txt: r_.name,
+      });
     }
-    if (!this.jnr_2) this.setErr(ErrMsg.set_rel_no_2nd);
+    if (!this.jnr_2) this.setErr({ msg: ErrMsg.set_rel_no_2nd });
     if (t_ instanceof Key || t_ instanceof Ids) {
       t_.attachTo_$(this);
     } else if (
       t_ && t_.value !== SetTok.asterisk && t_.value !== SetTok.question
     ) {
-      this.setErr([ErrMsg.set_rel_unexp_tk, Ranval.fromRan(t_.ran_$), t_.name]);
+      this.setErr({
+        msg: ErrMsg.set_rel_unexp_tk,
+        rv: Ranval.fromRan(t_.ran_$),
+        txt: t_.name,
+      });
     }
-    if (!s_ || !r_ || !t_) this.setErr(ErrMsg.set_rel_no_srt);
+    if (!s_ || !r_ || !t_) this.setErr({ msg: ErrMsg.set_rel_no_srt });
 
     /*#static*/ if (!DENO) {
       CSS.highlights.set(this.#stx_hl_name, this.#stx_hl);
@@ -256,7 +268,7 @@ export class Rel extends SetSn {
       );
     }
 
-    this.ensureBdry();
+    this.ensureBdries();
   }
   /** @headconst @param _x */
   static create(_x: RelCtorP_) {
@@ -306,7 +318,7 @@ export class Rel extends SetSn {
     }
     this.#children = undefined;
 
-    this.invalBdry();
+    this.invalBdries();
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 

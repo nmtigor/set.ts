@@ -20,6 +20,40 @@ const lt_re_ = /\r\n|\n|\r/g;
 /** @const @param text_x */
 export const linesOf = (text_x: string): string[] => text_x.split(lt_re_);
 // console.log(linesOf("abc\n\n123\n"));
+
+/**
+ * Get trimed string on the first non-empty line
+ * @const @param text_x
+ */
+export const line1Of = (text_x: string): string => {
+  const LEN = text_x.length;
+  let strt: uint = 0;
+  while (strt < LEN) {
+    const nextN = text_x.indexOf("\n", strt);
+    const nextR = text_x.indexOf("\r", strt);
+
+    let stop: uint;
+    let offs: 1 | 2 = 1;
+    if (nextN < 0 && nextR < 0) {
+      stop = LEN;
+    } else if (nextN >= 0 && nextR >= 0) {
+      if (nextR + 1 === nextN) {
+        stop = nextR;
+        offs = 2;
+      } else {
+        stop = Math.min(nextN, nextR);
+      }
+    } else {
+      stop = nextN >= 0 ? nextN : nextR;
+    }
+
+    const ret = text_x.slice(strt, stop).trim();
+    if (ret) return ret;
+
+    strt = stop + offs;
+  }
+  return "";
+};
 /*80--------------------------------------------------------------------------*/
 
 /** @const @param _x */

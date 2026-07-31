@@ -71,7 +71,7 @@ export enum ScanR {
 /*80--------------------------------------------------------------------------*/
 
 /** text-decoration-thickness in em */
-export const Tdt = .04;
+export const Tdt = 0.04;
 /** text-underline-offset factor in em */
-export const Tuof = .08;
+export const Tuof = 0.08;
 /*80--------------------------------------------------------------------------*/

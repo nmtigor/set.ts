@@ -3,6 +3,8 @@
  * @license MIT
  ******************************************************************************/
 
+import type { ERan, ERanr } from "@fe-edt/ERan.ts";
+import { g_eran_fac } from "@fe-edt/ERan.ts";
 import * as Is from "@fe-lib/util/is.ts";
 import type { lnum_t, loff_t } from "../alias.ts";
 import type { Id_t } from "../alias_v.ts";
@@ -10,8 +12,6 @@ import type { Line } from "./Line.ts";
 import type { Loc } from "./Loc.ts";
 import type { _OldInfo_, Err, ErrMsg } from "./util.ts";
 import { SortedErr } from "./util.ts";
-import type { ERan, ERanr } from "@fe-edt/ERan.ts";
-import { g_eran_fac } from "@fe-edt/ERan.ts";
 /*80--------------------------------------------------------------------------*/
 
 type NErr_ = 2;
@@ -60,8 +60,8 @@ export abstract class Snt {
    * @const
    * @const @param errMsg_x
    */
-  onlyErr(err_x: Err): boolean {
-    return this.err_ss$?.at(0) === err_x && !this.err_ss$.at(1);
+  onlyErrMsg(msg_x: ErrMsg): boolean {
+    return this.err_ss$?.at(0)?.msg === msg_x && !this.err_ss$.at(1);
   }
 
   protected NErr$ = NErr_;
@@ -98,11 +98,11 @@ export abstract class Snt {
     const retA: unknown[] = [];
     if (this.err_ss$) {
       for (const err of this.err_ss$) {
-        if (Is.array(err)) {
-          retA.push(err.map((_y) => `${_y}`));
-        } else {
-          retA.push(err);
-        }
+        /** representation */
+        const r_: { msg: ErrMsg; rv?: string; txt?: string } = { msg: err.msg };
+        if (err.rv) r_.rv = `${err.rv}`;
+        if (err.txt !== undefined) r_.txt = err.txt;
+        retA.push(r_);
       }
     }
     return retA;

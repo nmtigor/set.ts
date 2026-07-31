@@ -239,7 +239,7 @@ export class Line implements Bidir {
 
   /** @final @implement */
   get bidi(): Bidi {
-    if (this.#bidi.bidiLastCont_ts < this.#lastCont_ts) {
+    if (this.#bidi.bidiLastCont_ts < this.#lineLastCont_ts) {
       this.#bidi.reset_Bidi(this.text$, this.dir);
       //jjjj TOCLEANUP
       // /*#static*/ if (!AUTOTEST) {
@@ -251,16 +251,16 @@ export class Line implements Bidir {
   /* ~ */
 
   /* lineLastCont_ts */
-  #lastCont_ts = 0 as Ts_t;
+  #lineLastCont_ts = 0 as Ts_t;
   /**
    * last content timestamp
    * @final
    */
   get lineLastCont_ts() {
-    return this.#lastCont_ts;
+    return this.#lineLastCont_ts;
   }
-  #updateLastContTs(): Ts_t {
-    return this.#lastCont_ts = Date.now_1() as Ts_t;
+  #updateLineLastContTs(): Ts_t {
+    return this.#lineLastCont_ts = Date.now_1() as Ts_t;
   }
   /* ~ */
 
@@ -546,7 +546,7 @@ export class Line implements Bidir {
   resetText_$(text_x?: string): this {
     this.text$ = text_x ?? "";
 
-    this.#updateLastContTs();
+    this.#updateLineLastContTs();
     return this;
   }
 
@@ -748,7 +748,7 @@ export class Line implements Bidir {
     );
   }, _TREE)
   rmvSelf_$(/*jjjj TOCLEANUP ts_x?: Ts_t */): void {
-    /* `frstTSegBy_$?`, `lastTSegBy_$?` could be useful in `Tfmr.lexadj_$()` even
+    /* `frstTSegBy_$?`, `lastTSegBy_$?` could be useful in `Tfmr.lexAdj_$()` even
     after `this.removed`.*/
     // this.delTSegBdryOf();
 
@@ -798,7 +798,7 @@ export class Line implements Bidir {
     //jjjj TOCLEANUP
     // this.bufr$ = undefined;
 
-    /* `#frstToken_m`, `#lastToken_m` will be used in `Lexr.lexadj_$()` */
+    /* `#frstToken_m`, `#lastToken_m` will be used in `Lexr.lexAdj_$()` */
     // /* Because Lexr<T> could keep using to make `this` unreleasable. */
     // this.#frstToken_m.clear();
     // this.#lastToken_m.clear();

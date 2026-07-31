@@ -78,7 +78,7 @@ export class Bufr {
   /* oldLidx_m_$ */
   /**
    * Possible removed Line could still be useful (e.g. `strtLn_src` in
-   * `Lexr.lexadj_$()`)
+   * `Lexr.lexAdj_$()`)
    */
   readonly oldLidx_m_$ = new Map</* Line.lastLidx */ lnum_t, LineData>();
 
@@ -222,16 +222,20 @@ export class Bufr {
   // }
   /* ~ */
 
-  //jjjj TOCLEANUP
-  // lineN_$ = 0;
   /** @final */
   get lineN(): lnum_t {
     //jjjj TOCLEANUP
     // return this.lineN_$;
     return this.lineTree.size_1;
   }
-  //jjjj TOCLEANUP
-  // maxValidLidx_$: lnum_t | -1 = -1;
+  /**
+   * @final
+   * @const @param id_x `EdtrBaseScrolr.id`
+   * @const @param fb_x
+   */
+  bsizeOn(id_x: Id_t, fb_x: unum): unum {
+    return this.lineTree.bsizeOn_$(id_x, fb_x);
+  }
 
   frstLine_$: Line;
   get frstLine() {
@@ -256,7 +260,7 @@ export class Bufr {
     this.modified_br_Bufr.val = modified_x;
 
     if (modified_x) {
-      this.#updateLastContTs();
+      this.#updateBufrLastContTs();
     } else {
       this.#repl_saved = this.#lastRepl;
     }
@@ -335,16 +339,16 @@ export class Bufr {
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /* bufrLastCont_ts */
-  #lastCont_ts = Date.now_1();
+  #bufrLastCont_ts = Date.now_1();
   /**
    * last content timestamp
    * @final
    */
   get bufrLastCont_ts() {
-    return this.#lastCont_ts;
+    return this.#bufrLastCont_ts;
   }
-  #updateLastContTs(): Ts_t {
-    return this.#lastCont_ts = Date.now_1() as Ts_t;
+  #updateBufrLastContTs(): Ts_t {
+    return this.#bufrLastCont_ts = Date.now_1() as Ts_t;
   }
   /* ~ */
 
@@ -486,7 +490,7 @@ export class Bufr {
     // this.#onReplStateChange = undefined;
     this.repl_actr.fina();
 
-    this.#updateLastContTs();
+    this.#updateBufrLastContTs();
 
     /*#static*/ if (DEBUG) {
       assert(this.#sigPool === 0x7fff_ffff); //kkkk

@@ -1140,6 +1140,8 @@ export class Bidi {
     let rside: RSide_;
     if (visul === undefined) {
       /*#static*/ if (INOUT) {
+        // console.log({ l_x });
+        // console.log(`#text: ${this.#text}`);
         assert(l_x === this.#text.length);
       }
       if (this.#lastRSide === RSide_.left || this.#lastRSide === RSide_.rigt) {
@@ -1343,13 +1345,13 @@ export class Bidi {
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /* bidiLastCont_ts */
-  #lastCont_ts = 0 as Ts_t;
+  #bidiLastCont_ts = 0 as Ts_t;
   /** last content timestamp */
   get bidiLastCont_ts() {
-    return this.#lastCont_ts;
+    return this.#bidiLastCont_ts;
   }
-  #updateLastContTs(): Ts_t {
-    return this.#lastCont_ts = Date.now_1() as Ts_t;
+  #updateBidiLastContTs(): Ts_t {
+    return this.#bidiLastCont_ts = Date.now_1() as Ts_t;
   }
   /* ~ */
 
@@ -1375,7 +1377,7 @@ export class Bidi {
     this.#visul_a = undefined;
     this.#logal_a = undefined;
 
-    this.#updateLastContTs();
+    this.#updateBidiLastContTs();
     return this;
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/

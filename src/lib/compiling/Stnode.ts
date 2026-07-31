@@ -310,7 +310,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   /* ~ */
 
   /** @final */
-  invalBdry(): this {
+  invalBdries(): this {
     if (this.frstTk$?.sn_$ === this) {
       this.frstTk$.sn_$ = undefined;
     }
@@ -323,7 +323,7 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   }
 
   /** @final */
-  ensureBdry(): this {
+  ensureBdries(): this {
     //jjjj TOCLEANUP
     // this.frstBdryTk;
     // this.lastBdryTk;
@@ -337,17 +337,17 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
     if (c_a) {
       for (const sn of c_a) sn.ensureAllBdries();
     }
-    return this.ensureBdry();
+    return this.ensureBdries();
   }
 
-  // resetBdry(): void {
-  //   this.invalBdry().ensureBdry();
+  // resetBdries(): void {
+  //   this.invalBdries().ensureBdries();
   // }
 
   //jjjj TOCLEANUP
   // /**
-  //  * Used to justify `frstToken_1`, `lastToken_1` in `Pazr.pazmrk_$()`.\
-  //  * Override this if `Pazr.pazmrk_$()` is invoked after `Lexr.lex()`.\
+  //  * Used to justify `frstToken_1`, `lastToken_1` in `Pazr.pazMrk_$()`.\
+  //  * Override this if `Pazr.pazMrk_$()` is invoked after `Lexr.lex()`.\
   //  * May depend on `children`\
   //  */
   /**

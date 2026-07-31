@@ -218,7 +218,7 @@ export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
     this._writingMode_mo.set_Moo(this.#writingMode);
     this.#scronr.syncLayout();
 
-    this.#scronr.resizob.observe(this.scrolr$.scrole_el);
+    this.#scronr.resizob.observe(this.scrolr$.codeScrole_el);
     this.#scronr.observeTheme(); //!
 
     this.#inited_EdtrBase = true;
@@ -331,16 +331,33 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   readonly type: EdtrType;
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
+  //jjjj TOCLEANUP
+  // /** @final */
+  // protected override updateContentBSize$(): void {
+  //   this.contentBSize$ = this.bufr$.bsizeOn(this.id, this.elnBSize$);
+  // }
+
   /* elidx_m$ */
   protected readonly elidx_m$ = new Map<lnum_t, ELineBase<CI>>();
 
   /** @const @param lidx_x */
-  #mainLidx(lidx_x: lnum_t): void {
+  @traceOut(_TRACE)
+  #codeLidx(lidx_x: lnum_t): void {
+    /*#static*/ if (_TRACE) {
+      console.log(
+        `${trace.indent}>>>>>>> ${this.class_id}.#codeLidx( lidx_x: ${lidx_x}) >>>>>>>`,
+      );
+      console.log(
+        `${trace.dent}${lidx_x} in  [${this.strtLidx$},${this.stopLidx$})?`,
+      );
+    }
     if (this.strtLidx$ <= lidx_x && lidx_x < this.stopLidx$) return;
 
     this.#sufScroll_sync = true;
     if (lidx_x < this.strtLidx$) {
-      this.host.scrollScrolrTo(this.#getLidxBStrt(lidx_x));
+      this.host.scrollScrolrTo(
+        this.#getLidxBStrt(lidx_x),
+      );
     } /* if (this.stopLidx$ <= lidx_x) */ else {
       this.host.scrollScrolrTo(
         this.#getLidxBStrt(lidx_x + 1 - this.nElnMax$),
@@ -353,8 +370,10 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
    * @const @param lidx_x
    */
   eline_1(lidx_x: lnum_t): ELineBase {
-    this.#mainLidx(lidx_x);
-    return this.elidx_m$.get(lidx_x)!;
+    this.#codeLidx(lidx_x);
+    const ret = this.elidx_m$.get(lidx_x)!;
+    /*#static*/ if (DEBUG) { if (!ret) debugger; }
+    return ret;
   }
   /**
    * `in( 0 <= lidx_x && lidx_x < this.bufr$.lineN)`
@@ -405,12 +424,12 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   /* ~ */
 
   /** Scrollee, the Element being scrolled */
-  readonly scrole_el = div();
+  readonly codeScrole_el = div();
 
   /* code_el$ */
   protected readonly code_el$ = div();
 
-  protected get codeBSize$(): unum {
+  protected get codeSize$(): unum {
     return this.coo$._writingMode & WritingDir.v
       ? this.code_el$.clientWidth
       : this.code_el$.clientHeight;
@@ -424,17 +443,33 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   // /** head size: `elnBSize$ * (bufr$.lineN - stopLidx$) + headBDt$` */
   // protected headBDt$: unum = 0;
 
-  readonly headBSize_mo = new Moo<unum>({ val: 0 });
+  readonly scrollHeadSize_mo = new Moo<unum>({ val: 0 });
 
-  protected get headBSize$(): unum {
-    return this.coo$._writingMode & WritingDir.v
-      ? this.#head_el.clientWidth
-      : this.#head_el.clientHeight;
+  #controlHeadSize: unum = 0;
+  protected get controlHeadSize$(): unum {
+    //jjjj TOCLEANUP
+    // return this.coo$._writingMode & WritingDir.v
+    //   ? this.#head_el.clientWidth
+    //   : this.#head_el.clientHeight;
+    return this.#controlHeadSize;
   }
-  protected set headBSize$(bs_x: number) {
-    if (bs_x < 0) bs_x = 0;
-    this.#head_el.style.blockSize = `${bs_x}px`;
-    this.headBSize_mo.val = this.headBSize$;
+  static ScrollHeadSizeMAX = 10_000_000;
+  // static ScrollHeadSizeMAX = 100;
+  /** @const @param size_x */
+  protected set controlHeadSize$(size_x: number) {
+    this.#controlHeadSize = Math.max(size_x, 0);
+    if (this.#controlHeadSize > EdtrBaseScrolr.ScrollHeadSizeMAX) {
+      this.contentBStrt$ = this.#controlHeadSize -
+        EdtrBaseScrolr.ScrollHeadSizeMAX;
+    } else {
+      this.contentBStrt$ = 0;
+    }
+    const size_ = Math.min(
+      this.#controlHeadSize,
+      EdtrBaseScrolr.ScrollHeadSizeMAX,
+    );
+    this.#head_el.style.blockSize = `${size_}px`;
+    this.scrollHeadSize_mo.val = size_;
   }
   /* ~ */
 
@@ -445,17 +480,30 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   // /** foot size: `elnBSize$ * strtLidx$ + footBDt$` */
   // protected footBDt$: unum = 0;
 
-  // readonly footBSize_mo = new Moo<unum>({ val: 0 });
+  // readonly scrollFootSize_mo = new Moo<unum>({ val: 0 });
 
-  protected get footBSize$(): unum {
-    return this.coo$._writingMode & WritingDir.v
-      ? this.#foot_el.clientWidth
-      : this.#foot_el.clientHeight;
+  #controlFootSize: unum = 0;
+  protected get controlFootSize$(): unum {
+    //jjjj TOCLEANUP
+    // return this.coo$._writingMode & WritingDir.v
+    //   ? this.#foot_el.clientWidth
+    //   : this.#foot_el.clientHeight;
+    return this.#controlFootSize;
   }
-  protected set footBSize$(bs_x: number) {
-    if (bs_x < 0) bs_x = 0;
-    this.#foot_el.style.blockSize = `${bs_x}px`;
-    // this.footBSize_mo.val = this.footBSize$;
+  /** @const @param size_x */
+  protected set controlFootSize$(size_x: number) {
+    this.#controlFootSize = Math.max(size_x, 0);
+    // if (this.#controlFootSize > EdtrBaseScrolr.ScrollHeadSizeMAX) {
+    //   this.contentBFoot$ = this.#controlFootSize - EdtrBaseScrolr.ScrollHeadSizeMAX;
+    // } else {
+    //   this.contentBFoot$ = 0;
+    // }
+    const size_ = Math.min(
+      this.#controlFootSize,
+      EdtrBaseScrolr.ScrollHeadSizeMAX,
+    );
+    this.#foot_el.style.blockSize = `${size_}px`;
+    // this.scrollFootSize_mo.val = size_;
   }
   /* ~ */
 
@@ -469,10 +517,11 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   };
 
   protected readonly revEln$: RevEln;
-  /** @headconst @param eln_x `SetELine` */
+  /** @headconst @param eln_x */
   static readonly revEln$ = (eln_x: ELineBase): void => {
     ELineBaseFac.rev(eln_x);
   };
+  /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   protected rich_el$?: HTMLDivElement;
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
@@ -522,13 +571,15 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       );
     }
     if (retC_x.focusVisible && this.bcr.containRec(retC_x.bcr_1, VFMrgin)) {
+      // console.log(`${trace.dent}bcr: ${this.bcr}`);
+      // console.log(`${trace.dent}retC_x.bcr_1: ${retC_x.bcr_1}`);
       return;
     }
 
     const ts_ = Date.now() as Ts_t;
     if (ts_ < this.#lastVF_ts + VFPulse) return;
 
-    this.#mainLidx(retC_x.ranval.focusLidx);
+    this.#codeLidx(retC_x.ranval.focusLidx);
     this.host.scrollScrolrContain(retC_x.bcr_1, VFMrgin);
 
     this.#lastVF_ts = ts_;
@@ -564,14 +615,14 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       : this.bcr.bottom - this.bcr.top;
   }
   /**
-   * block start
+   * content/scroll block-start
    * @final
    */
-  get bstrt(): unum {
+  get controlBStrt(): unum {
     return /* final switch */ {
-      [WritingMode.htb]: this.el$.scrollTop,
-      [WritingMode.vrl]: -this.el$.scrollLeft,
-      [WritingMode.vlr]: this.el$.scrollLeft,
+      [WritingMode.htb]: this.contentBStrt + this.el$.scrollTop,
+      [WritingMode.vrl]: -(this.contentBStrt + this.el$.scrollLeft),
+      [WritingMode.vlr]: this.contentBStrt + this.el$.scrollLeft,
     }[this.coo$._writingMode];
   }
 
@@ -723,9 +774,9 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     // );
 
     /*#static*/ if (CYPRESS || DEBUG) {
-      // this.scrole_el.hint = `${this.el$.hint}.scrole`;
+      // this.codeScrole_el.hint = `${this.el$.hint}.scrole`;
       // this.#head_el.hint = `${this.el$.hint}.head`;
-      this.code_el$.hint = `${this.el$.hint}.main`;
+      this.code_el$.hint = `${this.el$.hint}.code`;
       // this.#foot_el.hint = `${this.el$.hint}.foot`;
     }
     this.code_el$.assignStylo({
@@ -739,13 +790,13 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       // whiteSpace: "preserve nowrap",
     });
 
-    this.scrole_el.append(
+    this.codeScrole_el.append(
       this.#head_el,
       this.code_el$,
       this.#foot_el,
     );
 
-    this.el$.append(this.scrole_el);
+    this.el$.append(this.codeScrole_el);
     this.mainCaret.attachTo(this);
 
     EdtrBaseScrolr.#activEslr_mo.registHandler((_y) => {
@@ -802,11 +853,11 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
 
   /** `in( this.el$.isConnected)` */
   reset_EdtrBaseScrolr(): this {
-    this.headBSize$ = 0;
+    this.controlHeadSize$ = 0;
     //jjjj TOCLEANUP
     // this.headBDt$ = 0;
     this.code_el$.removeAllChild();
-    this.footBSize$ = 0;
+    this.controlFootSize$ = 0;
     //jjjj TOCLEANUP
     // this.footBDt$ = 0;
 
@@ -936,9 +987,9 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     rmvRange.setEndAfter(this.elidx_m$.get(stopLidx - 1)!.el);
     rmvRange.deleteContents();
 
-    this.headBSize$ += this.#getLidxBSize(this.strtLidx$, srcStopLidx_x);
+    this.controlHeadSize$ += this.#getLidxBSize(this.strtLidx$, srcStopLidx_x);
     //jjjj TOCLEANUP
-    // const headBs_0 = this.headBSize$ - this.headBDt$ +
+    // const headBs_0 = this.controlHeadSize$ - this.headBDt$ +
     //   this.elnBSize$ * (srcStopLidx_x - this.strtLidx$);
     for (let i = this.strtLidx$; i < stopLidx; i++) {
       const eln = this.elidx_m$.get(i)!;
@@ -952,7 +1003,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     //   this.headBDt$ += this.bufr$.line(i).getBSizeOn(this.id, this.elnBSize$) -
     //     this.elnBSize$;
     // }
-    // this.headBSize$ = headBs_0 + this.headBDt$;
+    // this.controlHeadSize$ = headBs_0 + this.headBDt$;
   }
 
   /**
@@ -981,10 +1032,10 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     }
     elnBefo ? elnBefo.el.before(...elnEl_a) : this.code_el$.append(...elnEl_a);
 
-    this.headBSize$ -= this.#getLidxBSize(srcStopLidx_x, this.strtLidx$) +
+    this.controlHeadSize$ -= this.#getLidxBSize(srcStopLidx_x, this.strtLidx$) +
       this.#getLidxBSize(tgtStopLidx_x - n_x, tgtStopLidx_x);
     //jjjj TOCLEANUP
-    // const headBs_0 = this.headBSize$ - this.headBDt$ -
+    // const headBs_0 = this.controlHeadSize$ - this.headBDt$ -
     //   this.elnBSize$ * (this.strtLidx$ - srcStopLidx_x + n_x);
     // for (let i = this.strtLidx$; i-- > srcStopLidx_x;) {
     //   this.headBDt$ -= this.bufr$.line(i).getBSizeOn(this.id, this.elnBSize$) -
@@ -998,7 +1049,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       this.elidx_m$.set(tgtStopLidx_x - n_x + i, eln);
       eln.syncBSize();
     }
-    // this.headBSize$ = headBs_0 + this.headBDt$;
+    // this.controlHeadSize$ = headBs_0 + this.headBDt$;
   }
 
   /**
@@ -1014,9 +1065,9 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     rmvRange.setEndAfter(this.elidx_m$.get(this.stopLidx$ - 1)!.el);
     rmvRange.deleteContents();
 
-    this.footBSize$ += this.#getLidxBSize(srcStrtLidx_x, this.stopLidx);
+    this.controlFootSize$ += this.#getLidxBSize(srcStrtLidx_x, this.stopLidx);
     //jjjj TOCLEANUP
-    // const footBs_0 = this.footBSize$ - this.footBDt$ +
+    // const footBs_0 = this.controlFootSize$ - this.footBDt$ +
     //   this.elnBSize$ * (this.stopLidx$ - srcStrtLidx_x);
     for (let i = this.stopLidx$; i-- > strtLidx;) {
       const eln = this.elidx_m$.get(i)!;
@@ -1030,7 +1081,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     //   this.footBDt$ += this.bufr$.line(i).getBSizeOn(this.id, this.elnBSize$) -
     //     this.elnBSize$;
     // }
-    // this.footBSize$ = footBs_0 + this.footBDt$;
+    // this.controlFootSize$ = footBs_0 + this.footBDt$;
   }
 
   /**
@@ -1062,10 +1113,10 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     }
     elnAftr ? elnAftr.el.after(...elnEl_a) : this.code_el$.append(...elnEl_a);
 
-    this.footBSize$ -= this.#getLidxBSize(this.stopLidx$, srcStrtLidx_x) +
+    this.controlFootSize$ -= this.#getLidxBSize(this.stopLidx$, srcStrtLidx_x) +
       this.#getLidxBSize(tgtStrtLidx_x, tgtStrtLidx_x + n_x);
     //jjjj TOCLEANUP
-    // const footBs_0 = this.footBSize$ - this.footBDt$ -
+    // const footBs_0 = this.controlFootSize$ - this.footBDt$ -
     //   this.elnBSize$ * (srcStrtLidx_x - this.stopLidx$ + n_x);
     // for (let i = this.stopLidx$; i < srcStrtLidx_x; i++) {
     //   this.footBDt$ -= this.bufr$.line(i).getBSizeOn(this.id, this.elnBSize$) -
@@ -1080,7 +1131,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       eln.syncBSize();
     }
     //jjjj TOCLEANUP
-    // this.footBSize$ = footBs_0 + this.footBDt$;
+    // this.controlFootSize$ = footBs_0 + this.footBDt$;
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
@@ -1093,6 +1144,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       );
     }
     const stopLidx = Math.min(strtLidx_x + this.nElnMax$, this.bufr$.lineN);
+
     if (stopLidx <= this.strtLidx$) {
       /*
       --- strtLidx_x ------- stopLidx --- strtLidx$ ------- stopLidx$ ---
@@ -1129,23 +1181,27 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   #sufScroll_sync = false;
   #sufScroll_af: number | undefined;
   readonly #sufScroll_impl = (): void => {
-    const bstrt = this.bstrt;
+    const bstrt = this.toControlBStrt$ ?? this.controlBStrt;
     // console.log(`${trace.dent}`, { bstrt });
     // console.log(`${trace.dent}${
     //   [
-    //     this.headBSize$.fixTo(2),
-    //     this.codeBSize$.fixTo(2),
-    //     this.footBSize$.fixTo(2),
+    //     this.controlHeadSize$.fixTo(2),
+    //     this.codeSize$.fixTo(2),
+    //     this.controlFootSize$.fixTo(2),
     //   ].join(" + ")
-    // } = ${(this.headBSize$ + this.codeBSize$ + this.footBSize$).fixTo(2)}`);
+    // } = ${(this.controlHeadSize$ + this.codeSize$ + this.controlFootSize$).fixTo(2)}`);
     let strtLidx = 0;
     if (bstrt > 0) {
       const ln_ = this.bufr$.lineTree.getMax((ln_y) =>
         ln_y.getBStrtOn(this.id, this.elnBSize$) <= bstrt
       );
-      if (ln_) strtLidx = ln_.lidx_1;
+      if (ln_) {
+        strtLidx = Math.min(ln_.lidx_1, this.bufr$.lineN - this.nElnMax$ + 1);
+      }
     }
-    // console.log(`${trace.dent}`, { strtLidx });
+    // console.log(
+    //   `${trace.dent}strtLidx: ${strtLidx}, strtLidx$: ${this.strtLidx$}`,
+    // );
     if (strtLidx === this.strtLidx$ || strtLidx >= this.bufr$.lineN) return;
 
     const impl_ = () => {
@@ -1153,20 +1209,20 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       this.refreshCarets(); // `Caret.#selec_hl` should overlay `Stnode.hl_a$`
       // console.log(`${trace.dent}${
       //   [
-      //     this.headBSize$.fixTo(2),
-      //     this.codeBSize$.fixTo(2),
-      //     this.footBSize$.fixTo(2),
+      //     this.controlHeadSize$.fixTo(2),
+      //     this.codeSize$.fixTo(2),
+      //     this.controlFootSize$.fixTo(2),
       //   ].join(" + ")
-      // } = ${(this.headBSize$ + this.codeBSize$ + this.footBSize$).fixTo(2)}`);
+      // } = ${(this.controlHeadSize$ + this.codeSize$ + this.controlFootSize$).fixTo(2)}`);
       this.#sufScroll = undefined;
       /* This happens e.g. after removal in `#head_el` in `vrl`.
-       */ if (bstrt !== this.bstrt) {
+       */ if (bstrt !== this.controlBStrt) {
         this.host.scrollScrolrTo(bstrt);
       }
-      if (this.headBSize$ < bstrt - this.elnBSize$) {
-        this.host.scrollScrolrTo(this.headBSize$ + this.elnBSize$);
-      } else if (this.headBSize$ > bstrt) {
-        this.host.scrollScrolrTo(this.headBSize$);
+      if (this.controlHeadSize$ < bstrt - this.elnBSize$) {
+        this.host.scrollScrolrTo(this.controlHeadSize$ + this.elnBSize$);
+      } else if (this.controlHeadSize$ > bstrt) {
+        this.host.scrollScrolrTo(this.controlHeadSize$);
       }
       this.#sufScroll = this.#sufScroll_impl;
     };
@@ -1185,10 +1241,10 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   };
   #sufScroll: (() => void) | undefined = this.#sufScroll_impl;
   @traceOut(_TRACE && EDTR)
-  protected override sufScroll$(): void {
+  override sufScroll(): void {
     /*#static*/ if (_TRACE && EDTR) {
       console.log(
-        `${trace.indent}>>>>>>> ${this.class_id}.sufScroll$() >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.sufScroll() >>>>>>>`,
       );
     }
     this.#sufScroll?.();
@@ -1408,8 +1464,9 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     return {
       /* Adding ` + 0` is to prevent `-0`, which, stangely, is different to `0`
       in cypress tesing. */
-      bstrt: this.bstrt + 0,
-      bsize: `${this.headBSize$}:${this.codeBSize$}:${this.footBSize$}`,
+      controlBStrt: this.controlBStrt + 0,
+      controlBSize:
+        `${this.controlHeadSize$}:${this.codeSize$}:${this.controlFootSize$}`,
       lidx: `[${this.strtLidx$},${this.stopLidx$})`,
     };
   }

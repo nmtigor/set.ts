@@ -109,12 +109,10 @@ describe("SetPazr.paz_impl$()", () => {
     ]]);
 
     repl(ran(0).rv, "abc");
-    assertEquals(pazr._err_, [
-      ["BinaryErr,1", [
-        [ErrMsg.set_inval_binary_op, "[0-27,0-30)", "fuzykey"],
-        ErrMsg.set_binaryerr_no_rhs,
-      ]],
-    ]);
+    assertEquals(pazr._err_, [["BinaryErr,1", [
+      { msg: ErrMsg.set_inval_binary_op, rv: "[0-27,0-30)", txt: "fuzykey" },
+      { msg: ErrMsg.set_binaryerr_no_rhs },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ priid[0-0,0-27), fuzykey[0-27,0-30) ]",
@@ -150,9 +148,10 @@ describe("SetPazr.paz_impl$()", () => {
     let r_: Rel;
 
     repl(rv(0, 0), ">");
-    assertEquals(pazr._err_, [
-      ["Rel,1", [ErrMsg.set_rel_no_2nd, ErrMsg.set_rel_no_srt]],
-    ]);
+    assertEquals(pazr._err_, [["Rel,1", [
+      { msg: ErrMsg.set_rel_no_2nd },
+      { msg: ErrMsg.set_rel_no_srt },
+    ]]]);
     assertEquals(pazr.root?._newInfo_, "Set,0 [ joiner[0-0,0-1) ]");
     assertEquals(pazr.root?._repr_(), ["Set,0", ["Rel,1", {
       src: undefined,
@@ -166,9 +165,10 @@ describe("SetPazr.paz_impl$()", () => {
     /*
     >*
     */
-    assertEquals(pazr._err_, [
-      ["Rel,1", [ErrMsg.set_rel_no_2nd, ErrMsg.set_rel_no_srt]],
-    ]);
+    assertEquals(pazr._err_, [["Rel,1", [
+      { msg: ErrMsg.set_rel_no_2nd },
+      { msg: ErrMsg.set_rel_no_srt },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ joiner[0-0,0-1), asterisk[0-1,0-2) ]",
@@ -185,9 +185,10 @@ describe("SetPazr.paz_impl$()", () => {
     /*
     >*?
     */
-    assertEquals(pazr._err_, [
-      ["Rel,1", [ErrMsg.set_rel_no_2nd, ErrMsg.set_rel_no_srt]],
-    ]);
+    assertEquals(pazr._err_, [["Rel,1", [
+      { msg: ErrMsg.set_rel_no_2nd },
+      { msg: ErrMsg.set_rel_no_srt },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ joiner[0-0,0-1), question[0-2,0-3) ]",
@@ -204,9 +205,9 @@ describe("SetPazr.paz_impl$()", () => {
     /*
     >*>?
     */
-    assertEquals(pazr._err_, [
-      ["Rel,1", [ErrMsg.set_rel_no_srt]],
-    ]);
+    assertEquals(pazr._err_, [["Rel,1", [
+      { msg: ErrMsg.set_rel_no_srt },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ joiner[0-0,0-1), question[0-3,0-4) ]",
@@ -240,11 +241,9 @@ describe("SetPazr.paz_impl$()", () => {
     /*
     \>>(>?
     */
-    assertEquals(pazr._err_, [
-      ["Rel,1", [
-        [ErrMsg.set_rel_unexp_tk, "[0-3,0-4)", "paren_open"],
-      ]],
-    ]);
+    assertEquals(pazr._err_, [["Rel,1", [
+      { msg: ErrMsg.set_rel_unexp_tk, rv: "[0-3,0-4)", txt: "paren_open" },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ fuzykey[0-0,0-2), question[0-5,0-6) ]",
@@ -296,7 +295,9 @@ describe("SetPazr.paz_impl$()", () => {
     let b_: BinaryOp, b_1: BinaryOp;
 
     repl(rv(0, 0), "1∩");
-    assertEquals(pazr._err_, [["Intersect,1", [ErrMsg.set_intersect_no_rhs]]]);
+    assertEquals(pazr._err_, [["Intersect,1", [
+      { msg: ErrMsg.set_intersect_no_rhs },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ fuzykey[0-0,0-1), intersect[0-1,0-2) ]",
@@ -336,7 +337,9 @@ describe("SetPazr.paz_impl$()", () => {
     /*
     1∩2\
     */
-    assertEquals(pazr._err_, [["Subtract,3", [ErrMsg.set_subtract_no_rhs]]]);
+    assertEquals(pazr._err_, [["Subtract,3", [
+      { msg: ErrMsg.set_subtract_no_rhs },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ fuzykey[0-0,0-1), subtract[0-3,0-4) ]",
@@ -402,7 +405,9 @@ describe("SetPazr.paz_impl$()", () => {
     /*
     1∩2\3∪
     */
-    assertEquals(pazr._err_, [["Union,1", [ErrMsg.set_union_no_rhs]]]);
+    assertEquals(pazr._err_, [["Union,1", [
+      { msg: ErrMsg.set_union_no_rhs },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ fuzykey[0-0,0-1), union[0-5,0-6) ]",
@@ -494,9 +499,9 @@ describe("SetPazr.paz_impl$()", () => {
     let b_: BinaryOp;
 
     repl(rv(0, 0), "(");
-    assertEquals(pazr._err_, [
-      ["Set,0", [[ErrMsg.set_unexp_tk, "[0-0,0-1)", "paren_open"]]],
-    ]);
+    assertEquals(pazr._err_, [["Set,0", [
+      { msg: ErrMsg.set_unexp_tk, rv: "[0-0,0-1)", txt: "paren_open" },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ paren_open[0-0,0-1) ]",
@@ -509,10 +514,12 @@ describe("SetPazr.paz_impl$()", () => {
     ((
     */
     assertEquals(pazr._err_, [
-      ["Set,2", [[ErrMsg.set_unexp_tk, "[0-0,0-1)", "paren_open"]]],
+      ["Set,2", [
+        { msg: ErrMsg.set_unexp_tk, rv: "[0-0,0-1)", txt: "paren_open" },
+      ]],
       ["BinaryErr,1", [
-        [ErrMsg.set_inval_binary_op, "[0-1,0-2)", "paren_open"],
-        ErrMsg.set_binaryerr_no_rhs,
+        { msg: ErrMsg.set_inval_binary_op, rv: "[0-1,0-2)", txt: "paren_open" },
+        { msg: ErrMsg.set_binaryerr_no_rhs },
       ]],
     ]);
     assertEquals(
@@ -532,13 +539,15 @@ describe("SetPazr.paz_impl$()", () => {
     */
     assertEquals(pazr._err_, [
       ["Set,2", [
-        [ErrMsg.set_unexp_tk, "[0-1,0-2)", "intersect"],
+        { msg: ErrMsg.set_unexp_tk, rv: "[0-1,0-2)", txt: "intersect" },
       ]],
       ["BinaryErr,1", [
-        [ErrMsg.set_inval_binary_op, "[0-2,0-3)", "fuzykey"],
-        ErrMsg.set_binaryerr_no_rhs,
+        { msg: ErrMsg.set_inval_binary_op, rv: "[0-2,0-3)", txt: "fuzykey" },
+        { msg: ErrMsg.set_binaryerr_no_rhs },
       ]],
-      ["Set,0", [ErrMsg.set_no_cloz_paren]],
+      ["Set,0", [
+        { msg: ErrMsg.set_no_cloz_paren },
+      ]],
     ]);
     assertEquals(
       pazr.root?._newInfo_,
@@ -557,9 +566,11 @@ describe("SetPazr.paz_impl$()", () => {
     */
     assertEquals(pazr._err_, [
       ["Set,2", [
-        [ErrMsg.set_unexp_tk, "[0-1,0-2)", "paren_cloz"],
+        { msg: ErrMsg.set_unexp_tk, rv: "[0-1,0-2)", txt: "paren_cloz" },
       ]],
-      ["Set,0", [ErrMsg.set_no_cloz_paren]],
+      ["Set,0", [
+        { msg: ErrMsg.set_no_cloz_paren },
+      ]],
     ]);
     assertEquals(
       pazr.root?._newInfo_,
@@ -597,7 +608,9 @@ describe("SetPazr.paz_impl$()", () => {
     /*
     ((0)∩1
     */
-    assertEquals(pazr._err_, [["Set,0", [ErrMsg.set_no_cloz_paren]]]);
+    assertEquals(pazr._err_, [["Set,0", [
+      { msg: ErrMsg.set_no_cloz_paren },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ paren_open[0-0,0-1), fuzykey[0-5,0-6) ]",
@@ -658,7 +671,9 @@ describe("SetPazr.paz_impl$()", () => {
     /*
     (((0)∩1)
     */
-    assertEquals(pazr._err_, [["Set,0", [ErrMsg.set_no_cloz_paren]]]);
+    assertEquals(pazr._err_, [["Set,0", [
+      { msg: ErrMsg.set_no_cloz_paren },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ paren_open[0-0,0-1), paren_cloz[0-7,0-8) ]",
@@ -723,7 +738,9 @@ describe("SetPazr.paz_impl$()", () => {
     /*
     1)
     */
-    assertEquals(pazr._err_, [["Set,0", [ErrMsg.set_no_open_paren]]]);
+    assertEquals(pazr._err_, [["Set,0", [
+      { msg: ErrMsg.set_no_open_paren },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ fuzykey[0-0,0-1), paren_cloz[0-1,0-2) ]",
@@ -745,8 +762,8 @@ describe("SetPazr.paz_impl$()", () => {
     0)∩1)
     */
     assertEquals(pazr._err_, [
-      ["Set,2", [ErrMsg.set_no_open_paren]],
-      ["Set,2", [ErrMsg.set_no_open_paren]],
+      ["Set,2", [{ msg: ErrMsg.set_no_open_paren }]],
+      ["Set,2", [{ msg: ErrMsg.set_no_open_paren }]],
     ]);
     assertEquals(
       pazr.root?._newInfo_,
@@ -771,8 +788,8 @@ describe("SetPazr.paz_impl$()", () => {
     0)∩1))
     */
     assertEquals(pazr._err_, [
-      ["Set,2", [ErrMsg.set_no_open_paren]],
-      ["Set,2", [ErrMsg.set_no_open_paren]],
+      ["Set,2", [{ msg: ErrMsg.set_no_open_paren }]],
+      ["Set,2", [{ msg: ErrMsg.set_no_open_paren }]],
     ]);
     assertEquals(
       pazr.root?._newInfo_,
@@ -802,7 +819,9 @@ describe("SetPazr.paz_impl$()", () => {
     /*
     ((0)∩1))
     */
-    assertEquals(pazr._err_, [["Set,0", [ErrMsg.set_no_open_paren]]]);
+    assertEquals(pazr._err_, [["Set,0", [
+      { msg: ErrMsg.set_no_open_paren },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ paren_open[0-0,0-1), paren_cloz[0-7,0-8) ]",
@@ -834,7 +853,9 @@ describe("SetPazr.paz_impl$()", () => {
     /*
     0 ∩ ( 1))
     */
-    assertEquals(pazr._err_, [["Set,2", [ErrMsg.set_no_open_paren]]]);
+    assertEquals(pazr._err_, [["Set,2", [
+      { msg: ErrMsg.set_no_open_paren },
+    ]]]);
     assertEquals(
       pazr.root?._newInfo_,
       "Set,0 [ fuzykey[0-0,0-1), paren_cloz[0-8,0-9) ]",

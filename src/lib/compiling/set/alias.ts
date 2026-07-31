@@ -6,11 +6,8 @@
 import type { uint } from "../../alias.ts";
 import type { BinaryOp } from "./stnode/BinaryOp.ts";
 import type { Ids } from "./stnode/Ids.ts";
-import type { Intersect } from "./stnode/Intersect.ts";
 import type { Key } from "./stnode/Key.ts";
 import type { Rel } from "./stnode/Rel.ts";
-import type { Subtract } from "./stnode/Subtract.ts";
-import type { Union } from "./stnode/Union.ts";
 /*80--------------------------------------------------------------------------*/
 
 /** Operator precedence */

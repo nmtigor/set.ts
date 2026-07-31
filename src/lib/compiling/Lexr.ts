@@ -23,7 +23,7 @@ import type { Ran } from "./Ran.ts";
 import { g_ran_fac } from "./RanFac.ts";
 import type { Stnode } from "./Stnode.ts";
 import { Token } from "./Token.ts";
-import type { Err } from "./util.ts";
+import type { ErrMsg } from "./util.ts";
 import { frstNon, SortedSnt_id, SortedTk_id } from "./util.ts";
 /*80--------------------------------------------------------------------------*/
 
@@ -61,7 +61,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   /* curLexTk$ */
   /** @final */
   protected curLexTk$!: Token<T>;
-  get _curLexTk_() {
+  get curLexTk_$() {
     return this.curLexTk$;
   }
 
@@ -174,9 +174,9 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    * @deprecated
    * @final
    */
-  onlyErr(err_x: Err, tk_x?: Token<T>): boolean {
+  onlyErrMsg(msg_x: ErrMsg, tk_x?: Token<T>): boolean {
     return this.errTk_ss$.length === 1 &&
-      this.errTk_ss$[0].onlyErr(err_x) &&
+      this.errTk_ss$[0].onlyErrMsg(msg_x) &&
       (!tk_x || this.errTk_ss$[0] === tk_x);
   }
 
@@ -613,10 +613,10 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     assert(!self.stopLexTk$.isErr);
     assert(self.curLexTk$.posS(self.stopLexTk$));
   })
-  lexmrk_$(oldRan_a_x: Ran[]): this {
+  lexMrk_$(oldRan_a_x: Ran[]): this {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this.class_id}.lexmrk_$( oldRan_a_x: ${oldRan_a_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.lexMrk_$( oldRan_a_x: ${oldRan_a_x}) >>>>>>>`,
       );
     }
     /*#static*/ if (INOUT) {
@@ -744,10 +744,10 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    * @headconst @param newRan_a_x
    */
   @traceOut(_TRACE)
-  lexadj_$(newRan_a_x: Ran[]): this {
+  lexAdj_$(newRan_a_x: Ran[]): this {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this.class_id}.lexadj_$( newRan_a_x: ${newRan_a_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.lexAdj_$( newRan_a_x: ${newRan_a_x}) >>>>>>>`,
       );
     }
     if (this.isErr) {

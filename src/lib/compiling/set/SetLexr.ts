@@ -81,7 +81,7 @@ export class SetLexr extends Lexr<SetTok> {
     do {
       const ucod = this.curLoc$.forw_ucod();
       if (this.reachLexBdry$()) {
-        this.outTk$!.setErr(ErrMsg.quoted_string_open)
+        this.outTk$!.setErr({ msg: ErrMsg.quoted_string_open })
           .setStop(this.curLoc$, SetTok.quotkey);
         break;
       }
@@ -91,7 +91,7 @@ export class SetLexr extends Lexr<SetTok> {
       ) {
         this.curLoc$.forw();
         if (this.reachLexBdry$()) {
-          this.outTk$!.setErr(ErrMsg.quoted_string_open)
+          this.outTk$!.setErr({ msg: ErrMsg.quoted_string_open })
             .setStop(this.curLoc$, SetTok.quotkey);
           break;
         }

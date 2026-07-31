@@ -492,11 +492,28 @@ if (globalThis.DOMRect) {
   };
 
   DOMRect.prototype.toString = function (this) {
+    //jjjj TOCLEANUP
+    // return [
+    //   `left: ${this.left.fixTo(2)}`,
+    //   `top: ${this.top.fixTo(2)}`,
+    //   `height: ${this.height.fixTo(2)}`,
+    //   `width: ${this.width.fixTo(2)}`,
+    // ].join(", ");
     return [
-      `left: ${this.left.fixTo(2)}`,
-      `top: ${this.top.fixTo(2)}`,
-      `height: ${this.height.fixTo(2)}`,
-      `width: ${this.width.fixTo(2)}`,
+      `vert: ${
+        [
+          this.top.fixTo(2),
+          this.height.fixTo(2),
+          this.bottom.fixTo(2),
+        ].join(" | ")
+      }`,
+      `horz: ${
+        [
+          this.left.fixTo(2),
+          this.width.fixTo(2),
+          this.right.fixTo(2),
+        ].join(" | ")
+      }`,
     ].join(", ");
   };
 }

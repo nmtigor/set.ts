@@ -138,5 +138,14 @@ export class LineTree extends Tree<Line> {
   constructor(ln_x: Line) {
     super(ln_x.hostTn_$.createCtnrTp());
   }
+  /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+
+  /**
+   * @const @param id_x `EdtrBaseScrolr.id`
+   * @const @param fb_x
+   */
+  bsizeOn_$(id_x: Id_t, fb_x: unum): unum {
+    return (this.root_$ as LineTp).bsizeOn_$(id_x, fb_x);
+  }
 }
 /*80--------------------------------------------------------------------------*/
