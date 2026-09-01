@@ -181,12 +181,6 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
 
   /** @const @param scrollBStrt_x */
   #calcSlidrBStrt(scrollBStrt_x: unum) {
-    //jjjj TOCLEANUP
-    // return this.#slidrOrigBSize >= Slidr_.SizeMIN
-    //   ? scrollBStrt_x * this.#clientBSize / this.#scrollBSize
-    //   : scrollBStrt_x *
-    //     ((this.#clientBSize - Slidr_.SizeMIN) /
-    //       (this.#scrollBSize - this.#clientBSize));
     return scrollBStrt_x *
       ((this.#clientBSize - this.#slidrBSize) /
         (this.#scrollBSize - this.#clientBSize));
@@ -343,7 +337,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     this.scrollBStrt_mo.registHandler(this.#moScrollBStrt);
     this.scrollIStrt_mo.registHandler(this.#moScrollIStrt);
 
-    // this.resizob.observe(this.el$);
+    this.resizob.observe(this.el$);
   }
 
   #scrolrInited = false;
@@ -367,7 +361,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
 
     this.el$.append(scrolr_x.el);
 
-    // this.resizob.observe(scrolr_x.el);
+    this.resizob.observe(scrolr_x.el);
 
     this.el$.onWheel(this._onWheel);
     scrolr_x.on("scroll", this._onScroll_scrolr);
@@ -449,7 +443,7 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   protected toControlIStrt$: unum | undefined;
   /**
    * Use `scrollO`.
-   * @const @param controlValu_x content/scroll value
+   * @const @param controlValu_x content-scroll value
    * @const @param inline_x
    */
   // @traceOut(_TRACE)
@@ -625,7 +619,10 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     // const ts_ = Date.now_1() as Ts_t;
     // if (ts_ - this.#lastSlidrBStrt_ts > Scronr.SlidrGapMAX) {
     this.scrodB$.show();
-    this.scrobarB$.show();
+    if (global.canHover || CYPRESS) {
+      this.scrobarB$.show();
+    } //llll otherwise impl swipe to scroll
+
     this.#setSlidrBStrt(this.#calcSlidrBStrt(n_x));
     //jjjj TOCLEANUP
     //   this.#lastSlidrBStrt_ts = ts_;
@@ -639,7 +636,10 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     // const ts_ = Date.now_1() as Ts_t;
     // if (ts_ - this.#lastSlidrIStrt_ts > Scronr.SlidrGapMAX) {
     this.scrodI$.show();
-    this.scrobarI$.show();
+    if (global.canHover || CYPRESS) {
+      this.scrobarI$.show();
+    } //llll otherwise impl swipe to scroll
+
     this.#setSlidrIStrt(this.#calcSlidrIStrt(n_x));
     //jjjj TOCLEANUP
     //   this.#lastSlidrIStrt_ts = ts_;
@@ -653,16 +653,16 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
    * @final
    */
   @bind
-  @traceOut(_TRACE)
+  // @traceOut(_TRACE)
   refresh_Scronr(): void {
-    /*#static*/ if (_TRACE) {
-      console.log(
-        `${trace.indent}>>>>>>> ${this.class_id}.refresh_Scronr() >>>>>>>`,
-      );
-      console.log(
-        `${trace.dent}isConnected: ${this.el$.isConnected}, #scrolrInited: ${this.#scrolrInited}`,
-      );
-    }
+    // /*#static*/ if (_TRACE) {
+    //   console.log(
+    //     `${trace.indent}>>>>>>> ${this.class_id}.refresh_Scronr() >>>>>>>`,
+    //   );
+    //   console.log(
+    //     `${trace.dent}isConnected: ${this.el$.isConnected}, #scrolrInited: ${this.#scrolrInited}`,
+    //   );
+    // }
     if (!this.el$.isConnected || !this.#scrolrInited) return;
     //jjjj TOCLEANUP
     // if (this.#suppressRefreshOnce) {
@@ -762,17 +762,16 @@ export abstract class Scronr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   /**
    * Also update `#clientBSize`, `#clientISize`, `#scrollBSize`, `#scrollISize`,
    * because this could be called before `refresh_Scronr()`.\
-   * Also set `#contentBStrt`, `#contentIStrt`\
    * `in( this.#scrolrInited)`
    */
   @bind
-  @traceOut(_TRACE)
+  // @traceOut(_TRACE)
   private _onScroll_scrolr(_evt_x: Event) {
-    /*#static*/ if (_TRACE) {
-      console.log(
-        `${trace.indent}>>>>>>> ${this.class_id}._onScroll_scrolr() >>>>>>>`,
-      );
-    }
+    // /*#static*/ if (_TRACE) {
+    //   console.log(
+    //     `${trace.indent}>>>>>>> ${this.class_id}._onScroll_scrolr() >>>>>>>`,
+    //   );
+    // }
     this.#clientBSize = this.#getClientBSize();
     this.#scrollBSize = this.#getScrollBSize();
     this.#clientISize = this.#getClientISize();
@@ -965,41 +964,6 @@ export abstract class Scrolr<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-  //jjjj TOCLEANUP
-  // /** @borrow @const @param _options */
-  // protected preScrollTo$(_options: ScrollToOptions): void {}
-  // /** @borrow @const @param _options */
-  // protected preScrollBy$(_options: ScrollToOptions): void {}
-
-  //jjjj TOCLEANUP
-  // /**
-  //  * @final
-  //  * @const @param options
-  //  */
-  // scrollTo(options: ScrollToOptions): void {
-  //   //jjjj TOCLEANUP
-  //   // this.preScrollTo$(options);
-  //   //kkkk
-  //   const extent = Math.max(options.left ?? 0, options.top ?? 0);
-  //   if (extent > 30_000_000) {
-  //     warn(
-  //       `extent (${extent}) larger than 30_000_000 (https://share.google/aimode/TCfls9Fe72v07wgKd)`,
-  //     );
-  //   }
-  //   this.el$.scrollTo(options);
-  // }
-
-  //jjjj TOCLEANUP
-  // /**
-  //  * @final
-  //  * @const @param options
-  //  */
-  // scrollBy(options: ScrollToOptions): void {
-  //   //jjjj TOCLEANUP
-  //   // this.preScrollBy$(options);
-  //   this.el$.scrollBy(options);
-  // }
-
   sufScroll(): void {}
 }
 /*64----------------------------------------------------------*/
@@ -1040,9 +1004,9 @@ abstract class Scrod_<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     super(host_x.coo, div());
     this.host = host_x;
 
-    // /*#static*/ if (CYPRESS || DEBUG) {
-    //   this.el$.hint = this.class_id;
-    // }
+    /*#static*/ if (CYPRESS || DEBUG) {
+      this.el$.hint = this.class_id;
+    }
     this.assignStylo({
       position: "relative",
       zIndex: Scrod_z,
@@ -1146,7 +1110,7 @@ class ScrodicatrI_<C extends Coo> extends Scrodicatr_<C> {
 /*64----------------------------------------------------------*/
 
 /** in milliseconds */
-export const ScrobarHide_to = 1_000;
+export const ScrobarHide_to = 2_000;
 
 /** Scrollbar */
 abstract class Scrobar_<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
@@ -1177,14 +1141,19 @@ abstract class Scrobar_<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     return this.shown$;
   }
 
+  #pointerEntered = false;
+
   /** @final */
   show() {
     //jjjj TOCLEANUP
     // clearTimeout(this.#hide_to);
     // console.log(`%crun here: setTimeout`, `color:${LOG_cssc.runhere}`);
     // this.#hide_to = setTimeout(this.hide, ScrobarHide_to * 2);
-    //jjjj TOCLEANUP
-    // this.toHide_$();
+    if (this.#pointerEntered) {
+      window.clearTimeout(this.#hide_to);
+    } else {
+      this.toHide_$();
+    }
 
     if (this.shown$) return;
 
@@ -1225,9 +1194,9 @@ abstract class Scrobar_<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     super(host_x.coo, div());
     this.host = host_x;
 
-    // /*#static*/ if (CYPRESS || DEBUG) {
-    //   this.el$.hint = this.class_id;
-    // }
+    /*#static*/ if (CYPRESS || DEBUG) {
+      this.el$.hint = this.class_id;
+    }
     this.assignStylo({
       display: "none",
       position: "absolute",
@@ -1237,7 +1206,7 @@ abstract class Scrobar_<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     });
 
     this.on("pointerdown", this.#onPointerDown);
-    if (global.can_hover) {
+    if (global.canHover) {
       this.on("pointerenter", this.#onPointerEnter);
       this.on("pointerleave", this.#onPointerLeave);
     }
@@ -1330,10 +1299,12 @@ abstract class Scrobar_<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
   };
 
   readonly #onPointerEnter = () => {
+    this.#pointerEntered = true;
     // console.log(`%crun here: clearTimeout`, `color:${LOG_cssc.runhere}`);
     window.clearTimeout(this.#hide_to);
   };
   readonly #onPointerLeave = () => {
+    this.#pointerEntered = false;
     this.toHide_$();
   };
 }
@@ -1643,7 +1614,7 @@ abstract class Slidr_<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
       global.mw?.on("pointermove", this.#onPointerMove);
       global.mw?.on("pointerup", this.#onPointerUp);
       //jjjj TOCLEANUP
-      // if (global.can_hover) {
+      // if (global.canHover) {
       //   this.host$.off("pointerenter", this.host$.onPointerEnter);
       //   this.host$.off("pointerleave", this.host$.onPointerLeave);
       // }
@@ -1687,7 +1658,7 @@ abstract class Slidr_<C extends Coo> extends HTMLVuu<C, HTMLDivElement> {
     global.mw?.off("pointermove", this.#onPointerMove);
     global.mw?.off("pointerup", this.#onPointerUp);
     //jjjj TOCLEANUP
-    // if (global.can_hover) {
+    // if (global.canHover) {
     //   this.host$.on("pointerenter", this.host$.onPointerEnter);
     //   this.host$.on("pointerleave", this.host$.onPointerLeave);
     // }

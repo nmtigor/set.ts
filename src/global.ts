@@ -53,7 +53,7 @@ export const global = new class {
   pointer = Pointer.none;
   anyPointer = Pointer.none;
   #mockTouch: boolean | undefined;
-  get can_touch() {
+  get canTouch() {
     return this.#mockTouch ??
       (navigator.maxTouchPoints > 0 &&
         (this.anyPointer === Pointer.coarse || "ontouchstart" in globalThis));
@@ -62,14 +62,14 @@ export const global = new class {
   hover = Hover.none;
   anyHover = Hover.none;
   #mockHover: boolean | undefined;
-  get can_hover() {
+  get canHover() {
     return this.#mockHover ??
       this.anyHover === Hover.hover;
   }
 
   @out((self: typeof global) => {
-    assert(self.can_touch);
-    assert(!self.can_hover);
+    assert(self.canTouch);
+    assert(!self.canHover);
   })
   mockTouch() {
     this.#mockTouch = true;
@@ -107,6 +107,9 @@ export const global = new class {
   // /* ~ */
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
+  /** Local File System */
+  hasLFS = false;
+
   opfs_pr = Promise.withResolvers<FileSystemDirectoryHandle>();
   /** OPFS root directory handle */
   opfs: FileSystemDirectoryHandle | undefined;
@@ -125,8 +128,8 @@ export const global = new class {
     return {
       serveStatic: this.serveStatic,
 
-      can_touch: this.can_touch,
-      can_hover: this.can_hover,
+      canTouch: this.canTouch,
+      canHover: this.canHover,
 
       locl: this.locl,
     };

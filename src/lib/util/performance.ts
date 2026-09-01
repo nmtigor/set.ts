@@ -15,6 +15,9 @@ export const g_count = {
   oldStnode: 0,
 
   newVuu: 0,
+  newCell: 0,
+  newExplorVCo: 0,
+  newViewrary: 0,
 
   hr_0: 0,
 };

@@ -4,8 +4,7 @@
  ******************************************************************************/
 
 import { INOUT } from "../../preNs.ts";
-import type { id_t } from "../alias.ts";
-import type { int, uint } from "../alias.ts";
+import type { id_t, int, uint } from "../alias.ts";
 import "../jslang.ts";
 import { assert, fail } from "../util.ts";
 /*80--------------------------------------------------------------------------*/
@@ -50,7 +49,7 @@ export class SortedSet<T> extends Array<T> {
 
   /**
    * `[ 0, this.length ]`\
-   * Helper. Set by `includes()`
+   * Set by `includes()`, `indexOf()`
    */
   #index: uint = 0;
   // get _index_() {
@@ -100,7 +99,7 @@ export class SortedSet<T> extends Array<T> {
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
   /**
-   * If `#sorted`, assign `#index`
+   * If `#sorted`, set `#index`
    * @headconst @param val_x
    */
   override includes(val_x: T): boolean {
@@ -110,7 +109,7 @@ export class SortedSet<T> extends Array<T> {
   }
 
   /**
-   * If `#sorted`, assign `#index`
+   * If `#sorted`, set `#index`
    * @headconst @param val_x
    */
   override indexOf(val_x: T): uint | -1 {
@@ -140,6 +139,7 @@ export class SortedSet<T> extends Array<T> {
     return ret;
   }
 
+  /*jjjj Have a look at `Symbol.species` and https://share.google/aimode/epLQ74XTRge3tWg7Z */
   /**
    * Disable `splice()` for the moment.
    *
@@ -259,17 +259,17 @@ export class SortedSet<T> extends Array<T> {
     }
     return had ? -1 : this.#index;
   }
-  /** @headconst @param val_a_x */
-  add_O(val_a_x?: T[]): this {
-    if (val_a_x) {
-      for (const v of val_a_x) this.add(v);
+  /** @headconst @param vals_x */
+  add_O(vals_x?: T[]): this {
+    if (vals_x) {
+      for (const v of vals_x) this.add(v);
     }
     return this;
   }
 
   /**
-   * `in( this.length )`\
-   * `in( 0 <= _x && _x < this.length )`
+   * `in( this.length)`\
+   * `in( 0 <= i_x && i_x < this.length)`
    * @const @param i_x
    */
   #rmvByIndex_impl(i_x: uint) {
@@ -304,9 +304,10 @@ export class SortedSet<T> extends Array<T> {
     }
     return has ? this.#index : -1;
   }
-  rmv_O(val_a_x?: T[]): void {
-    if (val_a_x) {
-      for (const v of val_a_x) this.rmv(v);
+  /** @headconst @param vals_x */
+  rmv_O(vals_x?: T[]): void {
+    if (vals_x) {
+      for (const val of vals_x) this.rmv(val);
     }
   }
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/

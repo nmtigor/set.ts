@@ -114,6 +114,7 @@ export const Popmenu_z = 5;
 export const PopfoldActiv_z = 4;
 export const PopfoldInact_z = 3;
 export const Pocusd_z = 2;
+export const ActivePRViewr_z = 1;
 /*80--------------------------------------------------------------------------*/
 
 /* deno-fmt-ignore */

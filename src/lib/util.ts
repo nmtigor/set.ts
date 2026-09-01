@@ -9,6 +9,7 @@
 
 import { AUTOTEST, INOUT } from "../preNs.ts";
 import type { uint } from "./alias.ts";
+import type { ULID } from "./alias_v.ts";
 /*80--------------------------------------------------------------------------*/
 
 const space_a_: (string | undefined)[] = [];
@@ -18,6 +19,9 @@ export const space = (n_: uint): string => {
   }
   return space_a_[n_]!;
 };
+
+/** @const @param _x */
+export const _hashAbbr_ = (_x: ULID) => `#..${_x.slice(-3)}`;
 /*80-------------------------------------------------------------------------*/
 
 /**

@@ -9,15 +9,17 @@ import { BaseTok } from "../BaseTok.ts";
 enum HTMLTok_ {
   doctype = 500,
   tag,
+  /** processing instruction */
+  proins, // <?abc>
   comment,
   character,
   chrref, // &lt; | &#60; | &#x3C;
 
   /**
-   * By spec, some bogus tags are not tokenized to any spec token (e.g. "<z\r"),
-   * so add this to keep `HTMLTk`s concatenated.
+   * By spec, some inputs are not tokenized to any spec token (e.g. "<z\r",
+   * "<?"), so add this to keep `HTMLTk`s concatenated.
    */
-  bogusTag,
+  bogus,
 
   /** Used as the only Token in auto-generated Elment's */
   placeholder,

@@ -240,7 +240,6 @@ export abstract class Stnode<T extends Tok = BaseTok> extends Snt {
   }
 
   /* frstTk$ */
-  /** @final */
   protected frstTk$: Token<T> | undefined;
   /**
    * `in( this.known)`

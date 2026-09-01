@@ -1,5 +1,8 @@
 export default [
-  ["Base", { "coors": [{ "qm_a": [[null, "rgb(0,150,215,1)"]] }], "cidx": 0 }],
+  ["Base", {
+    "coors": [{ "qm_a": [[null, "rgb(0,150,215,1)"]] }],
+    "cidx": 0,
+  }],
   ["Primary", {
     "coors": [{
       "axes": ["Base"],
@@ -746,13 +749,6 @@ export default [
     }],
     "cidx": 0,
   }],
-  ["premsys.PRViewr.inact", {
-    "coors": [{
-      "axes": ["Surface Container"],
-      "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
-    }],
-    "cidx": 0,
-  }],
   ["premsys.ExplorEndbar.bg", {
     "coors": [{
       "axes": ["Primary Container"],
@@ -858,6 +854,16 @@ export default [
     }],
     "cidx": 0,
   }],
+  ["premsys.ViewrResizr", {
+    "coors": [{
+      "axes": ["Tertiary"],
+      "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], [{
+        "channel": "a",
+        "value": 0.5,
+      }]]],
+    }],
+    "cidx": 0,
+  }],
   ["premsys.RCNote.bg", {
     "coors": [{
       "axes": ["Tertiary"],
@@ -935,7 +941,7 @@ export default [
     }],
     "cidx": 0,
   }],
-  ["lib.ToolbarResizr.bg", {
+  ["lib.ToolbarResizr", {
     "coors": [{
       "axes": ["Tertiary"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], [{
@@ -1073,6 +1079,13 @@ export default [
   ["lib.Popfold.titl.inactFg", {
     "coors": [{
       "axes": ["On Secondary Container"],
+      "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
+    }],
+    "cidx": 0,
+  }],
+  ["lib.ActionPara.bg", {
+    "coors": [{
+      "axes": ["Surface Container"],
       "qm_a": [[[["rgb", [[0, 255], [0, 255], [0, 255]]]], []]],
     }],
     "cidx": 0,

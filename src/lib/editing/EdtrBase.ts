@@ -219,6 +219,7 @@ export abstract class EdtrBase<CI extends EdtrBaseCI = EdtrBaseCI>
     this.#scronr.syncLayout();
 
     this.#scronr.resizob.observe(this.scrolr$.codeScrole_el);
+    this.#scronr.resizob.observe(this.scrolr$.richScrole_el);
     this.#scronr.observeTheme(); //!
 
     this.#inited_EdtrBase = true;
@@ -360,7 +361,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       );
     } /* if (this.stopLidx$ <= lidx_x) */ else {
       this.host.scrollScrolrTo(
-        this.#getLidxBStrt(lidx_x + 1 - this.nElnMax$),
+        this.#getLidxBStrt(lidx_x + 1 - this.lnClientMaxn$),
       );
     }
     this.#sufScroll_sync = false;
@@ -403,11 +404,11 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     return this.#elnBSize = elnBs;
   }
   /** @return `>0` */
-  protected get nElnMax$(): uint {
+  protected get lnClientMaxn$(): uint {
     return Math.ceil(this.bsize / this.elnBSize$) + 1;
   }
-  get _nElnMax_() {
-    return this.nElnMax$;
+  get _lnClientMaxn_() {
+    return this.lnClientMaxn$;
   }
 
   protected strtLidx$: lnum_t = 0;
@@ -428,6 +429,9 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
 
   /* code_el$ */
   protected readonly code_el$ = div();
+  // get _code_el_() {
+  //   return this.code_el$;
+  // }
 
   protected get codeSize$(): unum {
     return this.coo$._writingMode & WritingDir.v
@@ -453,6 +457,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
     //   : this.#head_el.clientHeight;
     return this.#controlHeadSize;
   }
+  /** Rationale: https://share.google/aimode/TCfls9Fe72v07wgKd */
   static ScrollHeadSizeMAX = 10_000_000;
   // static ScrollHeadSizeMAX = 100;
   /** @const @param size_x */
@@ -523,7 +528,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   };
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
-  protected rich_el$?: HTMLDivElement;
+  readonly richScrole_el = div().assignStylo({ display: "none" });
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   /* bufr */
@@ -615,7 +620,7 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       : this.bcr.bottom - this.bcr.top;
   }
   /**
-   * content/scroll block-start
+   * content-scroll block-start
    * @final
    */
   get controlBStrt(): unum {
@@ -640,14 +645,14 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
   // protected sel$: Selection | null = null;
   /* ~ */
 
-  readonly dragingM_mo = new Moo({ val: false });
-  get dragingM() {
-    return this.dragingM_mo.val;
+  readonly mdraging_mo = new Moo({ val: false });
+  get mdraging() {
+    return this.mdraging_mo.val;
   }
 
-  protected readonly draggedM_mo$ = new Moo({ val: false });
-  get draggedM() {
-    return this.draggedM_mo$.val;
+  protected readonly mdragged_mo$ = new Moo({ val: false });
+  get mdragged() {
+    return this.mdragged_mo$.val;
   }
 
   /* #vuq */
@@ -796,7 +801,10 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       this.#foot_el,
     );
 
-    this.el$.append(this.codeScrole_el);
+    this.el$.append(
+      this.codeScrole_el,
+      this.richScrole_el,
+    );
     this.mainCaret.attachTo(this);
 
     EdtrBaseScrolr.#activEslr_mo.registHandler((_y) => {
@@ -1143,7 +1151,10 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
         `${trace.indent}>>>>>>> ${this.class_id}.scrollTo$( strtLidx_x: ${strtLidx_x}) >>>>>>>`,
       );
     }
-    const stopLidx = Math.min(strtLidx_x + this.nElnMax$, this.bufr$.lineN);
+    const stopLidx = Math.min(
+      strtLidx_x + this.lnClientMaxn$,
+      this.bufr$.lineN,
+    );
 
     if (stopLidx <= this.strtLidx$) {
       /*
@@ -1196,7 +1207,10 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
         ln_y.getBStrtOn(this.id, this.elnBSize$) <= bstrt
       );
       if (ln_) {
-        strtLidx = Math.min(ln_.lidx_1, this.bufr$.lineN - this.nElnMax$ + 1);
+        strtLidx = Math.min(
+          ln_.lidx_1,
+          this.bufr$.lineN - this.lnClientMaxn$ + 1,
+        );
       }
     }
     // console.log(
@@ -1239,14 +1253,20 @@ export abstract class EdtrBaseScrolr<CI extends EdtrBaseCI = EdtrBaseCI>
       });
     }
   };
+  get _sufScroll_impl_() {
+    return this.#sufScroll_impl;
+  }
   #sufScroll: (() => void) | undefined = this.#sufScroll_impl;
-  @traceOut(_TRACE && EDTR)
+  set _sufScroll_(_x: (() => void) | undefined) {
+    this.#sufScroll = _x;
+  }
+  // @traceOut(_TRACE && EDTR)
   override sufScroll(): void {
-    /*#static*/ if (_TRACE && EDTR) {
-      console.log(
-        `${trace.indent}>>>>>>> ${this.class_id}.sufScroll() >>>>>>>`,
-      );
-    }
+    // /*#static*/ if (_TRACE && EDTR) {
+    //   console.log(
+    //     `${trace.indent}>>>>>>> ${this.class_id}.sufScroll() >>>>>>>`,
+    //   );
+    // }
     this.#sufScroll?.();
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/

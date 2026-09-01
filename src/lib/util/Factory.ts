@@ -17,23 +17,22 @@ export abstract class Factory<V> {
   get(i_x: uint): V {
     return this._val_a[i_x];
   }
-  //jjjj TOCLEANUP
-  // at(i_x: int): V | undefined {
-  //   return this._val_a.at(i_x);
-  // }
+  at(i_x: int): V | undefined {
+    return this._val_a.at(i_x);
+  }
   /* ~ */
 
   /** `<= _val_a.length` */
-  private _nUsed: uint = 0;
-  get nUsed() {
-    return this._nUsed;
+  private _nInUse: uint = 0;
+  get nInUse() {
+    return this._nInUse;
   }
 
   readonly #MAX;
-  /** Call after `_nUsed` is assigned */
+  /** Call after `_nInUse` is assigned */
   #maxCtrl(): void {
     if (this._val_a.length > this.#MAX) {
-      this._val_a.length = Math.max(this.#MAX, this._nUsed);
+      this._val_a.length = Math.max(this.#MAX, this._nInUse);
     }
   }
 
@@ -46,15 +45,15 @@ export abstract class Factory<V> {
   }
 
   reset_Factory(hard_x?: "hard") {
-    // if( this._nUsed )
+    // if( this._nInUse )
     // {
-    //   assert( this._nUsed <= this._val_a.length );
-    //   for( let i = this._nUsed; i--; )
+    //   assert( this._nInUse <= this._val_a.length );
+    //   for( let i = this._nInUse; i--; )
     //   {
     //     this.resetVal$( i );
     //   }
     // }
-    // this._nUsed = 0;
+    // this._nInUse = 0;
     this.produce(0);
 
     if (hard_x) this._val_a.length = 0;
@@ -75,32 +74,33 @@ export abstract class Factory<V> {
   /**
    * @final
    * @const @param ret_x
+   * @return `_nInUse`
    */
   @out((self: Factory<V>) => {
-    assert(self._nUsed <= self._val_a.length);
+    assert(self._nInUse <= self._val_a.length);
   })
   produce(ret_x: uint): uint {
     const n_ = Math.min(ret_x, this._val_a.length);
-    for (let i = this._nUsed; i < n_; i++) {
+    for (let i = this._nInUse; i < n_; i++) {
       this.reuseVal$(this._val_a[i], i);
     }
     if (ret_x > this._val_a.length) {
       for (let i = this._val_a.length; i < ret_x; i++) {
         this._val_a.push(this.createVal$(i));
       }
-    } else if (ret_x < this._nUsed) {
-      for (let i = ret_x; i < this._nUsed; i++) {
+    } else if (ret_x < this._nInUse) {
+      for (let i = ret_x; i < this._nInUse; i++) {
         this.resetVal$(this._val_a[i]);
       }
     }
-    this._nUsed = ret_x;
+    this._nInUse = ret_x;
     this.#maxCtrl();
     return ret_x;
   }
 
   /** @final */
   produceMore(n_x: uint): uint {
-    return this.produce(this._nUsed + n_x);
+    return this.produce(this._nInUse + n_x);
   }
   /** @final */
   oneMore(): V {
@@ -110,7 +110,7 @@ export abstract class Factory<V> {
 
   /** @final */
   produceLess(n_x: uint): uint {
-    return this.produce(Math.max(this._nUsed - n_x, 0));
+    return this.produce(Math.max(this._nInUse - n_x, 0));
   }
 
   /** @final */
@@ -118,7 +118,7 @@ export abstract class Factory<V> {
     let i_ = 0;
     return {
       next: () =>
-        i_ < this._nUsed
+        i_ < this._nInUse
           ? { value: this._val_a[i_++] }
           : { value: undefined, done: true },
     };
@@ -126,7 +126,7 @@ export abstract class Factory<V> {
 
   /** @const @param val_x */
   lastIndexOf(val_x: V): uint | -1 {
-    for (let i = this._nUsed; i--;) {
+    for (let i = this._nInUse; i--;) {
       if (val_x === this._val_a[i]) return i;
     }
     return -1;
@@ -141,11 +141,11 @@ export abstract class Factory<V> {
     const i_ = this.lastIndexOf(val_x);
     if (0 <= i_) {
       this.resetVal$(val_x);
-      for (let j = i_ + 1, jJ = this._nUsed; j < jJ; ++j) {
+      for (let j = i_ + 1, jJ = this._nInUse; j < jJ; ++j) {
         this._val_a[j - 1] = this._val_a[j];
       }
-      this._val_a[this._nUsed - 1] = val_x;
-      this._nUsed -= 1;
+      this._val_a[this._nInUse - 1] = val_x;
+      this._nInUse -= 1;
       this.#maxCtrl();
     }
     return this;
@@ -157,15 +157,15 @@ export abstract class Factory<V> {
   //  * @final
   //  */
   // gcWith(cb_x: (val_y: V) => boolean): this {
-  //   for (let i = this._nUsed; i--;) {
+  //   for (let i = this._nInUse; i--;) {
   //     const v_ = this.get(i);
   //     if (cb_x(v_)) {
   //       this.resetVal$(i);
-  //       for (let j = i + 1, LEN = this._nUsed; j < LEN; ++j) {
+  //       for (let j = i + 1, LEN = this._nInUse; j < LEN; ++j) {
   //         this._val_a[j - 1] = this.get(j);
   //       }
-  //       this._val_a[this._nUsed - 1] = v_;
-  //       this._nUsed -= 1;
+  //       this._val_a[this._nInUse - 1] = v_;
+  //       this._nInUse -= 1;
   //     }
   //   }
   //   return this;
@@ -174,7 +174,7 @@ export abstract class Factory<V> {
 
   /** For testing only */
   toString() {
-    return `${this._nUsed}/${this._val_a.length}`;
+    return `${this._nInUse}/${this._val_a.length}`;
   }
   // /**
   //  * @const @param rhs_x

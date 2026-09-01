@@ -303,6 +303,7 @@ declare global {
     /** `in( 0 <= digits && digits <= 20 )` */
     fixTo(digits?: uint8): number;
 
+    _3: string;
     reprRatio(fixTo_x?: uint8): string;
   }
 
@@ -382,6 +383,12 @@ Number.prototype.fixTo = function (this, digits = 0) {
   const mul = 10 ** digits;
   return Math.round(this.valueOf() * mul) / mul;
 };
+
+Reflect.defineProperty(Number.prototype, "_3", {
+  get(this: Number) {
+    return this.toLocaleString("fr-FR").replace(/\s/g, "_");
+  },
+});
 
 Number.prototype.reprRatio = function (this, fixTo_x = 2) {
   let x_ = this.valueOf();
@@ -612,6 +619,35 @@ Reflect.defineProperty(Float64Array.prototype, "eql", {
 
     return faEql_impl_(this, rhs_x);
   },
+});
+/*80--------------------------------------------------------------------------*/
+/* Map */
+
+declare global {
+  interface Map<K, V> {
+    /** Same as {@linkcode getOrInsert()} */
+    upsert(key: K, defaultValue: V): V;
+    // /** Same as {@linkcode getOrInsertComputed()} */
+    // upsertComputed(key: K, callback: (key: K) => V): V;
+  }
+}
+
+Reflect.defineProperty(Map.prototype, "upsert", {
+  value: function <K, V>(this: Map<K, V>, key: K, defaultValue: V) {
+    if ((this as any).getOrInsert) {
+      return (this as any).getOrInsert(key, defaultValue);
+    }
+
+    if (this.has(key)) {
+      return this.get(key);
+    }
+    this.set(key, defaultValue);
+    return defaultValue;
+  },
+  /* Reflect.getOwnPropertyDescriptor(Map.prototype, "getOrInsert") */
+  configurable: true,
+  enumerable: false,
+  writable: true,
 });
 /*80--------------------------------------------------------------------------*/
 /* JSON */

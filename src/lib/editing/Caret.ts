@@ -538,9 +538,9 @@ export class Caret extends HTMLVuu<EdtrBase, HTMLInputElement> {
   //       `${trace.indent}>>>>>>> ${this.class_id}._onBlur() >>>>>>>`,
   //     );
   //   }
-  //   // console.log(`${trace.dent}edtr.dragingM: ${this.edtr.dragingM}`);
-  //   // console.log(`${trace.dent}edtr.draggedM: ${this.edtr.draggedM}`);
-  //   if (!this.eslr.dragingM) {
+  //   // console.log(`${trace.dent}edtr.mdraging: ${this.edtr.mdraging}`);
+  //   // console.log(`${trace.dent}edtr.mdragged: ${this.edtr.mdragged}`);
+  //   if (!this.eslr.mdraging) {
   //     this.focusd$ = false;
   //   }
   // }
