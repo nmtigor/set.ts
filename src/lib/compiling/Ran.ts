@@ -282,7 +282,7 @@ export class Ran {
   }
 
   /**
-   * !Do not `strtLoc$.correct()` or `stopLoc$.correct()`
+   **! Do not `strtLoc$.correct()` or `stopLoc$.correct()`
    */
   get length_1(): loff_t {
     let ln = this.frstLine;
@@ -294,10 +294,10 @@ export class Ran {
     let valve = VALVE;
     while (ln.nextLine !== ln_1 && --valve) {
       ln = ln.nextLine!;
-      ret += ln.uchrLen;
+      ret += 1 + ln.uchrLen;
     }
     assert(valve, `Loop ${VALVE}(±1) times!`);
-    ret += this.stopLoff;
+    ret += 1 + this.stopLoff;
     return ret;
   }
 

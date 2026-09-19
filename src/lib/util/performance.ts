@@ -17,6 +17,7 @@ export const g_count = {
   newVuu: 0,
   newCell: 0,
   newExplorVCo: 0,
+  newPRItemVCo: 0,
   newViewrary: 0,
 
   hr_0: 0,

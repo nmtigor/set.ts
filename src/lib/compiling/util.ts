@@ -285,10 +285,12 @@ export const enum ErrMsg {
   html_tag_av_unexp_chr = "unexpected-character-in-unquoted-attribute-value",
   html_tag_av_no = "missing-attribute-value",
   html_tag_nosp_attrs = "missing-whitespace-between-attributes",
+  html_tag_void_trail_solidus =
+    "non-void-html-element-start-tag-with-trailing-solidus",
   html_tag_eof = "eof-in-tag",
   html_endtag_no = "missing-end-tag-name",
   html_endtag_attrs = "end-tag-with-attributes",
-  html_endtag_solidus = "end-tag-with-trailing-solidus",
+  html_endtag_trail_solidus = "end-tag-with-trailing-solidus",
   html_pi_target_inval_1stchr =
     "invalid-first-character-of-processing-instruction-target",
   html_pi_target_inval = "invalid-processing-instruction-target",
@@ -420,17 +422,19 @@ export const enum ErrMsg {
   html_html_unexp_endtag = "end-tag-after-implied-root", // "Unexpected end tag (%(name)s) after the (implied) root element.",
   html_no_named_endtag_eof = "expected-named-closing-tag-but-got-eof", // "Unexpected end of file. Expected end tag (%(name)s).",
   html_two_heads = "two-heads-are-not-better-than-one", // "Unexpected start tag head in existing head. Ignored.",
-  html_unexp_endtag = "unexpected-end-tag", // "Unexpected end tag (%(name)s). Ignored.",
   html_head_unexp_opntag = "unexpected-start-tag-out-of-my-head", // "Unexpected start tag (%(name)s) that can be in head. Moved.",
   html_unexp_opntag = "unexpected-start-tag", // "Unexpected start tag (%(name)s).",
+  html_unexp_opntag_as = "unexpected-start-tag-treated-as", // "Unexpected start tag (%(originalName)s). Treated as %(newName)s.",
+  html_unexp_opntag_ignored = "unexpected-start-tag-ignored", // "Unexpected start tag %(name)s. Ignored.",
+  html_unexp_opntag_to_endtag = "unexpected-start-tag-implies-end-tag", // "Unexpected start tag (%(startName)s) implies end tag (%(endName)s).",
+  html_unexp_endtag = "unexpected-end-tag", // "Unexpected end tag (%(name)s). Ignored.",
+  html_unexp_endtag_ignored = "unexpected-end-tag-ignored", // "Unexpected end tag %(name)s. Ignored.",
+  html_unexp_chr = "unexpected-chars", // "Unexpected characters. Ignored.",
   "missing-end-tag" = "Missing end tag (%(name)s).",
   "missing-end-tags" = "Missing end tags (%(name)s).",
-  html_unexp_opntag_to_endtag = "unexpected-start-tag-implies-end-tag", // "Unexpected start tag (%(startName)s) implies end tag (%(endName)s).",
-  html_unexp_opntag_as = "unexpected-start-tag-treated-as", // "Unexpected start tag (%(originalName)s). Treated as %(newName)s.",
-  "deprecated-tag" = "Unexpected start tag %(name)s. Don't use it!",
-  html_unexp_opntag_ignored = "unexpected-start-tag-ignored", // "Unexpected start tag %(name)s. Ignored.",
-  "expected-one-end-tag-but-got-another" =
-    "Unexpected end tag (%(gotName)s). Missing end tag (%(expectedName)s).",
+  //jjjj TOCLEANUP
+  // "deprecated-tag" = "Unexpected start tag %(name)s. Don't use it!",
+  html_wrong_endtag = "expected-one-end-tag-but-got-another", // "Unexpected end tag (%(gotName)s). Missing end tag (%(expectedName)s).",
   html_endtag_early = "end-tag-too-early", // "End tag (%(name)s) seen too early. Expected other end tag.",
   //jjjj TOCLEANUP
   // html_endtag_early_1 = "end-tag-too-early-named", // "Unexpected end tag (%(gotName)s). Expected end tag (%(expectedName)s).",
@@ -439,6 +443,7 @@ export const enum ErrMsg {
     "End tag (%(name)s) violates step 1, paragraph 1 of the adoption agency algorithm.",
   html_aaa_1_2 = "adoption-agency-1.2", // "End tag (%(name)s) violates step 1, paragraph 2 of the adoption agency algorithm.",
   html_aaa_1_3 = "adoption-agency-1.3", // "End tag (%(name)s) violates step 1, paragraph 3 of the adoption agency algorithm.",
+  /*jjjj suggestion: formatting-element-not-in-scope */
   html_aaa_4_4 = "adoption-agency-4.4", // "End tag (%(name)s) violates step 4, paragraph 4 of the adoption agency algorithm.",
   html_unexp_endtag_as = "unexpected-end-tag-treated-as", // "Unexpected end tag (%(originalName)s). Treated as %(newName)s.",
   html_no_endtag = "no-end-tag", // "This element (%(name)s) has no end tag.",
@@ -452,11 +457,13 @@ export const enum ErrMsg {
   html_table_voodoo_endtag = "unexpected-end-tag-implies-table-voodoo", // "Unexpected end tag (%(name)s) in table context caused voodoo mode.",
   html_table_voodoo_char = "unexpected-character-implies-table-voodoo", // "Unexpected non-space characters in table context caused voodoo mode.",
   html_tbody_unexp_cell = "unexpected-cell-in-table-body", // "Unexpected table cell start tag (%(name)s) in the table body phase.",
-  html_cell_unexp_endtag = "unexpected-cell-end-tag", // "Got table cell end tag (%(name)s) while required end tags are missing.",
+  html_tbody_unexp_opntag = "unexpected-start-tag-in-table-body", // "Unexpected start tag (%(name)s) in the table body phase. Ignored.",
   html_tbody_unexp_endtag = "unexpected-end-tag-in-table-body", // "Unexpected end tag (%(name)s) in the table body phase. Ignored.",
   "unexpected-implied-end-tag-in-table-row" =
     "Unexpected implied end tag (%(name)s) in the table row phase.",
+  html_tr_unexp_opntag = "unexpected-start-tag-in-table-row", // "Unexpected start tag (%(name)s) in the table row phase. Ignored.",
   html_tr_unexp_endtag = "unexpected-end-tag-in-table-row", // "Unexpected end tag (%(name)s) in the table row phase. Ignored.",
+  html_cell_unexp_endtag = "unexpected-cell-end-tag", // "Got table cell end tag (%(name)s) while required end tags are missing.",
   html_select_unexp_select = "unexpected-select-in-select", // "Unexpected select start tag in the select phase treated as select end tag.",
   html_select_unexp_input = "unexpected-input-in-select", // "Unexpected input start tag in the select phase.",
   html_select_unexp_opntag = "unexpected-start-tag-in-select", // "Unexpected start tag token (%(name)s in the select phase. Ignored.",
@@ -465,10 +472,10 @@ export const enum ErrMsg {
     "unexpected-table-element-start-tag-in-select-in-table", // "Unexpected table element start tag (%(name)s) in the select in table phase."
   "unexpected-table-element-end-tag-in-select-in-table" =
     "Unexpected table element end tag (%(name)s) in the select in table phase.",
-  "unexpected-char-after-body" =
-    "Unexpected non-space characters in the after body phase.",
+  html_no_body_scope = "expected-body-in-scope",
+  html_body_unexp_chr = "unexpected-char-after-body", // "Unexpected non-space characters in the after body phase.",
   html_body_unexp_opntag = "unexpected-start-tag-after-body", // "Unexpected start tag token (%(name)s) in the after body phase.",
-  html_body_unexp_endtag = "unexpected-end-tag-after-body", // "Unexpected end tag token (%(name)s) in the after body phase.",
+  html_body_unexp_endtag = "unexpected-end-tag-after-body", // "Unexpected end tag token (%(name)s) in the after UUU phase.",
   //jjjj TOCLEANUP
   // "unexpected-char-in-frameset" =
   //   "Unexpected characters in the frameset phase. Characters ignored.",
@@ -486,26 +493,24 @@ export const enum ErrMsg {
   //   "Unexpected end tag (%(name)s) in the after frameset phase. Ignored.",
   "unexpected-end-tag-after-body-innerhtml" =
     "Unexpected end tag after body(innerHtml)",
-  "expected-eof-but-got-char" =
-    "Unexpected non-space characters. Expected end of file.",
+  html_no_eof_chr = "expected-eof-but-got-char", // "Unexpected non-space characters. Expected end of file.",
   html_no_eof_opntag = "expected-eof-but-got-start-tag", // "Unexpected start tag (%(name)s). Expected end of file.",
   html_no_eof_endtag = "expected-eof-but-got-end-tag", // "Unexpected end tag (%(name)s). Expected end of file.",
   html_table_eof = "eof-in-table", // "Unexpected end of file. Expected table content.",
   html_select_eof = "eof-in-select", // "Unexpected end of file. Expected select content.",
-  "eof-in-frameset" = "Unexpected end of file. Expected frameset content.",
-  "eof-in-script-in-script" =
-    "Unexpected end of file. Expected script content.",
+  html_template_eof = "eof-in-template", // "Unexpected end of file. Expected template content.",
+  //jjjj TOCLEANUP
+  // "eof-in-frameset" = "Unexpected end of file. Expected frameset content.",
+  // html_no_script_eof = "eof-in-script-in-script", // "Unexpected end of file. Expected script content.",
   "eof-in-foreign-lands" = "Unexpected end of file. Expected foreign content",
-  "non-void-element-with-trailing-solidus" =
-    "Trailing solidus not allowed on element %(name)s",
+  //jjjj TOCLEANUP
+  // "non-void-element-with-trailing-solidus" =
+  //   "Trailing solidus not allowed on element %(name)s",
   html_foreign_unexp_html = "unexpected-html-element-in-foreign-content", // "Element %(name)s not allowed in a non-html context",
   html_unexp_endtag_html = "unexpected-end-tag-before-html", // "Unexpected end tag (%(name)s) before html.",
-  "unexpected-inhead-noscript-tag" =
-    "Element %(name)s not allowed in a inhead-noscript context",
-  "eof-in-head-noscript" =
-    "Unexpected end of file. Expected inhead-noscript content",
-  "char-in-head-noscript" =
-    "Unexpected non-space character. Expected inhead-noscript content",
+  html_noscript_unexp_tag = "unexpected-inhead-noscript-tag", // "Element %(name)s not allowed in a inhead-noscript context",
+  html_noscript_unexp_chr = "char-in-head-noscript", // "Unexpected non-space character. Expected inhead-noscript content",
+  html_noscript_eof = "eof-in-head-noscript", // "Unexpected end of file. Expected inhead-noscript content",
   html_XXX = "XXX-undefined-error", // "Undefined error (this sucks and should be fixed)",
   /* ~ */
   /*64||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/

@@ -154,6 +154,33 @@ export const isSurTral = (_x: uint | bigint) =>
   0x0_DC00 <= _x && _x <= 0x0_DFFF;
 /*80--------------------------------------------------------------------------*/
 
+const ctrlChr_m_: Record<string, string> = {
+  "n": "\n",
+  "r": "\r",
+  "t": "\t",
+  "f": "\f",
+  "b": "\b",
+  "v": "\v",
+  "\\": "\\",
+  '"': '"',
+  "'": "'",
+};
+export const unescapeString = (_x: string): string =>
+  _x.replace(/\\(u[0-9a-fA-F]{4}|u\{[0-9a-fA-F]+\}|.)/g, (_, esc_y) => {
+    if (esc_y.startsWith("u{")) {
+      const hex = esc_y.slice(2, -1);
+      return String.fromCodePoint(parseInt(hex, 16));
+    }
+
+    if (esc_y.startsWith("u")) {
+      const hex = esc_y.slice(1);
+      return String.fromCodePoint(parseInt(hex, 16));
+    }
+
+    return ctrlChr_m_[esc_y] || esc_y;
+  });
+/*64----------------------------------------------------------*/
+
 const textEncoder_ = new TextEncoder();
 export const encodeStr = textEncoder_.encode.bind(textEncoder_);
 

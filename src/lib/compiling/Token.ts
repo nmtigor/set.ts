@@ -3,7 +3,6 @@
  * @license MIT
  ******************************************************************************/
 
-import { g_eran_fac } from "@fe-edt/ERan.ts";
 import type { ERan, ERanr } from "@fe-edt/ERan.ts";
 import * as v from "@valibot/valibot";
 import { DEBUG, INOUT, PRF } from "../../preNs.ts";
@@ -70,12 +69,16 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   //   this.syncRanval();
   // }
 
-  saveRanval_$() {
+  _saveRvTurn_ = 0;
+  /** @const @param turn_x */
+  _saveRanval_(turn_x: uint) {
     //jjjj TOCLEANUP
     // this.syncRanval();
 
     this.#oldRanval ??= new Ranval(0, 0);
     this.#oldRanval.become_Array(this.ran_$.ranval);
+
+    this._saveRvTurn_ = turn_x;
   }
   /* ~ */
 
@@ -230,10 +233,12 @@ export class Token<T extends Tok = BaseTok> extends Snt {
   /* ~ */
 
   prevToken_$: Token<T> | undefined;
+  /** @final */
   get prevToken() {
     return this.prevToken_$;
   }
   nextToken_$: Token<T> | undefined;
+  /** @final */
   get nextToken() {
     return this.nextToken_$;
   }
@@ -365,26 +370,36 @@ export class Token<T extends Tok = BaseTok> extends Snt {
    * @primaryconst
    * @primaryconst @param rhs_x
    */
-  posS(rhs_x: Token<T>): boolean {
+  posS(rhs_x: Token<T> | undefined): boolean {
+    if (rhs_x === undefined) return false;
+
     return this.ran_$.posS(rhs_x.ran_$);
   }
   /** @see {@linkcode posS()} */
-  posGE(rhs_x: Token<T>): boolean {
+  posGE(rhs_x: Token<T> | undefined): boolean {
+    if (rhs_x === undefined) return false;
+
     return !this.posS(rhs_x);
   }
   /** @see {@linkcode posS()} */
-  posSE(rhs_x: Token<T>): boolean {
+  posSE(rhs_x: Token<T> | undefined): boolean {
+    if (rhs_x === undefined) return false;
+
     return this.posS(rhs_x) || this.posE(rhs_x);
   }
   /** @see {@linkcode posS()} */
-  posG(rhs_x: Token<T>): boolean {
+  posG(rhs_x: Token<T> | undefined): boolean {
+    if (rhs_x === undefined) return false;
+
     return !this.posSE(rhs_x);
   }
   /**
    * @const
    * @const @param rhs_x
    */
-  posE(rhs_x: Token<T>): boolean {
+  posE(rhs_x: Token<T> | undefined): boolean {
+    if (rhs_x === undefined) return false;
+
     return this.ran_$.posE(rhs_x.ran_$);
   }
 
@@ -832,7 +847,10 @@ export class Token<T extends Tok = BaseTok> extends Snt {
     const rv_ = this.#oldRanval ?? this.ran_$.rv;
     return {
       sort: [rv_.anchrLidx, rv_.anchrLoff],
-      info: `${this.name}${this.#oldRanval ? "" : "*"}${rv_}`,
+      // info: `${this.name}${this.#oldRanval ? "" : "*"}${rv_}`,
+      info: `${this.name}${rv_}${
+        this._saveRvTurn_ === 1 ? "" : this._saveRvTurn_
+      }`,
     };
   }
 

@@ -55,7 +55,7 @@ export class Key extends SetSn {
     return this.lastTk$ ??= this.children.at(-1)!.lastToken_1;
   }
 
-  readonly #cpl_hl_name = `${this.class_id}_cpl`;
+  readonly cpl_hl_name = `${this.class_id}_cpl`;
   get #cpl_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[0] ??= new Highlight();
@@ -77,12 +77,12 @@ export class Key extends SetSn {
     for (const sn of sns_x) sn.attachTo_$(this);
 
     /*#static*/ if (!DENO) {
-      CSS.highlights.set(this.#cpl_hl_name, this.#cpl_hl);
+      CSS.highlights.set(this.cpl_hl_name, this.#cpl_hl);
 
       document.body.style.setProperty(this.#cplTd_pn, this.#cplTd_p.cssc);
 
       document[$CSS].insertRule(
-        `::highlight(${this.#cpl_hl_name}) {
+        `::highlight(${this.cpl_hl_name}) {
           text-decoration: var(${this.#cplTd_pn}) underline ${Tdt}em;
           text-underline-offset: var(${this.#cplTuo_pn});
         }`,
@@ -104,13 +104,13 @@ export class Key extends SetSn {
 
     /*#static*/ if (!DENO) {
       document[$CSS].deleteSelector(
-        `::highlight(${this.#cpl_hl_name})`,
+        `::highlight(${this.cpl_hl_name})`,
       );
 
       document.body.style.removeProperty(this.#cplTd_pn);
       document.body.style.removeProperty(this.#cplTuo_pn);
 
-      CSS.highlights.delete(this.#cpl_hl_name);
+      CSS.highlights.delete(this.cpl_hl_name);
     }
 
     super.destructor();
@@ -119,16 +119,21 @@ export class Key extends SetSn {
 
   override replaceChild(
     oldSn_x: FuzykeySeq | QuotkeySeq,
-    newSn_x: FuzykeySeq | QuotkeySeq,
+    newSn_x?: FuzykeySeq | QuotkeySeq,
   ) {
     const c_a = this.children;
     const i_ = c_a.indexOf(oldSn_x);
+    const atBdry = i_ === 0 || i_ === c_a.length - 1;
     if (i_ >= 0) {
-      newSn_x.attachTo_$(this);
-      c_a.splice(i_, 1, newSn_x);
+      if (newSn_x) {
+        newSn_x.attachTo_$(this);
+        c_a.splice(i_, 1, newSn_x);
+      } else {
+        c_a.splice(i_, 1);
+      }
     }
 
-    if (i_ === 0 || i_ === c_a.length - 1) this.invalBdries();
+    if (atBdry) this.invalBdries();
   }
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 

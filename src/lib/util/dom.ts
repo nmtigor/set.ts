@@ -10,18 +10,8 @@ import "../dom.ts";
 /*80--------------------------------------------------------------------------*/
 /* Event */
 
-export const stopPropagation = (evt_x: Event) => {
-  evt_x.stopPropagation();
-};
-
-/**
- * Event handler to suppress context menu.
- *
- * Ref. [[pdf.js]/src/display/display_utils.js](https://github.com/mozilla/pdf.js/blob/master/src/display/display_utils.js)
- */
-export const noContextMenu = (evt_x: MouseEvent) => {
-  evt_x.preventDefault();
-};
+export const stopPropagation = (evt_x: Event) => evt_x.stopPropagation();
+export const preventDefault = (evt_x: Event) => evt_x.preventDefault();
 
 export const onWheel = (el_x: Element) => {
   return (evt_x: WheelEvent) => {

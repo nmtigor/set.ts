@@ -58,9 +58,7 @@ export abstract class BinaryOp extends SetSn {
 
   readonly opTk;
 
-  /**
-   * If `undefined`, must `hasErr`.
-   */
+  /** If `undefined`, must `hasErr`. */
   protected rhs$: Set | undefined;
   get rhs() {
     return this.rhs$;
@@ -88,7 +86,7 @@ export abstract class BinaryOp extends SetSn {
     return this.lastTk$ ??= this.rhs$ ? this.rhs$.lastToken_1 : this.opTk;
   }
 
-  readonly #stx_hl_name = `${this.class_id}_stx`;
+  readonly stx_hl_name = `${this.class_id}_stx`;
   get #stx_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[0] ??= new Highlight();
@@ -97,7 +95,7 @@ export abstract class BinaryOp extends SetSn {
     this.hl_a$?.at(0)?.clear();
   }
 
-  readonly #cpl_hl_name = `${this.class_id}_cpl`;
+  readonly cpl_hl_name = `${this.class_id}_cpl`;
   get #cpl_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[1] ??= new Highlight();
@@ -123,19 +121,19 @@ export abstract class BinaryOp extends SetSn {
     lhs_x.attachTo_$(this);
 
     /*#static*/ if (!DENO) {
-      CSS.highlights.set(this.#stx_hl_name, this.#stx_hl);
-      CSS.highlights.set(this.#cpl_hl_name, this.#cpl_hl);
+      CSS.highlights.set(this.stx_hl_name, this.#stx_hl);
+      CSS.highlights.set(this.cpl_hl_name, this.#cpl_hl);
 
       document.body.style.setProperty(this.#stxFg_pn, this.#stxFg_p.cssc);
       document.body.style.setProperty(this.#cplTd_pn, this.#cplTd_p.cssc);
 
       document[$CSS].insertRule(
-        `::highlight(${this.#stx_hl_name}) {
+        `::highlight(${this.stx_hl_name}) {
           color: var(${this.#stxFg_pn});
         }`,
       );
       document[$CSS].insertRule(
-        `::highlight(${this.#cpl_hl_name}) {
+        `::highlight(${this.cpl_hl_name}) {
               text-decoration: var(${this.#cplTd_pn}) underline ${Tdt}em;
               text-underline-offset: var(${this.#cplTuo_pn});
             }`,
@@ -146,15 +144,15 @@ export abstract class BinaryOp extends SetSn {
   override destructor(): void {
     /*#static*/ if (!DENO) {
       const css_ = document[$CSS];
-      css_.deleteSelector(`::highlight(${this.#stx_hl_name})`);
-      css_.deleteSelector(`::highlight(${this.#cpl_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.stx_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.cpl_hl_name})`);
 
       document.body.style.removeProperty(this.#stxFg_pn);
       document.body.style.removeProperty(this.#cplTd_pn);
       document.body.style.removeProperty(this.#cplTuo_pn);
 
-      CSS.highlights.delete(this.#stx_hl_name);
-      CSS.highlights.delete(this.#cpl_hl_name);
+      CSS.highlights.delete(this.stx_hl_name);
+      CSS.highlights.delete(this.cpl_hl_name);
     }
 
     super.destructor();
@@ -265,7 +263,6 @@ export class BinaryErr extends BinaryOp {
 
   static override readonly oprec = Oprec.err;
 
-  readonly #stx_hl_name = `${this.class_id}_stx`;
   get #stx_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[2] ??= new Highlight();
@@ -313,14 +310,14 @@ export class BinaryErr extends BinaryOp {
     }
 
     /*#static*/ if (!DENO) {
-      CSS.highlights.set(this.#stx_hl_name, this.#stx_hl);
+      CSS.highlights.set(this.stx_hl_name, this.#stx_hl);
       CSS.highlights.set(this.#err_hl_name, this.#err_hl);
 
       document.body.style.setProperty(this.#stxTd_pn, this.#stxTd_p.cssc);
       document.body.style.setProperty(this.#errTd_pn, this.#errTd_p.cssc);
 
       document[$CSS].insertRule(
-        `::highlight(${this.#stx_hl_name}) {
+        `::highlight(${this.stx_hl_name}) {
           text-decoration: var(${this.#stxTd_pn}) wavy underline;
           text-underline-offset: .2em;
         }`,
@@ -357,13 +354,13 @@ export class BinaryErr extends BinaryOp {
 
     /*#static*/ if (!DENO) {
       const css_ = document[$CSS];
-      css_.deleteSelector(`::highlight(${this.#stx_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.stx_hl_name})`);
       css_.deleteSelector(`::highlight(${this.#err_hl_name})`);
 
       document.body.style.removeProperty(this.#stxTd_pn);
       document.body.style.removeProperty(this.#errTd_pn);
 
-      CSS.highlights.delete(this.#stx_hl_name);
+      CSS.highlights.delete(this.stx_hl_name);
       CSS.highlights.delete(this.#err_hl_name);
     }
 

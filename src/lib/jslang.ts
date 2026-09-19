@@ -226,10 +226,8 @@ Reflect.defineProperty(Array.prototype, "eql", {
 
 Reflect.defineProperty(Array.prototype, "fillArray", {
   value(this: any[], ary_x: any[]) {
-    /*#static*/ if (INOUT) {
-      assert(ary_x.length <= this.length);
-    }
-    for (let i = 0, LEN = ary_x.length; i < LEN; ++i) {
+    const LEN = Math.min(this.length, ary_x.length);
+    for (let i = 0; i < LEN; ++i) {
       this[i] = ary_x[i];
     }
     return this;

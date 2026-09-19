@@ -146,7 +146,7 @@ export class Rel extends SetSn {
       : this.jnr_1;
   }
 
-  readonly #stx_hl_name = `${this.class_id}_stx`;
+  readonly stx_hl_name = `${this.class_id}_stx`;
   get #stx_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[0] ??= new Highlight();
@@ -155,7 +155,7 @@ export class Rel extends SetSn {
     this.hl_a$?.at(0)?.clear();
   }
 
-  readonly #tkErr_hl_name = `${this.class_id}_tkErr`;
+  readonly tkErr_hl_name = `${this.class_id}_tkErr`;
   get #tkErr_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[1] ??= new Highlight();
@@ -164,7 +164,7 @@ export class Rel extends SetSn {
     this.hl_a$?.at(1)?.clear();
   }
 
-  readonly #snErr_hl_name = `${this.class_id}_snErr`;
+  readonly snErr_hl_name = `${this.class_id}_snErr`;
   get #snErr_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[2] ??= new Highlight();
@@ -173,7 +173,7 @@ export class Rel extends SetSn {
     this.hl_a$?.at(2)?.clear();
   }
 
-  readonly #cpl_hl_name = `${this.class_id}_cpl`;
+  readonly cpl_hl_name = `${this.class_id}_cpl`;
   get #cpl_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[3] ??= new Highlight();
@@ -233,10 +233,10 @@ export class Rel extends SetSn {
     if (!s_ || !r_ || !t_) this.setErr({ msg: ErrMsg.set_rel_no_srt });
 
     /*#static*/ if (!DENO) {
-      CSS.highlights.set(this.#stx_hl_name, this.#stx_hl);
-      CSS.highlights.set(this.#tkErr_hl_name, this.#tkErr_hl);
-      CSS.highlights.set(this.#snErr_hl_name, this.#snErr_hl);
-      CSS.highlights.set(this.#cpl_hl_name, this.#cpl_hl);
+      CSS.highlights.set(this.stx_hl_name, this.#stx_hl);
+      CSS.highlights.set(this.tkErr_hl_name, this.#tkErr_hl);
+      CSS.highlights.set(this.snErr_hl_name, this.#snErr_hl);
+      CSS.highlights.set(this.cpl_hl_name, this.#cpl_hl);
 
       document.body.style.setProperty(this.#stxFg_pn, this.#stxFg_p.cssc);
       document.body.style.setProperty(this.#tkErrTd_pn, this.#tkErrTd_p.cssc);
@@ -244,24 +244,24 @@ export class Rel extends SetSn {
       document.body.style.setProperty(this.#cplTd_pn, this.#cplTd_p.cssc);
 
       document[$CSS].insertRule(
-        `::highlight(${this.#stx_hl_name}) {
+        `::highlight(${this.stx_hl_name}) {
           color: var(${this.#stxFg_pn});
         }`,
       );
       document[$CSS].insertRule(
-        `::highlight(${this.#tkErr_hl_name}) {
+        `::highlight(${this.tkErr_hl_name}) {
           text-decoration: var(${this.#tkErrTd_pn}) wavy underline;
           text-underline-offset: .2em;
         }`,
       );
       document[$CSS].insertRule(
-        `::highlight(${this.#snErr_hl_name}) {
+        `::highlight(${this.snErr_hl_name}) {
           text-decoration: var(${this.#snErrTd_pn}) wavy underline;
           text-underline-offset: .2em;
         }`,
       );
       document[$CSS].insertRule(
-        `::highlight(${this.#cpl_hl_name}) {
+        `::highlight(${this.cpl_hl_name}) {
           text-decoration: var(${this.#cplTd_pn}) underline ${Tdt}em;
           text-underline-offset: var(${this.#cplTuo_pn});
         }`,
@@ -282,10 +282,10 @@ export class Rel extends SetSn {
 
     /*#static*/ if (!DENO) {
       const css_ = document[$CSS];
-      css_.deleteSelector(`::highlight(${this.#stx_hl_name})`);
-      css_.deleteSelector(`::highlight(${this.#tkErr_hl_name})`);
-      css_.deleteSelector(`::highlight(${this.#snErr_hl_name})`);
-      css_.deleteSelector(`::highlight(${this.#cpl_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.stx_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.tkErr_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.snErr_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.cpl_hl_name})`);
 
       document.body.style.removeProperty(this.#stxFg_pn);
       document.body.style.removeProperty(this.#tkErrTd_pn);
@@ -293,10 +293,10 @@ export class Rel extends SetSn {
       document.body.style.removeProperty(this.#cplTd_pn);
       document.body.style.removeProperty(this.#cplTuo_pn);
 
-      CSS.highlights.delete(this.#stx_hl_name);
-      CSS.highlights.delete(this.#tkErr_hl_name);
-      CSS.highlights.delete(this.#snErr_hl_name);
-      CSS.highlights.delete(this.#cpl_hl_name);
+      CSS.highlights.delete(this.stx_hl_name);
+      CSS.highlights.delete(this.tkErr_hl_name);
+      CSS.highlights.delete(this.snErr_hl_name);
+      CSS.highlights.delete(this.cpl_hl_name);
     }
 
     super.destructor();

@@ -41,7 +41,7 @@ export class Union extends BinaryOp {
   override readonly op = "∪";
   static override readonly oprec = Oprec.union;
 
-  readonly #err_hl_name = `${this.class_id}_err`;
+  readonly err_hl_name = `${this.class_id}_err`;
   get #err_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[2] ??= new Highlight();
@@ -67,12 +67,12 @@ export class Union extends BinaryOp {
     }
 
     /*#static*/ if (!DENO) {
-      CSS.highlights.set(this.#err_hl_name, this.#err_hl);
+      CSS.highlights.set(this.err_hl_name, this.#err_hl);
 
       document.body.style.setProperty(this.#errTd_pn, this.#errTd_p.cssc);
 
       document[$CSS].insertRule(
-        `::highlight(${this.#err_hl_name}) {
+        `::highlight(${this.err_hl_name}) {
           text-decoration: var(${this.#errTd_pn}) wavy underline;
           text-underline-offset: .2em;
         }`,
@@ -103,12 +103,12 @@ export class Union extends BinaryOp {
 
     /*#static*/ if (!DENO) {
       document[$CSS].deleteSelector(
-        `::highlight(${this.#err_hl_name})`,
+        `::highlight(${this.err_hl_name})`,
       );
 
       document.body.style.removeProperty(this.#errTd_pn);
 
-      CSS.highlights.delete(this.#err_hl_name);
+      CSS.highlights.delete(this.err_hl_name);
     }
 
     super.destructor();

@@ -298,6 +298,8 @@ export class Loc {
   /*49|||||||||||||||||||||||||||||||||||||||||||*/
 
   forw(inline_x?: "inline"): this {
+    if (this.reachEob) return this;
+
     ++this.loff_$;
     if (!inline_x && this.overEol && !this.line_$.isLastLine) {
       this.line_$ = this.line_$.nextLine!;
@@ -308,9 +310,8 @@ export class Loc {
     return this;
   }
   back(inline_x?: "inline"): this {
-    /*#static*/ if (INOUT) {
-      assert(!this.atSob);
-    }
+    if (this.atSob) return this;
+
     if (this.atSol) {
       if (!inline_x) {
         this.line_$ = this.line_$.prevLine!;
@@ -344,16 +345,15 @@ export class Loc {
     this.forw(inline_x);
     return ret;
   }
-  /** @final */
-  forw_uchr(inline_x?: "inline"): UChr {
-    this.forw(inline_x);
-    return this.uchr;
-  }
-  /** @final */
-  forw_ucod(inline_x?: "inline"): UInt16 {
-    this.forw(inline_x);
-    return this.ucod;
-  }
+  //jjjj TOCLEANUP
+  // /** @final */
+  // forw_uchr(inline_x?: "inline"): UChr {
+  //   return this.forw(inline_x).uchr;
+  // }
+  // /** @final */
+  // forw_ucod(inline_x?: "inline"): UInt16 {
+  //   return this.forw(inline_x).ucod;
+  // }
 
   toSol(): this {
     this.loff_$ = 0;

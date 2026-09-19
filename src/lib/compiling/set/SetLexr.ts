@@ -79,7 +79,7 @@ export class SetLexr extends Lexr<SetTok> {
     const VALVE = 10_000;
     let valve = VALVE;
     do {
-      const ucod = this.curLoc$.forw_ucod();
+      const ucod = this.curLoc$.forw().ucod;
       if (this.reachLexBdry$()) {
         this.outTk$!.setErr({ msg: ErrMsg.quoted_string_open })
           .setStop(this.curLoc$, SetTok.quotkey);

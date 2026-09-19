@@ -5,7 +5,7 @@
 
 import type { MooEq } from "../Moo.ts";
 import { Moo } from "../Moo.ts";
-import type { lnum_t, loff_t } from "../alias.ts";
+import type { ldt_t, lnum_t, loff_t } from "../alias.ts";
 import type { Bufr } from "./Bufr.ts";
 import type { Loc } from "./Loc.ts";
 import type { Ran } from "./Ran.ts";
@@ -83,9 +83,12 @@ export class Ranval extends Array<lnum_t | loff_t> {
       ran_x.stopLoff,
     );
   }
-  /** @primaryconst @param loc_x */
-  static fromLoc(loc_x: Loc): Ranval {
-    return new Ranval(loc_x.line_$.lidx_1, loc_x.loff_$);
+  /**
+   * @primaryconst @param loc_x
+   * @const @param ldt_x
+   */
+  static fromLoc(loc_x: Loc, ldt_x: ldt_t = 0): Ranval {
+    return new Ranval(loc_x.line_$.lidx_1, loc_x.loff_$ + ldt_x);
   }
 
   /**

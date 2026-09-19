@@ -17,8 +17,18 @@ import { ErrMsg, paleMock, sntFrstTk, sntLastTk } from "../../util.ts";
 import type { SetPazr } from "../SetPazr.ts";
 import { SetTok } from "../SetTok.ts";
 import type { Paren, UnparenSet } from "../alias.ts";
+import { Oprec } from "../alias.ts";
 import { SetSn } from "./SetSn.ts";
 /*80--------------------------------------------------------------------------*/
+
+type SetCtorP_ = {
+  pazr: SetPazr;
+  /** @default `Oprec.lowest` */
+  oprec?: Oprec;
+  /** @default `0` */
+  paren?: Paren;
+  unparnSet: UnparenSet | SetTk;
+};
 
 /** @final */
 export class Set extends SetSn {
@@ -65,6 +75,8 @@ export class Set extends SetSn {
 
     this.invalBdries().ensureBdries();
   }
+
+  readonly oprec;
 
   #children: UnparenSet[] | undefined;
   override get children(): UnparenSet[] {
@@ -119,7 +131,7 @@ export class Set extends SetSn {
     return this.lastTk$ = retTk;
   }
 
-  readonly #stx_hl_name = `${this.class_id}_stx`;
+  readonly stx_hl_name = `${this.class_id}_stx`;
   get #stx_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[0] ??= new Highlight();
@@ -128,7 +140,7 @@ export class Set extends SetSn {
     this.hl_a$?.at(0)?.clear();
   }
 
-  readonly #err_hl_name = `${this.class_id}_err`;
+  readonly err_hl_name = `${this.class_id}_err`;
   get #err_hl(): Highlight {
     this.hl_a$ ??= [];
     return this.hl_a$[1] ??= new Highlight();
@@ -140,43 +152,48 @@ export class Set extends SetSn {
   readonly #stxFg_pn = `--${this.class_id}-stxFg`;
   readonly #errTd_pn = `--${this.class_id}-errTd`;
 
+  /**
+   * @headconst @param pazr
+   * @headconst @param unparnSet
+   * @const @param paren
+   * @const @param oprec
+   */
   private constructor(
-    pazr_x: SetPazr,
-    unparnSet_x: UnparenSet | SetTk,
-    paren_x: Paren,
+    { pazr, oprec = Oprec.lowest, paren = 0, unparnSet }: SetCtorP_,
   ) {
-    super(pazr_x);
-    this.#unparenSet = unparnSet_x;
-    this.#paren = paren_x;
+    super(pazr);
+    this.#unparenSet = unparnSet;
+    this.#paren = paren;
+    this.oprec = oprec;
 
-    if (unparnSet_x instanceof Token) {
+    if (unparnSet instanceof Token) {
       this.setErr({
         msg: ErrMsg.set_unexp_tk,
-        rv: Ranval.fromRan(unparnSet_x.ran_$),
-        txt: unparnSet_x.name,
+        rv: Ranval.fromRan(unparnSet.ran_$),
+        txt: unparnSet.name,
       });
     } else {
-      unparnSet_x.attachTo_$(this);
+      unparnSet.attachTo_$(this);
     }
 
     /*#static*/ if (!DENO) {
-      CSS.highlights.set(this.#stx_hl_name, this.#stx_hl);
-      CSS.highlights.set(this.#err_hl_name, this.#err_hl);
+      CSS.highlights.set(this.stx_hl_name, this.#stx_hl);
+      CSS.highlights.set(this.err_hl_name, this.#err_hl);
 
       document.body.style.setProperty(this.#stxFg_pn, this.#stxFg_p.cssc);
       document.body.style.setProperty(this.#errTd_pn, this.#errTd_p.cssc);
 
       document[$CSS].insertRule(
-        `::highlight(${this.#stx_hl_name}) {
+        `::highlight(${this.stx_hl_name}) {
           color: var(${this.#stxFg_pn});
         }`,
       );
       document[$CSS].insertRule(
         //jjjj TOCLEANUP
-        // `::highlight(${this.#err_hl_name}) {
+        // `::highlight(${this.err_hl_name}) {
         //   text-shadow: 0 -.2em var(${this.#errTd_pn});
         // }`,
-        `::highlight(${this.#err_hl_name}) {
+        `::highlight(${this.err_hl_name}) {
           text-decoration: var(${this.#errTd_pn}) wavy underline;
           text-underline-offset: .2em;
         }`,
@@ -185,17 +202,9 @@ export class Set extends SetSn {
 
     this.ensureBdries();
   }
-  /**
-   * @headconst @param pazr_x
-   * @headconst @param unparnSet_x
-   * @const @param paren_x
-   */
-  static create(
-    pazr_x: SetPazr,
-    unparnSet_x: UnparenSet | SetTk,
-    paren_x: Paren,
-  ) {
-    const ret = new Set(pazr_x, unparnSet_x, paren_x);
+  /** @headconst @param _x */
+  static create(_x: SetCtorP_) {
+    const ret = new Set(_x);
     ret.observeTheme();
     return ret;
   }
@@ -205,14 +214,14 @@ export class Set extends SetSn {
 
     /*#static*/ if (!DENO) {
       const css_ = document[$CSS];
-      css_.deleteSelector(`::highlight(${this.#stx_hl_name})`);
-      css_.deleteSelector(`::highlight(${this.#err_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.stx_hl_name})`);
+      css_.deleteSelector(`::highlight(${this.err_hl_name})`);
 
       document.body.style.removeProperty(this.#stxFg_pn);
       document.body.style.removeProperty(this.#errTd_pn);
 
-      CSS.highlights.delete(this.#stx_hl_name);
-      CSS.highlights.delete(this.#err_hl_name);
+      CSS.highlights.delete(this.stx_hl_name);
+      CSS.highlights.delete(this.err_hl_name);
     }
 
     super.destructor();
@@ -305,7 +314,7 @@ export class Set extends SetSn {
       for (
         let tk_ = this.lastToken_1;
         /* 3253 `tk_.value === SetTok.paren_cloz` does not work because
-        `#unparenSet` itself may end with ")" (e.g. "( 1\\ (0)"). */
+        `#unparenSet` itself may end with ")" (e.g. "( 1\\ (0)". */
         tk_ !== unparenLastTk;
         tk_ = tk_.prevToken_$!
       ) nCloz += 1;

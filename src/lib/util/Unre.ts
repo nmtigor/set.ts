@@ -26,6 +26,12 @@ export class Unre<T extends {} | null> {
 
   readonly #Len: uint;
   protected readonly ary$: Array<T>;
+  /** turn the sparse Array `ary$` to a normal Array */
+  get _ary_(): T[] {
+    let i_ = this.ary$.length;
+    for (; i_-- && this.ary$[i_] === undefined;);
+    return Array.from({ length: i_ + 1 }, (_, i_y) => this.ary$[i_y]);
+  }
 
   protected i_0$: uint = 0;
   protected i$: uint = 0;

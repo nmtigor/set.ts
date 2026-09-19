@@ -43,6 +43,9 @@ export const D_cmts = "commonmark.ts";
 export const D_sets = "set.ts";
 /*49-------------------------------------------*/
 
+export const D_htmlts = "html.ts";
+/*49-------------------------------------------*/
+
 export const D_7zts = "7z.ts";
 /*64----------------------------------------------------------*/
 /* Relative to `D_fe` */

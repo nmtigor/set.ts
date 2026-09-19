@@ -3,7 +3,7 @@
  * @license MIT
  ******************************************************************************/
 
-import { _TRACE, INOUT } from "../../preNs.ts";
+import { _TRACE, DEBUG, INOUT } from "../../preNs.ts";
 import type { int, ldt_t, loff_t, uint } from "../alias.ts";
 import { LnumMAX } from "../alias.ts";
 import type { Id_t, UInt16 } from "../alias_v.ts";
@@ -205,6 +205,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   //   this.curLoc$.become(loc);
   // }
 
+  _saveRvTurn_ = 0;
   /**
    * Token's in `oldTk_ss$` are kept from `destructor()` until `sufLex$()` is
    * called, so `oldTk_ss$` (together with `scandTk_a$`) can contain unrelated
@@ -220,7 +221,9 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    * @headborrow @headconst @param tk_x
    */
   protected readonly drtenTk$ = (tk_x: Token<T>): void => {
-    tk_x.saveRanval_$();
+    /*#static*/ if (DEBUG) {
+      tk_x._saveRanval_(this._saveRvTurn_);
+    }
     tk_x.setValue(BaseTok.unknown as T); //!
     this.oldTk_ss$.add(tk_x);
   };
@@ -246,6 +249,9 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     } else {
       this.scandTk_a$.push(retTk_x);
     }
+
+    if (this.lsTk$?.posS(retTk_x)) this.lsTk$ = retTk_x; //!
+
     return retTk_x;
   }
 
@@ -308,10 +314,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
   }
 
   #destroyed = false;
-  /**
-   * `in( this.bufr$)`
-   * @final
-   */
+  /** `in( this.bufr$)` */
   destructor(): void {
     if (this.#destroyed) return;
 
@@ -326,11 +329,12 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       ln_ = ln_.nextLine;
     }
     assert(valve, `Loop ${VALVE}(±1) times!`);
+    /*64----------------------------------------------------------*/
 
     // this.bufr$ = undefined as any;
     this.curLexTk$ = undefined as any;
-    this.stopLexTk$ = undefined as any;
     this.strtLexTk$ = undefined as any;
+    this.stopLexTk$ = undefined as any;
 
     this.#strtLexTk_a.length = 0;
     this.#stopLexTk_a.length = 0;
@@ -605,7 +609,6 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    * Set `curLexTk$`, `stopLexTk$`.
    *
    * @final
-   * @headconst @param oldRan_a_x
    */
   @traceOut(_TRACE)
   @out((self: Lexr<T>) => {
@@ -613,14 +616,18 @@ export abstract class Lexr<T extends Tok = BaseTok> {
     assert(!self.stopLexTk$.isErr);
     assert(self.curLexTk$.posS(self.stopLexTk$));
   })
-  lexMrk_$(oldRan_a_x: Ran[]): this {
+  lexMrk_$(): this {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this.class_id}.lexMrk_$( oldRan_a_x: ${oldRan_a_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.lexMrk_$() >>>>>>>`,
       );
     }
+    /*#static*/ if (DEBUG) {
+      this._saveRvTurn_ = 1;
+    }
+    const oldRan_a = this.bufr$.oldRan_a;
     /*#static*/ if (INOUT) {
-      assert(oldRan_a_x.length && oldRan_a_x[0].bufr === this.bufr$);
+      assert(oldRan_a.length && oldRan_a[0].bufr === this.bufr$);
       // const ranbufr = oldRan_x.bufr;
       // assert( !ranbufr || ranbufr === this.bufr$ );
     }
@@ -630,10 +637,10 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       this.#dtLoff_a.length =
       this.#adjStrtTk_a.length =
       this.#adjStopTk_a.length =
-        oldRan_a_x.length;
+        oldRan_a.length;
 
-    for (let i = oldRan_a_x.length; i--;) {
-      const oldRan = oldRan_a_x[i];
+    for (let i = oldRan_a.length; i--;) {
+      const oldRan = oldRan_a[i];
 
       this.#lv_oldStop_a[i] = [oldRan.stopLoc.lidx_1, oldRan.stopLoff];
       this.#dtLoff_a[i] = 0;
@@ -646,14 +653,14 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       this.#adjStopTk_a[i] =
         oldRan.lastLine === this.#stopLexTk_a[i].sntFrstLine;
 
-      if (i < oldRan_a_x.length - 1) {
+      if (i < oldRan_a.length - 1) {
         if (this.#strtLexTk_a[i] === this.#strtLexTk_a[i + 1]) {
           const tk_ = this.#stopLexTk_a[i] =
             this.#strtLexTk_a[i + 1] =
               this.#strtLexTk_a[i].insNext(
                 new Token(
                   this,
-                  g_ran_fac.byLoc(oldRan.stopLoc, oldRan_a_x[i + 1].strtLoc),
+                  g_ran_fac.byLoc(oldRan.stopLoc, oldRan_a[i + 1].strtLoc),
                 ).syncRanval(),
               );
           /* 3248 */ if (
@@ -667,7 +674,7 @@ export abstract class Lexr<T extends Tok = BaseTok> {
               this.#stopLexTk_a[i + 1].insPrev(
                 new Token(
                   this,
-                  g_ran_fac.byLoc(oldRan.stopLoc, oldRan_a_x[i + 1].strtLoc),
+                  g_ran_fac.byLoc(oldRan.stopLoc, oldRan_a[i + 1].strtLoc),
                 ).syncRanval(),
               );
           /* 3249 */ if (
@@ -707,12 +714,12 @@ export abstract class Lexr<T extends Tok = BaseTok> {
 
     this.batchForw_$(
       //jjjj TOCLEANUP
-      // (tk) => tk.reset_Token().saveRanval_$(),
+      // (tk) => tk.reset_Token()._saveRanval_(),
       this.drtenTk$,
       this.curLexTk$.nextToken_$,
       this.stopLexTk$,
     );
-    this.sufLexmrk$(oldRan_a_x);
+    this.sufLexmrk$(oldRan_a);
     return this;
   }
 
@@ -741,13 +748,12 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    * Reset `errTk_ss$`
    *
    * @final
-   * @headconst @param newRan_a_x
    */
   @traceOut(_TRACE)
-  lexAdj_$(newRan_a_x: Ran[]): this {
+  lexAdj_$(): this {
     /*#static*/ if (_TRACE) {
       console.log(
-        `${trace.indent}>>>>>>> ${this.class_id}.lexAdj_$( newRan_a_x: ${newRan_a_x}) >>>>>>>`,
+        `${trace.indent}>>>>>>> ${this.class_id}.lexAdj_$() >>>>>>>`,
       );
     }
     if (this.isErr) {
@@ -760,18 +766,19 @@ export abstract class Lexr<T extends Tok = BaseTok> {
       this.clrErr_$();
     }
 
-    const LEN = newRan_a_x.length;
+    const newRan_a = this.bufr$.newRan_a;
+    const LEN = newRan_a.length;
     /*#static*/ if (INOUT) {
-      assert(LEN && newRan_a_x[0].bufr === this.bufr$);
+      assert(LEN);
     }
     this.#anchr_s.clear();
     this.#focus_s.clear();
-    /* Adjusting each of `newRan_a_x`, not just `newRan_a_x[0]`,
-    `newRan_a_x.at(-1)!`, is because unrelated tokens also need to be adjusted. */
+    /* Adjusting each of `newRan_a`, not just `newRan_a[0]`,
+    `newRan_a.at(-1)!`, is because unrelated tokens also need to be adjusted. */
     /* MUST be in (non-reverse) order, because following tokens and
     `#lv_oldStop_a` on the same line need to be adjusted. */
     for (let i = 0; i < LEN; ++i) {
-      const newRan = newRan_a_x[i];
+      const newRan = newRan_a[i];
 
       const tgtStrtLn = newRan.frstLine;
       const tgtStopLn = newRan.lastLine;
@@ -925,8 +932,8 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    */
   protected lex_impl$(): this {
     // assert(--this.#valve, `Loop ${Lexr.#VALVE} times`);
-    /* if in `_relex`ing... */
-    if (this.scandTk_a$.length) {
+    /* if in `_relex`ing...
+    */ if (this.scandTk_a$.length) {
       for (const tk of this.scandTk_a$) {
         if (!this.oldTk_ss$.includes(tk)) tk.destructor();
       }
@@ -1185,20 +1192,27 @@ export abstract class Lexr<T extends Tok = BaseTok> {
    * @const @param _tk_0_x
    * @const @param _tk_1_x
    */
-  protected canConcat$(_tk_0_x: Token<T>, _tk_1_x: Token<T>): boolean {
+  protected canConcat$(
+    _tk_0_x: Token<T>,
+    _tk_1_x: Token<T>,
+  ): boolean /* | (<TK extends Token<T>>(_: { kept: TK; rmvd: TK }) => void) */ {
     return false;
   }
 
   protected concatBdry$ = true;
+  get concatBdry_$() {
+    return this.concatBdry$;
+  }
   protected concatInnr$ = false;
+  get concatInnr_$() {
+    return this.concatInnr$;
+  }
   /**
    * Try to concat `[strtLexTk$, ...scandTk_a$, stopLexTk$]`.\
    * `strtLexTk$` could be adjusted to keep valid, which will be used in
    * `Pazr.paz()`.
    *
    * Priority to keep unchanged: `stopLexTk$` > `strtLexTk$` > `scandTk_a$`
-   *
-   * @final
    */
   protected concatTokens$() {
     /*#static*/ if (INOUT) {
