@@ -1,3 +1,7 @@
+Archive this repository because this is part of [cimpiling.ts](https://github.com/nmtigor/compiling.ts/tree/main/src/lib/compiling/set).
+
+---
+
 This program implements a format for searching texts with the following grammar:
 
 ```
